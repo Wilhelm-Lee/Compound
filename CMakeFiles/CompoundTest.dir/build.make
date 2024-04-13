@@ -69,28 +69,28 @@ include CMakeFiles/CompoundTest.dir/progress.make
 # Include the compile flags for this target's objects.
 include CMakeFiles/CompoundTest.dir/flags.make
 
-CMakeFiles/CompoundTest.dir/src/test.c.o: CMakeFiles/CompoundTest.dir/flags.make
-CMakeFiles/CompoundTest.dir/src/test.c.o: src/test.c
-CMakeFiles/CompoundTest.dir/src/test.c.o: CMakeFiles/CompoundTest.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/william/Documents/Projects/Compound/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object CMakeFiles/CompoundTest.dir/src/test.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/CompoundTest.dir/src/test.c.o -MF CMakeFiles/CompoundTest.dir/src/test.c.o.d -o CMakeFiles/CompoundTest.dir/src/test.c.o -c /home/william/Documents/Projects/Compound/src/test.c
+CMakeFiles/CompoundTest.dir/test.c.o: CMakeFiles/CompoundTest.dir/flags.make
+CMakeFiles/CompoundTest.dir/test.c.o: test.c
+CMakeFiles/CompoundTest.dir/test.c.o: CMakeFiles/CompoundTest.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/william/Documents/Projects/Compound/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object CMakeFiles/CompoundTest.dir/test.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/CompoundTest.dir/test.c.o -MF CMakeFiles/CompoundTest.dir/test.c.o.d -o CMakeFiles/CompoundTest.dir/test.c.o -c /home/william/Documents/Projects/Compound/test.c
 
-CMakeFiles/CompoundTest.dir/src/test.c.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/CompoundTest.dir/src/test.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/william/Documents/Projects/Compound/src/test.c > CMakeFiles/CompoundTest.dir/src/test.c.i
+CMakeFiles/CompoundTest.dir/test.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/CompoundTest.dir/test.c.i"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/william/Documents/Projects/Compound/test.c > CMakeFiles/CompoundTest.dir/test.c.i
 
-CMakeFiles/CompoundTest.dir/src/test.c.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/CompoundTest.dir/src/test.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/william/Documents/Projects/Compound/src/test.c -o CMakeFiles/CompoundTest.dir/src/test.c.s
+CMakeFiles/CompoundTest.dir/test.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/CompoundTest.dir/test.c.s"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/william/Documents/Projects/Compound/test.c -o CMakeFiles/CompoundTest.dir/test.c.s
 
 # Object files for target CompoundTest
 CompoundTest_OBJECTS = \
-"CMakeFiles/CompoundTest.dir/src/test.c.o"
+"CMakeFiles/CompoundTest.dir/test.c.o"
 
 # External object files for target CompoundTest
 CompoundTest_EXTERNAL_OBJECTS =
 
-CompoundTest: CMakeFiles/CompoundTest.dir/src/test.c.o
+CompoundTest: CMakeFiles/CompoundTest.dir/test.c.o
 CompoundTest: CMakeFiles/CompoundTest.dir/build.make
 CompoundTest: CMakeFiles/CompoundTest.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/william/Documents/Projects/Compound/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking C executable CompoundTest"

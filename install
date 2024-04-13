@@ -1,0 +1,36 @@
+#!/bin/sh
+
+if [ "`whoami`" != "root" ]; then
+  echo "The script require root privilege to execute properly."
+  exit 1
+fi
+
+# echo "Please ensure the current work directory is the home directory to the project Compound!
+# Press enter key to continue..."
+# read
+
+SRC="$PWD"
+DST=/usr/include/Compound
+PROJ=("Array" "Paper" "Pen" "Render" "Status" "Var" "MemMan")
+
+PROJLEN=${#PROJ[*]}
+echo "======== $PROJLEN projects in total ========"
+
+idx=0
+while :; do
+  if [[ $idx -eq $PROJLEN || $idx -gt $PROJLEN ]]; then
+    break;
+  fi
+  
+  p="${PROJ[$idx]}"
+  
+  cd "$p"
+  echo "`date` >>> Installing $p"
+  cp -v include/*.h "$DST"
+  cd "$SRC"
+  ((idx++))
+  echo
+done
+
+cp -v "common.h" "$DST"
+printf "\nDone\n"

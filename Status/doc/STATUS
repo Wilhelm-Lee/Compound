@@ -1,0 +1,86 @@
+#PROJECT "Compound - Status" DOCUMENTATION WRITTEN BY WILLIAM PASCAL
+#
+#THIS PROJECT IS COMPILED UNDER "C99 ISO/IEC 9899:1999" WITH
+#"gcc (GCC) 13.2.1 20230801"
+#PLEASE NOTE THAT THE VERSION TO THE COMPILER MAY CHANGE DURING PROJECT
+#DEVELOPMENT, IT IS UNCERTAIN, SO FAR, THAT EVERY COMPILER OLDER/NEWER THAT
+#THIS VERSION COULD COMPILE PROPERLY.  MS WINDOWS SUPPORT IS UNDER
+#CONSIDERATION WHILE DEVELOPMENT FOR GNU/LINUX HAS HIGHER PRIORITY.
+
+LICENSE NOTICE:
+    This file is part of Compound.
+    Compound is free software: you can redistribute it and/or modify it under
+  the terms of the GNU General Public License as published by the Free Software
+  Foundation, either version 3 of the License, or (at your option) any later
+  version.
+    Compound is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+  FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+  details.
+    You should have received a copy of the GNU General Public License along
+  with Compound. If not, see <https://www.gnu.org/licenses/>. 
+
+BRIEF:
+  "STATUS" REPRESENT THE ACTUAL PROCESS STATUS OF THE FUNCTION APPLIED TO USE
+  THIS STRUCTURE AS THE RETURNING TYPE.
+
+DECLARATION:
+  STRUCTURE - STATUS
+  IT COMES WITH FOLLOWING MEMBERS:
+    i.  value: int
+    
+      "VALUE" INDICATES THE VALUE THAT FUNCTION RETURNS.  MORE USUALLY, THIS
+      VALUE IS IGNORED WHEN "CHARACTERISTIC" IS NOT "STATUS_UNKNOWN" AS AN
+      ALTERNATIVE FOR LEGACY FUNCTIONS WHICH DO NOT USE "int" FOR THEIR
+      RETURNING.
+
+    ii.  description: char*
+    
+      "DESCRIPTION" TELLS THE SITUATION, USUALLY NOT NORMAL, WHERE THE FUNCTION
+      HAD RUN INTO CERTAIN PROBLEMS DURING THE PROCESS.  IT CAN BE USEFUL WHEN
+      DEBUGGING AND SUCH.
+      
+      *PLEASE NOTE, AN EMPTY DESCRIPTION ALONG WITH A NULL DESCRIPTION IS
+      REGARDED AS "MEANINGLESS ONE" WHICH DOES NOT DOING ANYTHING EFFECTIVE FOR
+      ANYONE.  DESCRIPTIONS CAN BE VALIDATED WITH FUNCTION `status_isvalid`.
+      
+    iii.  characteristic: int
+    
+      "CHARACTERISTIC" INDICATED THE BASIC NATURE OF CURRENT "STATUS".
+      
+      *GO SEE  enum StatusCharacteristics FOR AVAILABLE "CHARACTERISTICS".
+
+    iv.  prev: struct _Status*
+    
+      "PREV" STANDS FOR "PREVIOUS STATUS".  JUST AS THE NAME TELLS, THIS MEMBER
+      POINTS AT THE PREVIOUS STRUCTURE OF STATUS WHERE THIS STATUS IS BASED ON.
+      
+      THIS MEMBER IS USUALLY USED FOR PRINTING CALLING STACKS.
+      
+      IN SOME CASES, THIS MEMBER COULD POINT AT IT SELF, MEANING IT COULD MAKE
+      A RECURSIVE SITUATION WHERE IT REQUIRE EXTRA EXAMINATIONS BEFORE GOING TO
+      THE ADDRESS IT POINTS AT.  THESE PROBLEMS CAN BE AVOIDED WITH FUNCTION
+      `status_recursive` CALLED AHEAD.
+      
+      *GO SEE  status_dump FOR DETAILS ABOUT DUMPING CALLING STACKS.
+      *GO SEE  status_recursive FOR DETERRING RECURSIVE "PREV".
+
+SYNONYM:
+  Status funcname1(void *param);
+  Status *funcname2(void);
+
+VARIANT SYNONYM:
+  int funcname1(Status stat);
+  void funcname2(Status *stats);
+
+
+
+typedef struct _Status {
+  int value;  /* Traditional returning data "int".  Only used when the function
+                 called and received legacy functions that uses "int" as the
+                 returning type that wish to have place to hold the value.
+                 Otherwise, the function would just return the structure Status. */
+  char *description;
+  int characteristic;
+  struct _Status *prev;
+} Status;

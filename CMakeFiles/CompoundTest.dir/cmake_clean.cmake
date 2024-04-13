@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/CompoundTest.dir/src/test.c.o"
-  "CMakeFiles/CompoundTest.dir/src/test.c.o.d"
+  "CMakeFiles/CompoundTest.dir/test.c.o"
+  "CMakeFiles/CompoundTest.dir/test.c.o.d"
   "CompoundTest"
   "CompoundTest.pdb"
 )
