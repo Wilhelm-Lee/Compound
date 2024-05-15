@@ -22,10 +22,6 @@ Status String_Delete(String *inst);
 Status String_GetIdx(String *inst, Char *item, int index);
 Status String_SetIdx(String *inst, Char *item, int index);
 Status String_Literalise(String *inst, String *store);
-Status String_Encode(String *inst, StringEncoding encoding)
-       throws(UnsupportedEncoding  EncodingError  DecodingError);
-Status String_Decode(String *inst, StringEncoding encoding);
-       throws(UnsupportedEncoding  EncodingError  DecodingError);
 bool   String_Equal(String *arr1, String *arr2);
 
 /* Extensional. */
@@ -80,6 +76,10 @@ Status StringUtils_ToCharBuff(String *inst, char const *buff, int base);
 Status StringUtils_ToWideCharBuff(String *inst, wchar_t const *wbuff, int base);
 Status StringUtils_Format(String *inst, const String *__restrict fmt, ...);
 Status StringUtils_Tokenise(String *inst, const String *delim, String *store);
+Status String_Encode(String *inst, StringEncoding encoding)
+       throws(UnsupportedEncoding  EncodingError  DecodingError);
+Status String_Decode(String *inst, StringEncoding encoding);
+       throws(UnsupportedEncoding  EncodingError  DecodingError);
 int    StringUtils_Compare(String *a, String *b);
 
 static Status StringConversionPrecisionError = {

@@ -50,7 +50,7 @@ void VarUtils_Swap(Var *v1, Var *v2)
   *v2 = v3;
 }
 
-Status VarUtils_Literalise(Var *inst, char *buff)
+Status Var_Literalise(Var *inst, char *buff)
 {
   /* Skip when inst is unavailable. */
   state(inst == NULL, UnavailableInstance);
@@ -61,6 +61,16 @@ Status VarUtils_Literalise(Var *inst, char *buff)
         error(RuntimeError, "Sprintf returned 0 where it should never do."));
   
   return NormalStatus;
+}
+
+bool Var_Equal(Var *a, Var *b)
+{
+  /* Skip unavailable inst and invalid param. */
+  state((a == NULL || b == NULL), false);
+  
+  return (a->addr == b->addr &&
+          a->size == b->size &&
+          (!strcmp(a->identity, b->identity)));
 }
 
 bool VarUtils_IsIdentityLegal(char *identity)

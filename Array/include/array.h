@@ -26,7 +26,6 @@ Status Array_CopyOf(Array *inst, Array *other);
 Status Array_Delete(Array *inst);
 Status Array_GetIdx(Array *inst, Var *store, int index);
 Status Array_SetIdx(Array *inst, Var *source, int index);
-Status Array_Literalise(Array *inst, char const *store);
 bool   Array_Equal(Array *arr1, Array *arr2);
 
 /* Extensional. */

@@ -19,7 +19,7 @@ typedef struct {
 	time_t time;
 	CatlogLevel level;
 	char *originator;
-	char *msg;
+	char *content;
 } CatlogMsg;
 
 Status CatlogMsg_Create(CatlogMsg *inst, CatlogLevel level,
