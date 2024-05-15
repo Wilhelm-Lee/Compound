@@ -118,8 +118,8 @@ TIME [PRIORITY] STATUSNAME (ORIGINATOR): STATUS.DESCRIPTION
 
 
 Fri 10 May 03:02:37 CST 2024 [EXCEPTIONAL] InvalidParameter (Nullity): Given buffer was unavailable.
-    at /external/Documents/Projects/Compound/Status/src/status.c:104, report_literalise
-    at /external/Documents/Projects/Compound/Status/src/status.c:114, reportsender_send
+    at /external/Documents/Projects/Compound/Status/src/status.c:104, Report_Literalise
+    at /external/Documents/Projects/Compound/Status/src/status.c:114, ReportSender_Send
     at /external/Documents/Projects/Compound/Status/src/status.c:69, _throw
 !!!!at /external/Documents/Projects/Compound/Array/src/array.c:16, array_create
     at /external/Documents/Projects/Compound/test.c:24, main
@@ -130,10 +130,14 @@ Fri 10 May 03:02:37 CST 2024 [EXCEPTIONAL] InvalidParameter (Nullity): Given buf
 # define REPORT_LITERALISE_CHAINS_FORMAT          "    at %s:%d, %s"
 # define REPORT_LITERALISE_CHAINS_EXCLAIM_FORMAT  "!!!!at %s:%d, %s"
 
-# define REPORT_LITERALISE_HEADER_FORMAT_LENGTH(PRIORITY, STATUSNAME,          \
+# define REPORT_LITERALISE_HEADER_FORMAT_LENGTH(buff, PRIORITY, STATUSNAME,          \
                                                ORIGINATOR, DESCRIPTION)        \
-  (INT64_DIGITS_DEC + strlen(PRIORITY) + strlen(STATUSNAME) +                  \
-   strlen(ORIGINATOR) + strlen(DESCRIPTION) + 9)  // Does not count '\0'
+{                                                                              \
+  const time_t now = time(NULL);                                               \
+  (void)strflen(buff, 28, DATETIME_FORMAT, localtime(&now));                   \
+  *length = strlen(buff);                                                      \
+}
+
 # define REPORT_LITERALISE_CHAINS_FORMAT_LENGTH(FILEPATH, LINE, FUNCNAME)      \
   (strlen(FILEPATH) + utils_calc_digits(LINE) +                                \
    strlen(FUNCNAME) + 10)  // Does not count '\0'
@@ -197,9 +201,10 @@ typedef struct {
 # define STATUS_BUFFER_MAXIMUM_LENGTH  UINT32_MAX
 
 bool Location_Equal(Location lc1, Location lc2);
-void Status_Dump(Status stat, Status *statbuff, int idx);
 bool Status_Equal(Status stat1, Status stat2);
-bool StatusUtils_HasPrev(Status stat);
+Status Status_Literalise(Status *inst, char *buff);
+void StatusUtils_Dump(Status *stat, Status *statbuff, int idx);
+bool StatusUtils_HasPrev(Status *stat);
 bool StatusUtils_IsOkay(Status stat);
 bool StatusUtils_IsValid(Status stat);
 bool StatusUtils_IsRecursive(Status stat);
@@ -382,9 +387,20 @@ static Status ReportMessageLengthTooLong = {
 
 // ========================================================
 
+/* Throw the report created with $e if $e is abnormal, commented with $c. */
 # define ensure(e, c)  {                                   \
   Status stat = e;                                         \
   solve(!(StatusUtils_IsOkay(stat)), {                     \
+    Report rep = stamp(error(stat, c), (char *)__func__);  \
+    (void)throw(rep);                                      \
+    return ReportThrown;                                   \
+  })                                                       \
+}
+
+/* Throw the report created with $s if $e is abnormal, commented with $c. */
+# define match(s, e, c)  {                                 \
+  Status stat = s;                                         \
+  solve(!(StatusUtils_IsOkay(e)), {                        \
     Report rep = stamp(error(stat, c), (char *)__func__);  \
     (void)throw(rep);                                      \
     return ReportThrown;                                   \
@@ -414,11 +430,11 @@ static int HANDLER(void *report)
       REPORT_SENDING_PRIORITY_FATAL);
 
     /* Perform throwing. */
-    (void)_throw(e); // Throw the report alone.
+    (void)throw(e); // Throw the report alone.
     return 1;
   }
 
-  (void)_throw(*(Report *)report); // Lonely _throw, no catch will company.
+  (void)throw(*(Report *)report); // Lonely _throw, no catch will company.
   return 0;
 }
 

@@ -45,8 +45,10 @@ typedef struct {
 
 Status Var_Create(Var *inst, void *addr, size_t size, char *identity);
 Status Var_CopyOf(Var *inst, Var *other);
+Status Var_Literalise(Var *inst, char *buff);
+bool   Var_Equal(Var *a, Var *b);
 void   Var_Delete(Var *inst);
-Status VarUtils_Literalise(Var *inst, char *buff);
+
 void   VarUtils_Swap(Var *v1, Var *v2);
 bool   VarUtils_IsIdentityLegal(char *identity);
 

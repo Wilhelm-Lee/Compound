@@ -11,7 +11,7 @@ Status CatlogMsg_Create(CatlogMsg *inst, CatlogLevel level,
 	inst->time = time(NULL);
 	inst->level = level;
 	*inst->originator = *originator;
-	*inst->msg = *msg;
+	*inst->content = *msg;
 
 	return NormalStatus;
 }
@@ -36,7 +36,7 @@ bool CatlogMsg_Equal(CatlogMsg *inst, CatlogMsg *other)
 		inst->time == other->time &&
 		inst->level == other->level &&
 		(!strcmp(inst->originator, other->originator)) &&
-		(!strcmp(inst->msg, other->msg))
+		(!strcmp(inst->content, other->content))
 	);
 }
 
@@ -92,12 +92,13 @@ Status CatlogSender_Send(CatlogSender *inst, int *store, bool append)
   fails(store, InvalidParameter);
 
   /* Open file. */
-  ensure(CatlogUtils_OpenFile(inst->dst, "r"), "Unable to open file.");
-  ensure(CatlogMsg_Create(&(CatlogMsg){}, 0, "", ""), "Failed!");
+  ensure(CatlogUtils_OpenFile(inst->dst, (append ? "a" : "w")),
+         "Unable to open file.");
 
-  /* Read file. */
-  /* Creating buffer, */
-  // TODO(william):  Finish this function.
+  /* Write msg. */
+  *store = fprintf(inst->dst, "%s", inst->msg.content);
+  
+  return NormalStatus;
 }
 
 Status CatlogUtils_CalcElapsed(struct timespec t1, struct timespec t2);
