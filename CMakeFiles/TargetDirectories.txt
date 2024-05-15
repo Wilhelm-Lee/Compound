@@ -1,3 +1,0 @@
-/home/william/Documents/Projects/Compound/CMakeFiles/CompoundTest.dir
-/home/william/Documents/Projects/Compound/CMakeFiles/edit_cache.dir
-/home/william/Documents/Projects/Compound/CMakeFiles/rebuild_cache.dir
