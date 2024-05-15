@@ -1,1 +1,0 @@
-/usr/bin/cc -rdynamic CMakeFiles/CompoundTest.dir/test.c.o -o CompoundTest
