@@ -11,7 +11,8 @@ fi
 
 SRC="$PWD"
 DST=/usr/include/Compound
-PROJ=("Array" "Paper" "Pen" "Render" "Status" "Var" "MemMan")
+PROJ=("Array" "Paper" "Pen" "Render" "Status" "Var" "MemMan" "Stack" "Utils"\
+      "String")
 
 PROJLEN=${#PROJ[*]}
 echo "======== $PROJLEN projects in total ========"
@@ -32,5 +33,7 @@ while :; do
   echo
 done
 
-cp -v "common.h" "$DST"
+cp -v "common.h" "const.h" "platform.h"\
+      "name.h" "type.h" "catlog.h"\
+      "attr.h" "$DST"
 printf "\nDone\n"

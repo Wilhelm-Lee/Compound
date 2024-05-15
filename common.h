@@ -1,17 +1,8 @@
-#ifndef COMMON_H
-# define COMMON_H
+#ifndef COMPOUND_COMMON_h
+# define COMPOUND_COMMON_h
 
 # include <stdlib.h>
 # include <stdbool.h>
-
-# define _buffer_definition_without_assignment(type, length)                  \
-         struct { type data[(length)]; const int len; }
-
-# define Buffer(type, length, var)                                            \
-         _buffer_definition_without_assignment(type, length)                  \
-         var = { .data = {}, .len = length }
-
-# define Array(type, length, var)  type var[(length)]
 
 /**
  * @brief Return $n as the return value, once $o is NULL
@@ -20,7 +11,7 @@
  * @note 'o' stands for "Object"
  * @note 'n' stands for "Numeric on Return"
  */
-# define fails(o, n) {if ((o) == NULL) return (n);}
+# define fails(o, n)  { if ((o) == NULL) return (n); }
 
 /**
  * @brief Return $e as the return value, once $v equals $e
@@ -29,16 +20,100 @@
  * @note 'v' stands for "Value"
  * @note 'e' stands for "Error Code"
  */
-# define trans(v, e) {if ((v) == (e)) return (e);}
+# define trans(v, e)  { if ((v) == (e)) return (e); }
 
-///**
-// * @brief Evaluate given statement while the ptr to $s is not NULL
-// * @return given $n as the return value
-// * @note "state" stands for "Statement Evaluation"
-// * @note 's' stands for "Statement"
-// * @note 'n' stands for "Numeric on Return"
-// */
-//# define state(s, n) {if ((#s)) return (n);}
+/**
+ * @brief Evaluate given statement while the ptr to $s is not NULL
+ * @return given $n as the return value
+ * @note "state" stands for "Statement Evaluation"
+ * @note 's' stands for "Statement"
+ * @note 'n' stands for "Numeric on Return"
+ */
+# define state(s, n)  { if ((s)) return (n); }
+
+/**
+ * @brief Evaluate given statement while the ptr to $s is not NULL
+ * @return nothing.
+ * @note "svoid" stands for "Statement Evaluation in Void"
+ * @note 's' stands for "Statement"
+ */
+# define svoid(s)  { if ((s)) return; }
+
+/**
+ * @brief Return an Error Status with given parameter $c as the
+ *        comment or description.
+ * @return A instance of Error Status customised.
+ * @note "error" stands for "Error in Status"
+ * @note 'e' stands for "Error"
+ * @note 'c' stands for "Comment"
+ */
+# define error(e, c)  ((Status) {\
+  .description = c,\
+  .characteristic = e.characteristic,\
+  .prev = e.prev\
+})
+
+/**
+ * @brief Return an Error Status with given parameter $p as the
+ *        predecessor.
+ * @return A instance of Error Status inherited.
+ * @note "extend" stands for "Extend from Predecessor"
+ * @note 'i' stands for 'Instance'
+ * @note 'p' stands for "Predecessor"
+ */
+# define extend(i, p)  ((Status)) {\
+  .prev = p\
+}
+
+# define modify(e, s, c)  ((Status)) {\
+  .description = s,\
+  .characteristic = c,\
+  .prev = e.prev\
+}
+
+/** @brief Create a report in place.
+ * @return A instance of Status Report customised.
+ * @note "stamp" stands for "Report Stamp"
+ * @note 'e' stands for "Exception"
+ * @note 'c' stands for "Char String of Originator"
+ */
+# define stamp(e, c)  ((Report) {\
+  .stat = e,\
+  .originator = c,\
+  .time = time(NULL),\
+  .priority = REPORT_SENDING_PRIORITY_NORMAL,\
+  .status = REPORT_SENDING_TASK_STATUS_PENDING\
+})
+
+/**
+ * @brief Another way to handle if statements more cleanly.
+ * @note "solve" stands for "Solve with Statements."
+ * @note 's' stands for "Statement"
+ * @note 'b' stands for "Block of Forks"
+ */
+# define solve(s, b)  if (s) b
+
+// /**
+//  * @brief Forcibly return desired value $v once $s is not $k.
+//  * @return $v once state for $s is false.
+//  * @note "force" stands for "Forcible value"
+//  * @note 's' stands for "Statement"
+//  * @note 'k' stands for "Key Value", the value that is targeted to detect.
+//  * @note 'v' stands for "Desire Value", the value that desires.
+//  */
+// # define force(s, k, v)  solve((s) != (k), v)
+
+// # define sforce(s, k, v)  solve((!status_equal(s, k)), v)
+
+/* Get the literal. */
+# define nameof(obj)  #obj
+
+# define type(T)
+
+/* Only effects when Generic is defined. */
+# define Array(T) Array
+
+# define String(T) String
 
 typedef enum {
   COMMON_ERROR_NULLPTR = 1,
@@ -73,4 +148,4 @@ typedef bool _Bit;
 # define ATRANGE(lf, rt, v) \
   (INRANGE(lf, true, rt, true, v)) ? 0 : ((v < lf) ? (v - lf) : (v - rt))
 
-#endif /* NO COMMON_H */
+#endif /* NO COMPOUND_COMMON_h */

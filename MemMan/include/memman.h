@@ -1,8 +1,8 @@
-#ifndef MEMMAN_H
-#define MEMMAN_H
+#ifndef COMPOUND_MEMMAN_H
+# define COMPOUND_MEMMAN_H
 
-#include <Compound/common.h>
-#include <Compound/status.h>
+# include <Compound/common.h>
+# include <Compound/status.h>
 
 /*
    Higher the priority it is, the less time for lifespan it has.
@@ -10,48 +10,44 @@
 
 typedef struct {
   void *addr;
-  int priority; // -1 for manual
-} Memory;
+  size_t length;
+  int priority; // Negative for manual; Higher than 0 it is,
+                // higher the priority is.
+} Memory;  // 20 Bytes
 
 typedef struct {
   Memory *members;
-  size_t poolsize;
+  size_t volume;
   int priority;
 } MemoryPool;
 
 typedef struct {
   MemoryPool *members;
   void *(*allocator)(size_t sz);
-  void (*delocator)(void *addr);
+  void (*deallocator)(void *addr);
 } MemoryPoolManager;
 
-Status memman_memory_allocate(Memory *inst, size_t sz);
-Status memman_memory_reallocate(Memory *inst, size_t sz);
-void memman_memory_release(Memory *inst);
+Status MemMan_Memory_Allocate(Memory *inst, size_t length);
+Status MemMan_Memory_Reallocate(Memory *inst, size_t length);
+void   MemMan_Memory_Release(Memory *inst);
+Status MemMan_Memory_Prioritise(Memory *inst);
+Status MemMan_Memory_Deprioritise(Memory *inst);
+bool   MemMan_Memory_Equal(Memory *inst, Memory *other);
 
-Status memman_memorypool_create(MemoryPool *inst, Memory **members,
-                                size_t poolsize);
-Status memman_memorypool_constr(MemoryPool *inst, Memory **members,
-                                size_t poolsize, int priority);
-Status memman_memorypool_allocate(MemoryPool *inst, int idx, size_t sz);
-Status memman_memorypool_reallocate(MemoryPool *inst, int idx, size_t sz);
-Status memman_memorypool_release(MemoryPool *inst, int idx);
-Status memman_memorypool_prioritise(MemoryPool *inst, int idx);
-Status memman_memorypool_deprioritise(MemoryPool *inst, int idx);
-void memman_memorypool_delete(MemoryPool *inst);
+Status MemMan_MemoryPool_Create(MemoryPool *inst, size_t volume);
+Status MemMan_MemoryPool_Constr(MemoryPool *inst, size_t volume, int priority);
+Status MemMan_MemoryPool_AllocateAt(MemoryPool *inst, int idx, size_t sz);
+Status MemMan_MemoryPool_ReallocateAt(MemoryPool *inst, int idx, size_t sz);
+Status MemMan_MemoryPool_ReleaseAt(MemoryPool *inst, int idx);
+void   MemMan_MemoryPool_Delete(MemoryPool *inst);
 
-Status memman_memorypoolmanager_create(MemoryPoolManager *inst,
-                                       MemoryPool **membersptr);
-Status memman_memorypoolmanager_constr(MemoryPoolManager *inst,
-                                       MemoryPool **membersptr,
+Status MemMan_MemoryPoolManager_Create(MemoryPoolManager *inst,
+                                       MemoryPool **members);
+Status MemMan_MemoryPoolManager_Constr(MemoryPoolManager *inst,
+                                       MemoryPool **members,
                                        void *(*allocator)(size_t sz),
-                                       void (*delocator)(void *addr));
-Status memman_memorypoolmanager_addmember(MemoryPoolManager *inst,
-                                          MemoryPool *newmember);
-Status memman_memorypoolmanager_removemember(MemoryPoolManager *inst, int idx);
-Status memman_memorypoolmanager_allocate(MemoryPoolManager *inst,
-                                         ArrayIndexerRange selected, size_t sz);
-Status memman_memorypoolmanager_release(MemoryPoolManager *inst,
-                                        ArrayIndexerRange selected);
+                                       void (*deallocator)(void *addr));
+Status MemMan_MemoryPoolManager_Merge(MemoryPool *pool1, MemoryPool *pool2);
+Status MemMan_MemoryPoolManager_Divide(MemoryPool *src, int off, int len);
 
-#endif /* MEMMAN_H */
+#endif /* COMPOUND_MEMMAN_H */
