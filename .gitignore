@@ -1,5 +1,5 @@
-CMakeFiles
-CMakeFiles/*
+*CMakeFiles
+*CMakeFiles/*
 *CMakeCache*
 cmake_install.cmake
 *[tT]est*
@@ -7,3 +7,9 @@ cmake_install.cmake
 gitwork
 work
 Makefile
+*sublime*
+found
+todo_stack
+getReady.sh
+base_type.c
+sample
