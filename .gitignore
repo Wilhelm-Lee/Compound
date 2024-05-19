@@ -13,4 +13,7 @@ todo_stack
 getReady.sh
 base_type.c
 sample
+<<<<<<< HEAD
 compile
+=======
+>>>>>>> refs/remotes/master/master
