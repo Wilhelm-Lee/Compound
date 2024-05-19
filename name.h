@@ -34,11 +34,11 @@ static const Name NullName = {
 //   Name value;
 //   Name idx;
 //   Name *occupied;
-// } NameSpace;  // Size: 8+8+8 =8*3 =24 Bytes (x64)
+// } NameScope;  // Size: 8+8+8 =8*3 =24 Bytes (x64)
 
 /*
  * Example:
- *   Var variable_from_namespace_Utils_in_class_Calculation_in_function_C;
+ *   Var variable_from_namescope_Utils_in_class_Calculation_in_function_C;
  *   // Not enough room for representation.
  *   // Must use another more efficient method to store the name.
  * Become (roughly):

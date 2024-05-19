@@ -34,6 +34,6 @@ while :; do
 done
 
 cp -v "common.h" "const.h" "platform.h"\
-      "name.h" "type.h" "catlog.h"\
-      "attr.h" "$DST"
+      "name.h" "namescope.h" "type.h" "catlog.h"\
+      "attr.h" "registry.h" "$DST"
 printf "\nDone\n"

@@ -8,6 +8,7 @@
 # include <threads.h>
 # include <time.h>
 # include <stdio.h>
+# include <math.h>
 
 # include <Compound/common.h>
 # include <Compound/utils.h>
@@ -19,7 +20,6 @@ typedef enum {
   STATUS_NORMAL   = 0,
   STATUS_ERROR    = 1
 } StatusCharacteristics;
-
 
 typedef enum {
   /* Settlement. */
@@ -100,17 +100,17 @@ typedef enum {
 /* "Report" recollects essential informations, included but not limited to
    Status and others for making an report for debugging and such. */
 typedef struct {
-  Status stat;
-  char *originator;
+  Status status;
+  char *initiator;
   time_t time;
   ReportSendingPriority priority;
-  ReportSendingTaskStatus status;
+  ReportSendingTaskStatus task_status;
   FILE *dest;  // The destination where the report is sending to.
 } Report;
 
 /*
 
-TIME [PRIORITY] STATUSNAME (ORIGINATOR): STATUS.DESCRIPTION
+DATETIME [PRIORITY] STATUSNAME (ORIGINATOR): STATUS.DESCRIPTION
     at LOCATION.FILE:LOCATION.LINE, LOCATION.FUNC
     at LOCATION.FILE:LOCATION.LINE, LOCATION.FUNC
     at LOCATION.FILE:LOCATION.LINE, LOCATION.FUNC
@@ -126,23 +126,23 @@ Fri 10 May 03:02:37 CST 2024 [EXCEPTIONAL] InvalidParameter (Nullity): Given buf
 
 */
 
-# define REPORT_LITERALISE_HEADER_FORMAT          "%ld [%s] %s (%s): %s"
+# define REPORT_LITERALISE_HEADER_FORMAT          "%s [%s] %s (%s): %s"
 # define REPORT_LITERALISE_CHAINS_FORMAT          "    at %s:%d, %s"
 # define REPORT_LITERALISE_CHAINS_EXCLAIM_FORMAT  "!!!!at %s:%d, %s"
 
-# define REPORT_LITERALISE_HEADER_FORMAT_LENGTH(buff, PRIORITY, STATUSNAME,          \
-                                               ORIGINATOR, DESCRIPTION)        \
-{                                                                              \
-  const time_t now = time(NULL);                                               \
-  (void)strflen(buff, 28, DATETIME_FORMAT, localtime(&now));                   \
-  *length = strlen(buff);                                                      \
-}
+// # define REPORT_LITERALISE_HEADER_FORMAT_LENGTH(buff, PRIORITY, STATUSNAME,          \
+//                                                ORIGINATOR, DESCRIPTION)        \
+// {                                                                              \
+//   const time_t now = time(NULL);                                               \
+//   (void)strflen(buff, 28, DATETIME_FORMAT, localtime(&now));                   \
+//   *length = strlen(buff);                                                      \
+// }
 
-# define REPORT_LITERALISE_CHAINS_FORMAT_LENGTH(FILEPATH, LINE, FUNCNAME)      \
-  (strlen(FILEPATH) + utils_calc_digits(LINE) +                                \
-   strlen(FUNCNAME) + 10)  // Does not count '\0'
-# define REPORT_LITERALISE_CHAINS_EXCLAIM_FORMAT_LENGTH                        \
-  REPORT_LITERALISE_CHAINS_FORMAT_LENGTH
+// # define REPORT_LITERALISE_CHAINS_FORMAT_LENGTH(FILEPATH, LINE, FUNCNAME)      \
+//   (strlen(FILEPATH) + utils_calc_digits(LINE) +                                \
+//    strlen(FUNCNAME) + 10)  // Does not count '\0'
+// # define REPORT_LITERALISE_CHAINS_EXCLAIM_FORMAT_LENGTH                        \
+//   REPORT_LITERALISE_CHAINS_FORMAT_LENGTH
 
 typedef enum {
   REPORT_SENDER_RESULT_FINISHED,
@@ -200,21 +200,21 @@ typedef struct {
 
 # define STATUS_BUFFER_MAXIMUM_LENGTH  UINT32_MAX
 
-bool Location_Equal(Location lc1, Location lc2);
-bool Status_Equal(Status stat1, Status stat2);
+bool   Location_Equals(Location lc1, Location lc2);
 Status Status_Literalise(Status *inst, char *buff);
-void StatusUtils_Dump(Status *stat, Status *statbuff, int idx);
-bool StatusUtils_HasPrev(Status *stat);
-bool StatusUtils_IsOkay(Status stat);
-bool StatusUtils_IsValid(Status stat);
-bool StatusUtils_IsRecursive(Status stat);
-int StatusUtils_Depth(Status *stat);
+bool   Status_Equals(Status stat1, Status stat2);
+void   StatusUtils_Dump(Status *inst, Status *store, int idx);
+bool   StatusUtils_HasPrev(Status *inst);
+bool   StatusUtils_IsOkay(Status inst);
+bool   StatusUtils_IsValid(Status inst);
+bool   StatusUtils_IsRecursive(Status inst);
+int    StatusUtils_Depth(Status *inst);
 
 Status
-Report_Create(Report *inst, Status *stat, FILE *dest, char *originator,
+Report_Create(Report *inst, Status *stat, FILE *dest, char *initiator,
               int priority);
 bool
-Report_Equal(Report repo1, Report repo2);
+Report_Equals(Report repo1, Report repo2);
 Status
 Report_Literalise(Report *inst, char *buff);
 
@@ -223,8 +223,8 @@ Status
 ReportSender_Create(ReportSender *inst, Report *report);
 Status
 ReportSender_Send(ReportSender *inst, ReportSendingTask task);
-ReportSendingTaskStatus
-ReportSender_GetStatus(ReportSender *inst);
+// ReportSendingTaskStatus
+// ReportSender_GetStatus(ReportSender *inst);
 
 ReportSendingTaskID
 ReportSenderManager_AppendTask(ReportSendingManager *inst,
@@ -286,10 +286,22 @@ static Status NullPointerAccounted = {
   .prev = &MemoryViolation
 };
 
+static Status InvalidObject = {
+  .description = "An invalid object was presented.",
+  .characteristic = STATUS_ERROR,
+  .prev = &ErrorStatus
+};
+
+static Status UnavailableObject = {
+  .description = "An unavailable object was presented.",
+  .characteristic = STATUS_ERROR,
+  .prev = &ErrorStatus
+};
+
 static Status InvalidParameter = {
   .description = "An invalid parameter was presented.",
   .characteristic = STATUS_ERROR,
-  .prev = &ErrorStatus
+  .prev = &InvalidObject
 };
 
 static Status InsufficientMemory = {
@@ -328,7 +340,7 @@ static Status ImprecisionError = {
   .prev = &RuntimeError
 };
 
-// ---------------USER DEFINED | RUNTIME-------------------
+// ---------------------USER DEFINED-----------------------
 
 static Status UnavailableInstance = {
   .description = "An unavailable instance was given for initialisation.",
@@ -372,6 +384,12 @@ static Status InvalidFileName = {
   .prev = &ReadWriteError
 };
 
+static Status UnavailableFileName = {
+  .description = "Given file name was unavailable",
+  .characteristic = STATUS_ERROR,
+  .prev = &UnavailableObject
+};
+
 static Status ReportThrown = {
   .description = "This function has thrown a report, "
                  "following instructions aborted.",
@@ -379,10 +397,34 @@ static Status ReportThrown = {
   .prev = &RuntimeError
 };
 
-static Status ReportMessageLengthTooLong = {
+static Status ReportMessageTooLong = {
   .description = "Given message is too long.",
   .characteristic = STATUS_ERROR,
   .prev = &ArrayLengthError
+};
+
+static Status MaximumLengthExceeded = {
+  .description = "Buffer was too long.",
+  .characteristic = STATUS_ERROR,
+  .prev = &ArrayLengthError
+};
+
+static Status MaximumLiteralisationLengthExceeded = {
+  .description = "Literalisation was too long.",
+  .characteristic = STATUS_ERROR,
+  .prev = &MaximumLengthExceeded
+};
+
+static Status UnavailableBuffer = {
+  .description = "Given buffer was unavailable.",
+  .characteristic = STATUS_ERROR,
+  .prev = &UnavailableInstance
+};
+
+static Status InvalidLiteralisingBuffer = {
+  .description = "Given buffer does not have a good integrity on its length.",
+  .characteristic = STATUS_ERROR,
+  .prev = &InvalidObject
 };
 
 // ========================================================
@@ -417,25 +459,6 @@ static Status ReportMessageLengthTooLong = {
 
 ReportSendingTaskID __throw(Report report, Location loc);
 Report catch(ReportSendingTaskID taskid);
-static int HANDLER(void *report)
-{
-  /* Throw UnableToThrowError when param is unavailable. */
-  if (report == NULL) {
-    /* Create report on this. */
-    Report e;
-    Report_Create(
-      &e,
-      &error(UnableToThrowError, "Cannot perform throwing.  Aborted."),
-      stderr, nameof(DEFAULT_ARGUE_STARTER),
-      REPORT_SENDING_PRIORITY_FATAL);
-
-    /* Perform throwing. */
-    (void)throw(e); // Throw the report alone.
-    return 1;
-  }
-
-  (void)throw(*(Report *)report); // Lonely _throw, no catch will company.
-  return 0;
-}
+int HANDLER(void *report);
 
 #endif  /* COMPOUND_STATUS_H */

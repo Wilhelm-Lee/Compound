@@ -22,7 +22,7 @@ Status String_Delete(String *inst);
 Status String_GetIdx(String *inst, Char *item, int index);
 Status String_SetIdx(String *inst, Char *item, int index);
 Status String_Literalise(String *inst, String *store);
-bool   String_Equal(String *arr1, String *arr2);
+bool   String_Equals(String *arr1, String *arr2);
 
 /* Extensional. */
 Status StringUtils_FromInteger(String *inst, int value);

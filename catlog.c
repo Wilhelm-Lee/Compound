@@ -2,16 +2,16 @@
 #include <Compound/status.h>
 
 Status CatlogMsg_Create(CatlogMsg *inst, CatlogLevel level,
-       char const *originator, char const *msg)
+       char *initiator, char *msg)
 {
   /* Skip unavailable instances and parameters. */
   fails(inst, UnavailableInstance);
-  state((originator == NULL || msg == NULL), InvalidParameter);
+  state((initiator == NULL || msg == NULL), InvalidParameter);
 
 	inst->time = time(NULL);
 	inst->level = level;
-	*inst->originator = *originator;
-	*inst->content = *msg;
+  inst->initiator = initiator;
+  inst->content = msg;
 
 	return NormalStatus;
 }
@@ -27,7 +27,7 @@ Status CatlogMsg_CopyOf(CatlogMsg *inst, CatlogMsg *other)
 	return NormalStatus;
 }
 
-bool CatlogMsg_Equal(CatlogMsg *inst, CatlogMsg *other)
+bool CatlogMsg_Equals(CatlogMsg *inst, CatlogMsg *other)
 {
   /* Skip unavailable instances and parameters. */
   state((inst == NULL || other == NULL), false);
@@ -35,7 +35,7 @@ bool CatlogMsg_Equal(CatlogMsg *inst, CatlogMsg *other)
 	return (
 		inst->time == other->time &&
 		inst->level == other->level &&
-		(!strcmp(inst->originator, other->originator)) &&
+		(!strcmp(inst->initiator, other->initiator)) &&
 		(!strcmp(inst->content, other->content))
 	);
 }
@@ -70,13 +70,13 @@ Status CatlogSender_CopyOf(CatlogSender *inst, CatlogSender *other)
   return NormalStatus;
 }
 
-bool CatlogSender_Equal(CatlogSender *inst, CatlogSender *other)
+bool CatlogSender_Equals(CatlogSender *inst, CatlogSender *other)
 {
   /* Skip unavailable instances and parameters. */
   state((inst == NULL || other == NULL), false);
 
   return (
-    CatlogMsg_Equal(&inst->msg, &other->msg) &&
+    CatlogMsg_Equals(&inst->msg, &other->msg) &&
     inst->dst == other->dst &&
     inst->successful == other->successful &&
     ((inst->elapsed.tv_sec == other->elapsed.tv_sec) &&
@@ -84,23 +84,35 @@ bool CatlogSender_Equal(CatlogSender *inst, CatlogSender *other)
   );
 }
 
-Status CatlogSender_Send(CatlogSender *inst, int *store, bool append)
+Status CatlogSender_Send(CatlogSender *inst, char *filepath, bool append)
        throws(ReadWriteError)
 {
   /* Skip unavailable instances and parameters. */
   fails(inst, UnavailableInstance);
-  fails(store, InvalidParameter);
+  fails(filepath, UnavailableFileName);
 
   /* Open file. */
-  ensure(CatlogUtils_OpenFile(inst->dst, (append ? "a" : "w")),
-         "Unable to open file.");
+  // ensure(CatlogUtils_OpenFile(inst->dst, (append ? "a" : "w")),
+  //        "Unable to open file.");
+  (void)CatlogUtils_OpenFile(inst->dst, filepath, (append ? "a" : "w"));
 
   /* Write msg. */
-  *store = fprintf(inst->dst, "%s", inst->msg.content);
-  
-  return NormalStatus;
+  return normal(NormalStatus, "", fprintf(inst->dst, "%s", inst->msg.content));
 }
 
 Status CatlogUtils_CalcElapsed(struct timespec t1, struct timespec t2);
 
-Status CatlogUtils_OpenFile(FILE *store, const char const *__restrict mode);
+Status CatlogUtils_OpenFile(FILE *store, char *filepath,
+                            const char const *__restrict mode)
+{
+  /* No need to open a system output stream. */
+  if (!strcmp(filepath, "stdin") ||
+      !strcmp(filepath, "stdout") ||
+      !strcmp(filepath, "stderr")) {
+    return NormalStatus;
+  }
+  
+  store = fopen(filepath, mode);
+  
+  return NormalStatus;
+}

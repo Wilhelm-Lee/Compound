@@ -38,7 +38,7 @@ Status String_Literalise(String *inst, String *store)
   fails(inst, UnavailableInstance);
 }
 
-bool   String_Equal(String *arr1, String *arr2)
+bool   String_Equals(String *arr1, String *arr2)
 {
   fails(inst, UnavailableInstance);
 }

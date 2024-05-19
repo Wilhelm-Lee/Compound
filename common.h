@@ -1,5 +1,6 @@
 #ifndef COMPOUND_COMMON_h
 # define COMPOUND_COMMON_h
+// # define __DEBUG__  1
 
 # include <stdlib.h>
 # include <stdbool.h>
@@ -39,37 +40,37 @@
  */
 # define svoid(s)  { if ((s)) return; }
 
-/**
- * @brief Return an Error Status with given parameter $c as the
- *        comment or description.
- * @return A instance of Error Status customised.
- * @note "error" stands for "Error in Status"
- * @note 'e' stands for "Error"
- * @note 'c' stands for "Comment"
- */
-# define error(e, c)  ((Status) {\
+
+/* Create a new UnknownStatus on the fly. */
+# define unknown(e, c, v)  ((Status) {\
+  .value = v,\
   .description = c,\
-  .characteristic = e.characteristic,\
+  .characteristic = STATUS_UNKNOWN,\
   .prev = e.prev\
 })
 
-/**
- * @brief Return an Error Status with given parameter $p as the
- *        predecessor.
- * @return A instance of Error Status inherited.
- * @note "extend" stands for "Extend from Predecessor"
- * @note 'i' stands for 'Instance'
- * @note 'p' stands for "Predecessor"
- */
-# define extend(i, p)  ((Status)) {\
-  .prev = p\
-}
-
-# define modify(e, s, c)  ((Status)) {\
-  .description = s,\
-  .characteristic = c,\
+/* Create a new NormalStatus on the fly. */
+# define normal(e, c, v)  ((Status) {\
+  .value = v,\
+  .description = c,\
+  .characteristic = STATUS_NORMAL,\
   .prev = e.prev\
-}
+})
+
+/* Create a new ErrorStatus on the fly. */
+# define error(e, c)  ((Status) {\
+  .description = c,\
+  .characteristic = STATUS_ERROR,\
+  .prev = e.prev\
+})
+
+/* Extend the Status chain by giving 'p' for "predecessor"
+   and 'c' for "comment/description". */
+# define extend(p, c)  ((Status) {\
+  .description = c,\
+  .characteristic = p.characteristic,\
+  .prev = p\
+})
 
 /** @brief Create a report in place.
  * @return A instance of Status Report customised.
@@ -78,8 +79,8 @@
  * @note 'c' stands for "Char String of Originator"
  */
 # define stamp(e, c)  ((Report) {\
-  .stat = e,\
-  .originator = c,\
+  .status = e,\
+  .initiator = c,\
   .time = time(NULL),\
   .priority = REPORT_SENDING_PRIORITY_NORMAL,\
   .status = REPORT_SENDING_TASK_STATUS_PENDING\
@@ -103,7 +104,7 @@
 //  */
 // # define force(s, k, v)  solve((s) != (k), v)
 
-// # define sforce(s, k, v)  solve((!status_equal(s, k)), v)
+// # define sforce(s, k, v)  solve((!Status_Equals(s, k)), v)
 
 /* Get the literal. */
 # define nameof(obj)  #obj
@@ -114,6 +115,24 @@
 # define Array(T) Array
 
 # define String(T) String
+
+# define cat(s)  {\
+  CatlogMsg msg;\
+  CatlogMsg_Create(&msg, CATLOG_LEVEL_DEBUG, "CAT", s);\
+  CatlogSender sender;\
+  CatlogSender_Create(&sender, &msg, stderr);\
+  CatlogSender_Send(&sender, "stdout", false);\
+}
+
+# define ok(s, b)  {\
+  const Status _ = s;\
+  if (StatusUtils_IsOkay(_))  b\
+}
+
+# define notok(s, b)  {\
+  const Status _ = s;\
+  if (!StatusUtils_IsOkay(_))  b\
+}
 
 typedef enum {
   COMMON_ERROR_NULLPTR = 1,
@@ -147,5 +166,7 @@ typedef bool _Bit;
 
 # define ATRANGE(lf, rt, v) \
   (INRANGE(lf, true, rt, true, v)) ? 0 : ((v < lf) ? (v - lf) : (v - rt))
+
+# define LITERALISATION_LENGTH_MAXIMUM  0xFFFF
 
 #endif /* NO COMPOUND_COMMON_h */

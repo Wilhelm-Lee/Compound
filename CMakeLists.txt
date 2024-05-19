@@ -3,6 +3,7 @@ cmake_minimum_required (VERSION 3.5)
 project (Compound)
 
 add_compile_options(-g -std=c99 -Wall -Wextra -Wformat)
+LINK_LIBRARIES(m)
 
 # add_executable(CompoundTest test.c
 #                Var/src/var.c
@@ -13,7 +14,10 @@ add_compile_options(-g -std=c99 -Wall -Wextra -Wformat)
 #                catlog.c
 #                name.c)
 
-add_executable(CompoundTest test.c
+add_executable(CompoundTest
+               test.c
                Var/src/var.c
                Array/src/array.c
-               Status/src/status.c)
+               Status/src/status.c
+               Utils/src/utils.c
+               catlog.c)

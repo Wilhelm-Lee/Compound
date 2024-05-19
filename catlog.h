@@ -1,8 +1,8 @@
 ﻿#ifndef COMPOUND_CATLOG_H
 # define COMPOUND_CATLOG_H
 
-# include <Compound/status.h>
 # include <Compound/common.h>
+# include <Compound/status.h>
 
 typedef enum {
 	CATLOG_LEVEL_ALL,  // Least the value, most the information.
@@ -18,14 +18,14 @@ typedef enum {
 typedef struct {
 	time_t time;
 	CatlogLevel level;
-	char *originator;
+	char *initiator;
 	char *content;
 } CatlogMsg;
 
 Status CatlogMsg_Create(CatlogMsg *inst, CatlogLevel level,
-                        char const *originator, char const *msg);
+                        char *initiator, char *msg);
 Status CatlogMsg_CopyOf(CatlogMsg *inst, CatlogMsg *other);
-bool CatlogMsg_Equal(CatlogMsg *inst, CatlogMsg *other);
+bool   CatlogMsg_Equals(CatlogMsg *inst, CatlogMsg *other);
 
 typedef struct {
 	CatlogMsg msg;
@@ -36,10 +36,11 @@ typedef struct {
 
 Status CatlogSender_Create(CatlogSender *inst, CatlogMsg *msg, FILE *dst);
 Status CatlogSender_CopyOf(CatlogSender *inst, CatlogSender *other);
-bool CatlogSender_Equal(CatlogSender *inst, CatlogSender *other);
-Status CatlogSender_Send(CatlogSender *inst, int *store, bool append)
+bool   CatlogSender_Equals(CatlogSender *inst, CatlogSender *other);
+Status CatlogSender_Send(CatlogSender *inst, char *filepath, bool append)
        throws(ReadWriteError);
 Status CatlogUtils_CalcElapsed(struct timespec t1, struct timespec t2);
-Status CatlogUtils_OpenFile(FILE *store, const char *__restrict mode);
+Status CatlogUtils_OpenFile(FILE *store, char *filepath,
+                            const char const *__restrict mode);
 
 #endif  /* COMPOUND_CATLOG_H */

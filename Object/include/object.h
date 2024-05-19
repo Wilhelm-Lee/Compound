@@ -2,13 +2,13 @@
 # define COMPOUND_OBJECT_H
 
 # include <Compound/array.h>
-# include <Compound/namespace.h>
+# include <Compound/name.h>
 # include <Compound/type.h>
 
 typedef struct {  // interface
   Var *data;
   Array buffer;
-  int  (*Literalise)(void);
+  Var *(*Literalise)(void);
   int  (*Correspond)(Var *other);
 } Object;
 
@@ -71,7 +71,9 @@ typedef struct {
 } Destructor;
 
 typedef struct {
-  OBJECT_IMPLEMENTATION
+  // OBJECT_IMPLEMENTATION
+  
+  Object this;
 
   char *identity;
 

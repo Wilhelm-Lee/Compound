@@ -1,7 +1,7 @@
 #include <Compound/array.h>
 #include <Compound/status.h>
 
-Status Array_Create(Array *inst, int len)
+Status Array_Create(Array *inst, int len, size_t size)
 {
   /* Skip unavailable inst and invalid param. */
   fails(inst, UnavailableInstance);
@@ -10,29 +10,75 @@ Status Array_Create(Array *inst, int len)
   
   inst->len = len;
   inst->members = calloc(len, sizeof(Var));
+  int erridx = -1;
+  for (register int i = 0; i < len; i++) {
+    // TODO(william): Throw InsufficientMemory at following line.
+    solve(!StatusUtils_IsOkay(Var_Create(&inst->members[i], size)), {
+#ifdef __DEBUG__
+      cat("Var_Create failed!\n")
+#endif
+      erridx = i;
+      break;
+    } else {
+#ifdef __DEBUG__
+      cat("Var_Create success!\n")
+#endif
+    })
+  }
+  
+  /* Review on erridx.  Release data that allocated. */
+  if (erridx != -1) {
+    for (register int i = erridx; i >= 0; i--) {      
+      Var_Delete(&inst->members[i]);
+#ifdef __DEBUG__
+      cat("Deleted var from InsufficientMemory from Array_Create!")
+#endif
+    }
+    
+    /* Release array itself. */
+    free(inst->members);
+    
+    return InsufficientMemory;
+  }
+
+  return NormalStatus;
 }
 
 Status Array_CopyOf(Array *inst, Array *other)
 {
-  /* Skip unavailable inst and invalid param. */
-  fails(inst, UnavailableInstance);
-  fails(other, error(InvalidParameter, "Given other was unavailable."));
+  // /* Skip unavailable inst and invalid param. */
+  // fails(inst, UnavailableInstance);
+  // fails(other, error(InvalidParameter, "Given other was unavailable."));
   
-  /* Assign value for len. */
-  inst->len = other->len;
+  // /* Assign value for len. */
+  // inst->len = other->len;
   
-  /* Recreate array. */
-  if (inst->members == NULL)  return NormalStatus;
-  match(RuntimeError, Array_Delete(inst), "Failed on deleting array.");
-  match(RuntimeError, Array_Create(inst, other->len), "Failed on recreating "
-                                                      "array.");
+  // if (inst->members == NULL)  return NormalStatus;
+  // match(RuntimeError, Array_Create(inst, other->len), "Failed on recreating "
+  //                                                     "array.");
   
-  /* Copy and assign for each member from other to inst. */
-  for (register int i = 0; i < inst->len; i++) {
-    inst[i] = other[i];
-  }
+  // /* Copy and assign for each member from other to inst. */
+  // for (register int i = 0; i < inst->len; i++) {
+  //   inst[i] = other[i];
+  // }
   
-  return NormalStatus;
+  // return NormalStatus;
+  
+  
+  
+  
+  /*
+    if (other == NULL)  return 1;
+
+    String_Create(inst, other->len);
+    for (register int i = 0; i < other->len; i++) {
+        inst->arr[i] = other->arr[i];
+    }
+    
+    return 0;
+  
+  
+  */
 }
 
 Status Array_Delete(Array *inst)
@@ -74,14 +120,14 @@ Status Array_SetIdx(Array *inst, Var *source, int index)
   return NormalStatus;  
 }
 
-bool Array_Equal(Array *a, Array *b)
+bool Array_Equals(Array *a, Array *b)
 {
   /* Skip unavailable inst and invalid param. */
   state((a == NULL || b == NULL), false);
   state((a->len != b->len), false);
   
   for (register int i = 0; i < a->len; i++) {
-    if (!Var_Equal(&a->members[i], &b->members[i])) {
+    if (!Var_Equals(&a->members[i], &b->members[i])) {
       return false;
     }
   }

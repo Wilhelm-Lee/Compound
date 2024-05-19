@@ -1,6 +1,6 @@
 #include <Compound/utils.h>
 
-int Utils_CalcDigits(long long n)
+int Utils_CalcDigits(long long int n)
 {
   if (n == 0) {
     return 1;
@@ -15,11 +15,34 @@ int Utils_CalcDigits(long long n)
   return i;
 }
 
-int Utils_CalcDateTimeLiteralisationLength(char *buff)
+int Utils_LiteraliseInteger(long long int n, char *buff)
 {
-  const time_t now = time(NULL);
+  /* Invalid buffer was presented. */
+  if (strlen(buff) != LITERALISATION_LENGTH_MAXIMUM) {
+    buff = NULL;
+    return 0;
+  }
   
-  (void)strftime(buff, 28, DATETIME_FORMAT, localtime(&now));
+  if (!n) {
+    buff = "0";
+    return 1;
+  }
   
-  return strlen(buff);
+  const int literalising_len = Utils_CalcDigits(n);
+  if (literalising_len >= LITERALISATION_LENGTH_MAXIMUM) {
+    buff = NULL;
+    return 0;
+  }
+  
+  char literalising[literalising_len];
+  for (register int i = 0; i < literalising_len; i++) {
+    literalising[i] = (n / (int)pow(10, i));
+  }
+  
+  return literalising_len;
+}
+
+int Utils_DateTimeLiteralise(time_t t, char *buff)
+{
+  return 0;
 }

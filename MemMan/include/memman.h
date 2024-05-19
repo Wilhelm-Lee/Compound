@@ -32,7 +32,7 @@ Status MemMan_Memory_Reallocate(Memory *inst, size_t length);
 void   MemMan_Memory_Release(Memory *inst);
 Status MemMan_Memory_Prioritise(Memory *inst);
 Status MemMan_Memory_Deprioritise(Memory *inst);
-bool   MemMan_Memory_Equal(Memory *inst, Memory *other);
+bool   MemMan_Memory_Equals(Memory *inst, Memory *other);
 
 Status MemMan_MemoryPool_Create(MemoryPool *inst, size_t volume);
 Status MemMan_MemoryPool_Constr(MemoryPool *inst, size_t volume, int priority);
