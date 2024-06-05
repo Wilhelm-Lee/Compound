@@ -20,3 +20,4 @@ compile
 .vscode/
 todo
 vsc*
+libcompound.so
