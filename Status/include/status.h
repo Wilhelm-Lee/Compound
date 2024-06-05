@@ -3,16 +3,15 @@
 
 # include <stdbool.h>
 # include <stdint.h>
+# include <stdio.h>
 # include <stdlib.h>
 # include <string.h>
 # include <threads.h>
 # include <time.h>
-# include <stdio.h>
-# include <math.h>
 
 # include <Compound/common.h>
-# include <Compound/utils.h>
 # include <Compound/platform.h>
+# include <Compound/utils.h>
 
 /* Status characteristics */
 typedef enum {
@@ -39,14 +38,21 @@ typedef struct {
 } Location;
 
 # define __HERE__  (Location){                             \
-    .file = (char *)__FILE__,                              \
-    .line = __LINE__,                                      \
-    .func = (char *)__func__                               \
+  .file = (char *)__FILE__,                                \
+  .line = __LINE__,                                        \
+  .func = (char *)__func__                                 \
+}
+
+# define __GLOBAL__ (Location){                            \
+  .file = (char *)__FILE__,                                \
+  .line = __LINE__,                                        \
+  .func = (char *)"(GLOBAL)"                               \
 }
 
 /* Common return type for reporting functions that require to give more
    information about the procedure. */
 typedef struct _Status {
+  char *identity;
   int value;  /* Traditional returning data "int".  Only used when the function
                  called and received legacy functions that uses "int" as the
                  returning type that wish to have place to hold the value.
@@ -65,17 +71,30 @@ typedef struct _Status {
 
 */
 
-# ifdef __COMPOUND_32__
-#  define STATUS_LITERALISE_LENGTH(stat) \
-     (utils_calc_digits(stat.value) + strlen(stat.description) + 2 + \
-          utils_calc_digits(INT32_DIGITS_DEC))
-# elif defined __COMPOUND_64__
-#  define STATUS_LITERALISE_LENGTH(stat) \
-     (utils_calc_digits(stat.value) + strlen(stat.description) + 2 + \
-          utils_calc_digits(INT64_DIGITS_DEC))
-# endif
+/* line, func, file */
+// # define LOCATION_LITERALISE_FORMAT  "at line %d, in %s, %s"
 
-# define STATUS_LITERALISE_FORMAT  "%d \"%s\" %d %p"
+/* file, line, func */
+# define LOCATION_LITERALISE_FORMAT  "at %s:%d, in function `%s\'"
+# define LOCATION_LITERALISE_FORMAT_LENGTH  20
+
+/* value, description, characteristic, prev */
+// # define STATUS_LITERALISE_FORMAT  "%d \"%s\" %d %p"
+/* identity, prev->identity, value, characteristic, description, <loc> */
+// # define STATUS_LITERALISE_FORMAT  "%s (prev: %s): $=%d @=%d\n\t\"%s\"\n\t%s"
+
+// MaximumLiteralisationLengthExceeded (prev: MaximumLengthExceeded): $=1 @=1
+
+/*
+MaximumLengthExceeded:  "Buffer was too long."
+  predecessor=<ArrayLengthError> value=(1) characteristic=[1]
+  at line 40, in Main, /home/william/Documents/Projects/Compound/test.c
+
+*/
+
+// identity, description, prev->identity, value, characteristic, <loc>
+# define STATUS_LITERALISE_FORMAT \
+    "%s:  \"%s\"\n\tpredecessor=<%s> value=(%d) characteristic=[%d]\n\t%s\n"
 
 typedef enum {
   REPORT_SENDING_PRIORITY_ALL = 0,  // Highest level; least value.
@@ -129,20 +148,6 @@ Fri 10 May 03:02:37 CST 2024 [EXCEPTIONAL] InvalidParameter (Nullity): Given buf
 # define REPORT_LITERALISE_HEADER_FORMAT          "%s [%s] %s (%s): %s"
 # define REPORT_LITERALISE_CHAINS_FORMAT          "    at %s:%d, %s"
 # define REPORT_LITERALISE_CHAINS_EXCLAIM_FORMAT  "!!!!at %s:%d, %s"
-
-// # define REPORT_LITERALISE_HEADER_FORMAT_LENGTH(buff, PRIORITY, STATUSNAME,          \
-//                                                ORIGINATOR, DESCRIPTION)        \
-// {                                                                              \
-//   const time_t now = time(NULL);                                               \
-//   (void)strflen(buff, 28, DATETIME_FORMAT, localtime(&now));                   \
-//   *length = strlen(buff);                                                      \
-// }
-
-// # define REPORT_LITERALISE_CHAINS_FORMAT_LENGTH(FILEPATH, LINE, FUNCNAME)      \
-//   (strlen(FILEPATH) + utils_calc_digits(LINE) +                                \
-//    strlen(FUNCNAME) + 10)  // Does not count '\0'
-// # define REPORT_LITERALISE_CHAINS_EXCLAIM_FORMAT_LENGTH                        \
-//   REPORT_LITERALISE_CHAINS_FORMAT_LENGTH
 
 typedef enum {
   REPORT_SENDER_RESULT_FINISHED,
@@ -200,29 +205,26 @@ typedef struct {
 
 # define STATUS_BUFFER_MAXIMUM_LENGTH  UINT32_MAX
 
+Status Location_Literalise(Location *inst, char *buff);
 bool   Location_Equals(Location lc1, Location lc2);
 Status Status_Literalise(Status *inst, char *buff);
-bool   Status_Equals(Status stat1, Status stat2);
+bool   Status_Equal(Status *stat1, Status *stat2);
 void   StatusUtils_Dump(Status *inst, Status *store, int idx);
-bool   StatusUtils_HasPrev(Status *inst);
+bool   StatusUtils_HasPrev(Status inst);
 bool   StatusUtils_IsOkay(Status inst);
 bool   StatusUtils_IsValid(Status inst);
 bool   StatusUtils_IsRecursive(Status inst);
 int    StatusUtils_Depth(Status *inst);
 
-Status
-Report_Create(Report *inst, Status *stat, FILE *dest, char *initiator,
-              int priority);
-bool
-Report_Equals(Report repo1, Report repo2);
-Status
-Report_Literalise(Report *inst, char *buff);
+Status Report_Create(Report *inst, Status *stat, FILE *dest, char *initiator,
+                     int priority);
+Status Report_CopyOf(Report *inst, Report *other);
+Status Report_Literalise(Report *inst, char *buff);
+void   Report_Delete(Report *inst);
+bool   Report_Equals(Report repo1, Report repo2);
 
-
-Status
-ReportSender_Create(ReportSender *inst, Report *report);
-Status
-ReportSender_Send(ReportSender *inst, ReportSendingTask task);
+Status ReportSender_Create(ReportSender *inst, Report *report);
+Status ReportSender_Send(ReportSender *inst, ReportSendingTask task);
 // ReportSendingTaskStatus
 // ReportSender_GetStatus(ReportSender *inst);
 
@@ -254,177 +256,309 @@ Status ReportSenderManager_RemoveTask(ReportSendingManager *inst,
 
 // ---------------------ELEMENTARY-------------------------
 
-static Status UnknownStatus = {
+/*
+  typedef struct _Status {
+    char *identity;
+    int value;
+    char *description;
+    int characteristic;
+    Location loc;
+    struct _Status *prev;
+  } Status;
+*/
+
+static const Status UnknownStatus = {
+  .identity = nameof(UnknownStatus),
+  .value = -1,
   .description = "An unknown status.",
   .characteristic = STATUS_UNKNOWN,
+  .loc = __GLOBAL__,
   .prev = NULL
 };
 
-static Status NormalStatus = {
+static const Status NormalStatus = {
+  .identity = nameof(NormalStatus),
+  .value = 0,
   .description = "A normal status.",
   .characteristic = STATUS_NORMAL,
+  .loc = __GLOBAL__,
   .prev = NULL
 };
 
-static Status ErrorStatus = {
+static const Status ErrorStatus = {
+  .identity = nameof(ErrorStatus),
+  .value = 1,
   .description = "An error status.",
   .characteristic = STATUS_ERROR,
+  .loc = __GLOBAL__,
   .prev = NULL
 };
 
 // ----------------------EXTENDED--------------------------
 
-static Status MemoryViolation = {
+static const Status MemoryViolation = (Status){
+  .identity = nameof(MemoryViolation),
+  .value = 1,
   .description = "Illegal access on certain memory address.",
   .characteristic = STATUS_ERROR,
-  .prev = &ErrorStatus
+  .loc = __GLOBAL__,
+  .prev = (Status *)&ErrorStatus
 };
 
-static Status NullPointerAccounted = {
+static const Status NullPointerAccounted = (Status){
+  .identity = nameof(NullPointerAccounted),
+  .value = 1,
   .description = "An involving null pointer was not accepted.",
   .characteristic = STATUS_ERROR,
-  .prev = &MemoryViolation
+  .loc = __GLOBAL__,
+  .prev = (Status *)&MemoryViolation
 };
 
-static Status InvalidObject = {
+static const Status InvalidObject = (Status){
+  .identity = nameof(InvalidObject),
+  .value = 1,
   .description = "An invalid object was presented.",
   .characteristic = STATUS_ERROR,
-  .prev = &ErrorStatus
+  .loc = __GLOBAL__,
+  .prev = (Status *)&ErrorStatus
 };
 
-static Status UnavailableObject = {
+static const Status UnavailableObject = (Status){
+  .identity = nameof(UnavailableObject),
+  .value = 1,
   .description = "An unavailable object was presented.",
   .characteristic = STATUS_ERROR,
-  .prev = &ErrorStatus
+  .loc = __GLOBAL__,
+  .prev = (Status *)&ErrorStatus
 };
 
-static Status InvalidParameter = {
+static const Status InstanceStillAlive = (Status){
+  .identity = nameof(InstanceStillAlive),
+  .value = 1,
+  .description = "Given instance was yet alive.",
+  .characteristic = STATUS_ERROR,
+  .loc = __GLOBAL__,
+  .prev = (Status *)&ErrorStatus
+};
+
+static const Status InstanceNotAlive = (Status){
+  .identity = nameof(InstanceNotAlive),
+  .value = 1,
+  .description = "Given instance for reallocation was not alive.",
+  .characteristic = STATUS_ERROR,
+  .loc = __GLOBAL__,
+  .prev = (Status *)&ErrorStatus
+};
+
+static const Status InvalidParameter = (Status){
+  .identity = nameof(InvalidParameter),
+  .value = 1,
   .description = "An invalid parameter was presented.",
   .characteristic = STATUS_ERROR,
-  .prev = &InvalidObject
+  .loc = __GLOBAL__,
+  .prev = (Status *)&InvalidObject
 };
 
-static Status InsufficientMemory = {
+static const Status InsufficientMemory = (Status){
+  .identity = nameof(InsufficientMemory),
+  .value = 1,
   .description = "Not enough room for further memory allocations.",
   .characteristic = STATUS_ERROR,
-  .prev = &ErrorStatus
+  .loc = __GLOBAL__,
+  .prev = (Status *)&ErrorStatus
 };
 
-static Status ArithmeticError = {
+static const Status ArithmeticError = (Status){
+  .identity = nameof(ArithmeticError),
+  .value = 1,
   .description = "An arithmetic error occurred.",
   .characteristic = STATUS_ERROR,
-  .prev = &ErrorStatus
+  .loc = __GLOBAL__,
+  .prev = (Status *)&ErrorStatus
 };
 
-static Status RuntimeError = {
+static const Status IntegerOverFlow = (Status){
+  .identity = nameof(IntegerOverFlow),
+  .value = 1,
+  .description = "An integer had overflowed.",
+  .characteristic = STATUS_ERROR,
+  .loc = __GLOBAL__,
+  .prev = (Status *)&ArithmeticError
+};
+
+static const Status RuntimeError = (Status){
+  .identity = nameof(RuntimeError),
+  .value = 1,
   .description = "A runtime error occurred.",
   .characteristic = STATUS_ERROR,
-  .prev = &ErrorStatus
+  .loc = __GLOBAL__,
+  .prev = (Status *)&ErrorStatus
 };
 
-static Status ArrayLengthError = {
+static const Status ArrayLengthError = (Status){
+  .identity = nameof(ArrayLengthError),
+  .value = 1,
   .description = "Given array length does not meet the requirement.",
   .characteristic = STATUS_ERROR,
-  .prev = &ErrorStatus
+  .loc = __GLOBAL__,
+  .prev = (Status *)&ErrorStatus
 };
 
-static Status VariableFormatMismatch = {
+static const Status VariableFormatMismatch = (Status){
+  .identity = nameof(VariableFormatMismatch),
+  .value = 1,
   .description = "Given format does not match with given subjects.",
   .characteristic = STATUS_ERROR,
-  .prev = &ErrorStatus
+  .loc = __GLOBAL__,
+  .prev = (Status *)&ErrorStatus
 };
 
-static Status ImprecisionError = {
+static const Status ImprecisionError = (Status){
+  .identity = nameof(ImprecisionError),
+  .value = 1,
   .description = "Precision was not enough for handling the calculation.",
   .characteristic = STATUS_ERROR,
-  .prev = &RuntimeError
+  .loc = __GLOBAL__,
+  .prev = (Status *)&RuntimeError
 };
 
 // ---------------------USER DEFINED-----------------------
 
-static Status UnavailableInstance = {
+static const Status UnavailableInstance = (Status){
+  .identity = nameof(UnavailableInstance),
+  .value = 1,
   .description = "An unavailable instance was given for initialisation.",
   .characteristic = STATUS_ERROR,
-  .prev = &NullPointerAccounted
+  .loc = __GLOBAL__,
+  .prev = (Status *)&NullPointerAccounted
 };
 
-static Status UnavailableParameter = {
+static const Status RecreationOnInstanceStillAlive = (Status){
+  .identity = nameof(RecreationOnInstanceStillAlive),
+  .value = 1,
+  .description = "Given instance was still alive, yet, was sent for another "
+                 "session of recreation.",
+  .characteristic = STATUS_ERROR,
+  .loc = __GLOBAL__,
+  .prev = (Status *)&InstanceStillAlive\
+};
+
+static const Status UnavailableParameter = (Status){
+  .identity = nameof(UnavailableParameter),
+  .value = 1,
   .description = "An unavailable instance was given as a parameter.",
   .characteristic = STATUS_ERROR,
-  .prev = &UnavailableInstance
+  .loc = __GLOBAL__,
+  .prev = (Status *)&UnavailableInstance
 };
 
-static Status InvalidReportTask = {
+static const Status InvalidReportTask = (Status){
+  .identity = nameof(InvalidReportTask),
+  .value = 1,
   .description = "An unavailable or illegal report task was given.",
   .characteristic = STATUS_ERROR,
-  .prev = &InvalidParameter
+  .loc = __GLOBAL__,
+  .prev = (Status *)&InvalidParameter
 };
 
-static Status UnableToThrowError = {
+static const Status UnableToThrowError = (Status){
+  .identity = nameof(UnableToThrowError),
+  .value = 1,
   .description = "Unable to report an exceptional situation.",
   .characteristic = STATUS_ERROR,
-  .prev = &RuntimeError
+  .loc = __GLOBAL__,
+  .prev = (Status *)&RuntimeError
 };
 
-static Status ReadWriteError = {
+static const Status ReadWriteError = (Status){
+  .identity = nameof(ReadWriteError),
+  .value = 1,
   .description = "Error occurred during IO session.",
   .characteristic = STATUS_ERROR,
-  .prev = &RuntimeError
+  .loc = __GLOBAL__,
+  .prev = (Status *)&RuntimeError
 };
 
-static Status FileNotFound = {
+static const Status FileNotFound = (Status){
+  .identity = nameof(FileNotFound),
+  .value = 1,
   .description = "Target file was unavailable and unable to find.",
   .characteristic = STATUS_ERROR,
-  .prev = &ReadWriteError
+  .loc = __GLOBAL__,
+  .prev = (Status *)&ReadWriteError
 };
 
-static Status InvalidFileName = {
+static const Status InvalidFileName = (Status){
+  .identity = nameof(InvalidFileName),
+  .value = 1,
   .description = "Given file name was invalid.",
   .characteristic = STATUS_ERROR,
-  .prev = &ReadWriteError
+  .loc = __GLOBAL__,
+  .prev = (Status *)&ReadWriteError
 };
 
-static Status UnavailableFileName = {
+static const Status UnavailableFileName = (Status){
+  .identity = nameof(UnavailableFileName),
+  .value = 1,
   .description = "Given file name was unavailable",
   .characteristic = STATUS_ERROR,
-  .prev = &UnavailableObject
+  .loc = __GLOBAL__,
+  .prev = (Status *)&UnavailableObject
 };
 
-static Status ReportThrown = {
+static const Status ReportThrown = (Status){
+  .identity = nameof(ReportThrown),
+  .value = 1,
   .description = "This function has thrown a report, "
                  "following instructions aborted.",
   .characteristic = STATUS_ERROR,
-  .prev = &RuntimeError
+  .loc = __GLOBAL__,
+  .prev = (Status *)&RuntimeError\
 };
 
-static Status ReportMessageTooLong = {
+static const Status ReportMessageTooLong = (Status){
+  .identity = nameof(ReportMessageTooLong),
+  .value = 1,
   .description = "Given message is too long.",
   .characteristic = STATUS_ERROR,
-  .prev = &ArrayLengthError
+  .loc = __GLOBAL__,
+  .prev = (Status *)&ArrayLengthError
 };
 
-static Status MaximumLengthExceeded = {
+static const Status MaximumLengthExceeded = (Status){
+  .identity = nameof(MaximumLengthExceeded),
+  .value = 1,
   .description = "Buffer was too long.",
   .characteristic = STATUS_ERROR,
-  .prev = &ArrayLengthError
+  .loc = __GLOBAL__,
+  .prev = (Status *)&ArrayLengthError
 };
 
-static Status MaximumLiteralisationLengthExceeded = {
+static const Status MaximumLiteralisationLengthExceeded = (Status){
+  .identity = nameof(MaximumLiteralisationLengthExceeded),
+  .value = 1,
   .description = "Literalisation was too long.",
   .characteristic = STATUS_ERROR,
-  .prev = &MaximumLengthExceeded
+  .loc = __GLOBAL__,
+  .prev = (Status *)&MaximumLengthExceeded
 };
 
-static Status UnavailableBuffer = {
+static const Status UnavailableBuffer = (Status){
+  .identity = nameof(UnavailableBuffer),
+  .value = 1,
   .description = "Given buffer was unavailable.",
   .characteristic = STATUS_ERROR,
-  .prev = &UnavailableInstance
+  .loc = __GLOBAL__,
+  .prev = (Status *)&UnavailableInstance
 };
 
-static Status InvalidLiteralisingBuffer = {
+static const Status InvalidLiteralisingBuffer = (Status){
+  .identity = nameof(InvalidLiteralisingBuffer),
+  .value = 1,
   .description = "Given buffer does not have a good integrity on its length.",
   .characteristic = STATUS_ERROR,
-  .prev = &InvalidObject
+  .loc = __GLOBAL__,
+  .prev = (Status *)&InvalidObject
 };
 
 // ========================================================

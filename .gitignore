@@ -17,3 +17,6 @@ sample
 compile
 =======
 >>>>>>> refs/remotes/master/master
+.vscode/
+todo
+vsc*

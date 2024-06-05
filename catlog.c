@@ -30,7 +30,7 @@ Status CatlogMsg_CopyOf(CatlogMsg *inst, CatlogMsg *other)
 bool CatlogMsg_Equals(CatlogMsg *inst, CatlogMsg *other)
 {
   /* Skip unavailable instances and parameters. */
-  state((inst == NULL || other == NULL), false);
+  state((!inst || other == NULL), false);
 
 	return (
 		inst->time == other->time &&
@@ -73,7 +73,7 @@ Status CatlogSender_CopyOf(CatlogSender *inst, CatlogSender *other)
 bool CatlogSender_Equals(CatlogSender *inst, CatlogSender *other)
 {
   /* Skip unavailable instances and parameters. */
-  state((inst == NULL || other == NULL), false);
+  state((!inst || other == NULL), false);
 
   return (
     CatlogMsg_Equals(&inst->msg, &other->msg) &&
@@ -97,7 +97,7 @@ Status CatlogSender_Send(CatlogSender *inst, char *filepath, bool append)
   (void)CatlogUtils_OpenFile(inst->dst, filepath, (append ? "a" : "w"));
 
   /* Write msg. */
-  return normal(NormalStatus, "", fprintf(inst->dst, "%s", inst->msg.content));
+  return unknown(NormalStatus, "", !fprintf(inst->dst, "%s", inst->msg.content));
 }
 
 Status CatlogUtils_CalcElapsed(struct timespec t1, struct timespec t2);

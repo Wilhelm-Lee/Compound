@@ -2,69 +2,89 @@
 #include <Compound/status.h>
 #include <Compound/utils.h>
 
-bool Location_Equal(Location lc1, Location lc2)
+/*
+typedef struct {
+  char *file;
+  int line;
+  char *func;
+} Location;
+*/
+Status Location_Literalise(Location *inst, char *buff)
 {
-  return ((!strcmp(lc1.file, lc2.file)) && (lc1.line == lc2.line) &&
-          (!strcmp(lc1.func, lc2.func)));
+  fails(inst, UnavailableInstance);
+  fails(buff, UnavailableBuffer);
+  
+  /* Literalise line. */
+  char line_buff[LITERALISATION_LENGTH_MAXIMUM];
+  Utils_LiteraliseInteger(inst->line, line_buff);
+  
+  /* Concatenate every buff. */
+  const long total_len = strlen(inst->file) + strlen(line_buff)
+                           + strlen(inst->func)
+                           + LOCATION_LITERALISE_FORMAT_LENGTH;
+  state(total_len > LITERALISATION_LENGTH_MAXIMUM,
+        MaximumLiteralisationLengthExceeded);
+  
+  /* Copy and assign. */
+  return (Status) {
+    .value = !sprintf(buff, LOCATION_LITERALISE_FORMAT,
+                      inst->file, inst->line, inst->func),
+    .description = NormalStatus.description,
+    .characteristic = NormalStatus.characteristic,
+    .loc = __HERE__,
+    .prev = NormalStatus.prev
+  };
 }
 
-bool Status_Equals(Status stat1, Status stat2)
+bool Location_Equal(Location *lc1, Location *lc2)
 {
+  state(lc1 == NULL || lc2 == NULL, false);
 
-  /* Skip when both stat1 and stat2 are empty. */
-  state((stat1.value == 0 && stat2.value == 0 && stat1.description == 0x0 &&
-         stat2.description == 0x0 && stat1.characteristic == 0 &&
-         stat2.characteristic == 0 && stat1.prev == 0x0 && stat2.prev == 0x0),
-        true);
+  return ((!strcmp(lc1->file, lc2->file)) && (lc1->line == lc2->line) &&
+          (!strcmp(lc1->func, lc2->func)));
+}
 
-  /* True for equality; False for inequality. */
-  return ((stat1.value == stat2.value) &&
-          (!strcmp(stat1.description, stat2.description)) &&
-          (stat1.characteristic == stat2.characteristic) &&
-          (Status_Equals(*stat1.prev, *stat2.prev)));
+bool Status_Equal(Status *stat1, Status *stat2)
+{
+  state(stat1 == NULL || stat2 == NULL, false);
+
+  return (
+    stat1->value == stat2->value &&
+    !strcmp(stat1->description, stat2->description) &&
+    stat1->characteristic == stat2->characteristic &&
+    Location_Equal(&stat1->loc, &stat2->loc) &&
+    ((StatusUtils_HasPrev(*stat1) && StatusUtils_HasPrev(*stat2))
+            ? Status_Equal(stat1->prev, stat2->prev)
+            : true)
+  );
 }
 
 Status Status_Literalise(Status *inst, char *buff)
 {
-  /* Skip unavailable or invalid parameters. */
+  /* Skip unavailable instance and invalid parameter. */
   fails(inst, UnavailableInstance);
   fails(buff, UnavailableBuffer);
-  // state(strlen(buff) != LITERALISATION_LENGTH_MAXIMUM,
-  //       InvalidLiteralisingBuffer);
-  
-  /* Set up idx for counting final literalisation length to ensure the
-     string copying is index access safe. */
-  int idx = 0;
-  const int status_dump_buffer_len = StatusUtils_Depth(inst);
-  
-  Status status_dump_buffer[status_dump_buffer_len];
 
-  /* Literalise every status that flattened on status_dump_buffer. */
-  for (register int i = 0; i < status_dump_buffer_len; i++) {
-    char status_literalising_buffer[LITERALISATION_LENGTH_MAXIMUM];
-    (void)Status_Literalise(&status_dump_buffer[i], status_literalising_buffer);
-    
-    /* Append to buff. */
-    /* Prevent buffer-out-of-bound access. */
-    const int status_literalising_buffer_len = strlen(status_literalising_buffer);
-    if (idx + status_literalising_buffer_len >= LITERALISATION_LENGTH_MAXIMUM) {
-      buff = NULL;
-      return MaximumLiteralisationLengthExceeded;
-    }
-    
-    idx += status_literalising_buffer_len;
-    (void)strcat(buff, status_literalising_buffer);
-  }  
+  /* Literalise loc. */
+  char loc_buff[LITERALISATION_LENGTH_MAXIMUM];
+  notok(Location_Literalise(&inst->loc, loc_buff), {
+    return error(_, "Failed on literalising the \"loc\" of a status.");
+  });
+  
+  /* Concatenate every buffer. */
+  state(!sprintf(buff, STATUS_LITERALISE_FORMAT,
+                 inst->identity, inst->description,
+                 (!inst->prev ? "(null)" : (inst->prev->identity)),
+                 inst->value, inst->characteristic, loc_buff),
+    error(RuntimeError, "Returned 0 byte written on concatenating buffers "
+                        "during literalisation of a status using \"sprintf\"."));
   
   return NormalStatus;
 }
 
-bool StatusUtils_HasPrev(Status *stat)
+bool StatusUtils_HasPrev(Status stat)
 {
-  /* Skip when stat is unavailable for accessing. */
-  state(Status_Equals(*stat, (Status){}), false);
-
-  return (stat->prev != NULL);
+  return (stat.prev != NULL);
 }
 
 bool StatusUtils_IsOkay(Status stat)
@@ -74,20 +94,20 @@ bool StatusUtils_IsOkay(Status stat)
 
 bool StatusUtils_IsValid(Status stat)
 {
-  return (!strcmp(stat.description, "") && stat.characteristic >= 0 &&
-          stat.prev != NULL);
+  return (!strcmp(stat.description, "") && stat.characteristic >= 0
+          && !stat.prev);
 }
 
 bool StatusUtils_IsRecursive(Status stat)
 {
-  return (stat.prev != NULL && stat.prev == &stat);
+  return (stat.prev && stat.prev == &stat);
 }
 
 void StatusUtils_Dump(Status *inst, Status *store, int idx)
 {
 
   /* Skip when either stat or stat.prev is unavailable, or, idx is invalid. */
-  solve((store == NULL || !StatusUtils_HasPrev(inst) || idx < 0), return;);
+  solve((!store || !StatusUtils_HasPrev(*inst) || idx < 0), return;);
 
   store[idx] = *inst;
   
@@ -97,17 +117,13 @@ void StatusUtils_Dump(Status *inst, Status *store, int idx)
 int StatusUtils_Depth(Status *stat)
 {
   /* Skip unavailable stat. */
-  state((stat == NULL), -1);
+  state((!stat || !stat->prev), -1);
   
   Status *p = stat;  // Include this layer of Status.
-  int cnt = 1;
-  while (p != NULL) {
-    if (StatusUtils_IsRecursive(*p) || !StatusUtils_HasPrev(stat))  break;
-    
-    p = p->prev;
-    cnt += 1;
-  }
-  
+  register int cnt;
+  for (cnt = 0; (!StatusUtils_IsRecursive(*p)
+       && StatusUtils_HasPrev(*p)); cnt++)  p = p->prev;
+
   return cnt;
 }
 
@@ -116,19 +132,49 @@ Status Report_Create(Report *inst, Status *stat, FILE *dest, char *initiator,
 {
   /* Skip unavailable parameters. */
   fails(inst, UnavailableInstance);
-  fails(stat, error(InvalidParameter, "Given initiator was null."));
+  fails(stat, error(InvalidParameter, "Given stat was null."));
   fails(initiator, error(InvalidParameter, "Given initiator was null."));
   state(priority < 0, error(InvalidParameter, "Given priority was negative."));
 
   /* Copy and assign. */
   inst->status = *stat;
-  inst->initiator = initiator;
+  inst->initiator = calloc(strlen(initiator), sizeof(char));
+  (void)strcpy(inst->initiator, initiator);
   inst->time = time(NULL);
   inst->priority = priority;
   inst->task_status = REPORT_SENDING_TASK_STATUS_PENDING;
-  inst->dest = (dest == NULL ? stderr : dest);
+  inst->dest = (dest == NULL ? stdout : dest);
 
   return NormalStatus;
+}
+
+Status Report_CopyOf(Report *inst, Report *other)
+{
+  fails(inst, UnavailableInstance);
+  fails(other, error(InvalidParameter, "Given report is unavailable."));
+
+  // Status status;
+  // char *initiator;
+  // time_t time;
+  // ReportSendingPriority priority;
+  // ReportSendingTaskStatus task_status;
+  // FILE *dest;
+  inst->status = other->status;
+
+}
+
+void Report_Delete(Report *inst)
+{
+  svoid(inst);
+
+  free(inst->initiator);
+  inst->initiator = NULL;
+  inst->dest = NULL;
+  inst->priority = 0;
+  inst->status = (Status){};
+  inst->task_status = REPORT_SENDING_TASK_STATUS_NOTFOUND;
+  inst->time = 0;
+  inst = NULL;
 }
 
 Status Report_Literalise(Report *inst, char *buff)
@@ -195,7 +241,9 @@ Status ReportSender_Create(ReportSender *inst, Report *report)
   fails(report, error(UnavailableParameter, "Given report was unavailable."));
 
   thrd_create(&inst->thread, &HANDLER, report);
-  *inst->report = *report;
+  notok(Report_CopyOf(inst->report, report),
+    return error(ErrorStatus, "Cannot copy to create new instance of report.");
+  )  // *inst->report = *report;
   inst->elapsed = 0;
   inst->result = REPORT_SENDER_RESULT_PENDING;
   inst->successful = false;
@@ -294,4 +342,3 @@ int HANDLER(void *report)
   
   return 0;
 }
-

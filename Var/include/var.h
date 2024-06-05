@@ -15,6 +15,7 @@
 // # define VAR_IDENTITY_ILLEGAL_CHAR  "!@#$%^*()-=+;\'\"\\|,./<>?[]{}`~ "
 
 // static Status IllegalVarIdentity = {
+//   .value = 1,
 //   .description = "Given identity does not fit the standard of Var Naming "
 //                  "convention.",
 //   .characteristic = STATUS_ERROR,
@@ -22,6 +23,7 @@
 // };
 
 // static Status VarIdentityTooLong = {
+//   .value = 1,
 //   .description = "Given identity has longer length that the maximum length "
 //                  "limitation.",
 //   .characteristic = STATUS_ERROR,
@@ -33,6 +35,8 @@ typedef struct {
   /* Data */
   void *addr;
   size_t size;
+  
+  bool alive;
   
   // /* Identification */
   // char *identity;  // Maximum up to VAR_IDENTITY_LENGTH

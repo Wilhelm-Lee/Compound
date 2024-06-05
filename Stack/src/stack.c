@@ -6,7 +6,7 @@ Status Stack_Create(Stack *inst, int len)
   // state((len < 0), InvalidParameter);
   
   // /* Initialise before access. */
-  // if (inst == NULL) {
+  // if (!inst) {
   //   *inst = (Stack) {
   //     .members = NULL,
   //     .len = len

@@ -1,35 +1,75 @@
-#include <Compound/common.h>
 #include <Compound/memman.h>
 
-/*
-  enum {
-    MEMMAN_RELEASE_LEVEL_INSTANTAL = 0,
-    MEMMAN_RELEASE_LEVEL_STACK = 1,
-    MEMMAN_RELEASE_LEVEL_HEAP = 2
-  };
-
-  typedef struct {
-    void *addr;
-    int release_level;
-  } Memory;
-
-  typedef struct {
-    Memory *members;
-    int release_level;
-  } MemoryPool;
-
-  typedef struct {
-    MemoryPool *members;
-    void *(*allocator)(size_t sz);
-    void (*delocator)(void *addr);
-  } MemoryPoolManager;
-*/
-
-int memman_memorypoolmanager_create(MemoryPoolManager *inst,
-                                    MemoryPool **membersptr)
+Status Memory_Create(Memory *inst, size_t size)
 {
-  fails(inst, COMMON_ERROR_INVALID_ARGUMENT);
-  fails(membersptr, COMMON_ERROR_INVALID_ARGUMENT);
+  fails(inst, UnavailableInstance);
   
+  *inst = (Memory) {
+    .addr = NULL,
+    .size = size,
+    .priority = 0,
+    .alive = false
+  };
   
+  return NormalStatus;
+}
+
+Status Memory_Allocate(Memory *inst)
+{
+  fails(inst, UnavailableInstance);
+  state(inst->alive, InstanceStillAlive);
+  
+  /* When failed on allocating. */
+  state(!(inst->addr = malloc(inst->size)), InsufficientMemory);
+  inst->alive = true;
+  
+  return NormalStatus;
+}
+
+Status Memory_Reallocate(Memory *inst, size_t size)
+{
+  fails(inst, UnavailableBuffer);
+  state(!inst->alive, InstanceNotAlive);
+  
+  /* When failed on reallocating. */
+  state(!(inst->addr = realloc(inst->addr, size)),
+    error(InsufficientMemory, "Unsuccessful reallocation was received."))
+
+  return NormalStatus;
+}
+
+Status Memory_Release(Memory *inst)
+{
+  fails(inst, UnavailableInstance);
+  state(!inst->alive, error(InstanceNotAlive, "Cannot release a non-alive "
+                            "instance."));
+
+  free(inst->addr);
+  inst->alive = false;
+
+  return NormalStatus;
+}
+
+Status Memory_Delete(Memory *inst)
+{
+  fails(inst, UnavailableInstance);
+  state(inst->alive, error(InstanceStillAlive, "Cannot deinitialise a instance "
+                           "still alive."));
+
+  inst->addr = NULL;
+  inst->priority = 0;
+  inst->size = 0;
+  inst = NULL;
+
+  return NormalStatus;
+}
+
+bool Memory_Equals(Memory *inst, Memory *other)
+{
+  state(!inst || !other, false);
+
+  return (inst->addr == other->addr
+          && inst->size == other->size
+          && inst->priority == other->priority
+          && inst->alive == other->alive);
 }

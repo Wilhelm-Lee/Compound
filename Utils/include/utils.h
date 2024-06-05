@@ -5,9 +5,13 @@
 # include <string.h>
 # include <stdlib.h>
 # include <math.h>
+# include <stdint.h>
 
 # include <Compound/common.h>
 # include <Compound/const.h>
+
+# define max(a, b)  (a >= b ? a : b)
+# define min(a, b)  (a <= b ? a : b)
 
 # define DATETIME_FORMAT "%a %d %b %X %Z %Y"
 

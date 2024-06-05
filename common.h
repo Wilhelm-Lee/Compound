@@ -43,33 +43,43 @@
 
 /* Create a new UnknownStatus on the fly. */
 # define unknown(e, c, v)  ((Status) {\
+  .identity = nameof(UnknownStatus),\
   .value = v,\
   .description = c,\
   .characteristic = STATUS_UNKNOWN,\
+  .loc = __HERE__,\
   .prev = e.prev\
 })
 
 /* Create a new NormalStatus on the fly. */
-# define normal(e, c, v)  ((Status) {\
-  .value = v,\
+# define normal(e, c)  ((Status) {\
+  .identity = nameof(NormalStatus),\
+  .value = 0,\
   .description = c,\
   .characteristic = STATUS_NORMAL,\
+  .loc = __HERE__,\
   .prev = e.prev\
 })
 
 /* Create a new ErrorStatus on the fly. */
 # define error(e, c)  ((Status) {\
+  .identity = nameof(ErrorStatus),\
+  .value = e.value,\
   .description = c,\
   .characteristic = STATUS_ERROR,\
+  .loc = __HERE__,\
   .prev = e.prev\
 })
 
 /* Extend the Status chain by giving 'p' for "predecessor"
-   and 'c' for "comment/description". */
-# define extend(p, c)  ((Status) {\
-  .description = c,\
+   and 'e' for "Eval-Status". */
+# define extend(p, e)  ((Status) {\
+  .identity = e.identity,\
+  .value = p.value,\
+  .description = e.description,\
   .characteristic = p.characteristic,\
-  .prev = p\
+  .loc = e.loc,\
+  .prev = &p\
 })
 
 /** @brief Create a report in place.
@@ -83,7 +93,7 @@
   .initiator = c,\
   .time = time(NULL),\
   .priority = REPORT_SENDING_PRIORITY_NORMAL,\
-  .status = REPORT_SENDING_TASK_STATUS_PENDING\
+  .task_status = REPORT_SENDING_TASK_STATUS_PENDING\
 })
 
 /**
@@ -104,7 +114,7 @@
 //  */
 // # define force(s, k, v)  solve((s) != (k), v)
 
-// # define sforce(s, k, v)  solve((!Status_Equals(s, k)), v)
+// # define sforce(s, k, v)  solve((!Status_Equal(s, k)), v)
 
 /* Get the literal. */
 # define nameof(obj)  #obj
@@ -122,6 +132,13 @@
   CatlogSender sender;\
   CatlogSender_Create(&sender, &msg, stderr);\
   CatlogSender_Send(&sender, "stdout", false);\
+}
+
+# define _status(s)  {\
+  const Status _ = s;\
+  char buff[LITERALISATION_LENGTH_MAXIMUM];\
+  (void)Status_Literalise((Status *)&_, buff);\
+  (void)printf("%s\n", buff);\
 }
 
 # define ok(s, b)  {\
@@ -162,11 +179,21 @@ typedef bool _Bit;
 # define WHICH_MIN(a, b)  
 
 # define INRANGE(lf, inclf, rt, incrt, v) \
-  (! ((lf > rt) || ((v <= lf && !inclf) || (v >= rt && !incrt))))
+  (!((lf > rt) || ((v <= lf && !inclf) || (v >= rt && !incrt))))
 
 # define ATRANGE(lf, rt, v) \
   (INRANGE(lf, true, rt, true, v)) ? 0 : ((v < lf) ? (v - lf) : (v - rt))
 
-# define LITERALISATION_LENGTH_MAXIMUM  0xFFFF
+# define LITERALISATION_LENGTH_MAXIMUM  0xFFFFL
+
+
+/* Only effect (probably) when formal Attribute is defined. 
+ * __ATTRIBUTABLE indicates this field is used for further process by Attribute.
+ * Or, to put this way, this field has attributions not used so far, but
+ * eventually will.
+ */
+# define __ATTRIBUTABLE
+# define __ATTRIBUTABLE__
+# define attr(a)
 
 #endif /* NO COMPOUND_COMMON_h */

@@ -2,14 +2,14 @@
 
 Status Var_Create(Var *inst, size_t size)
 {
-  *inst = (Var) {
-    .addr = malloc(size),
-    .size = size
-  };
+  fails(inst, UnavailableInstance);
+  state(inst->alive, InstanceStillAlive);
+  state(!size, normal(NormalStatus, "Exited with given parameter"
+                                    "size as ZERO."));
   
-  if (inst->addr == NULL) {
-    return InsufficientMemory;
-  }
+  state(((inst->addr = malloc(size)) == NULL), InsufficientMemory);
+  inst->size = size;
+  inst->alive = true;
   
   return NormalStatus;
 }
@@ -34,18 +34,20 @@ Status Var_CopyOf(Var *inst, Var *other)
 {
   /* Skip when inst or other is unavailable. */
   fails(inst, UnavailableInstance);
+  state(inst->alive, InstanceStillAlive);
   fails(other, InvalidParameter);
   
   /* Copy members from other.  Only has to apply size, no addr is needed. */
-  inst->addr = malloc(other->size);
+  state(!((inst->addr = malloc(other->size))), InsufficientMemory);
   inst->size = other->size;
+  inst->alive = true;
   
   return NormalStatus;
 }
 
 void Var_Delete(Var *inst)
 {
-  if (inst == NULL)  return;
+  svoid(!inst);
   
   free(inst->addr);
   inst->addr = NULL;
@@ -55,7 +57,7 @@ void Var_Delete(Var *inst)
 // void Var_Delete(Var *inst)
 // {
 //   /* Skip when inst or inst->addr is unavailable. */
-//   svoid(inst == NULL || inst->addr == NULL);
+//   svoid(!inst || inst->addr == NULL);
 
 //   inst->addr = NULL;
 //   inst->size = 0;
@@ -65,7 +67,7 @@ void Var_Delete(Var *inst)
 void VarUtils_Swap(Var *v1, Var *v2)
 {
   /* Skip when v1 or v2 is unavailable. */
-  svoid(v1 == NULL || v2 == NULL);
+  svoid(!v1 || !v2);
   
   Var v3 = *v1;
   *v1 = *v2;
@@ -75,7 +77,7 @@ void VarUtils_Swap(Var *v1, Var *v2)
 Status Var_Literalise(Var *inst, char *buff)
 {
   /* Skip when inst is unavailable. */
-  state(inst == NULL, UnavailableInstance);
+  state(!inst, UnavailableInstance);
   
   /* Write into buffer. */
   state(!sprintf(buff, VAR_LITERALISE_FORMAT"\n", inst->addr, inst->size),
@@ -87,7 +89,7 @@ Status Var_Literalise(Var *inst, char *buff)
 bool Var_Equals(Var *a, Var *b)
 {
   /* Skip unavailable inst and invalid param. */
-  state((a == NULL || b == NULL), false);
+  state((!a || !b), false);
   
   return (a->addr == b->addr && a->size == b->size);
 }

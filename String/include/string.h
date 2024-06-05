@@ -22,7 +22,6 @@ Status String_Delete(String *inst);
 Status String_GetIdx(String *inst, Char *item, int index);
 Status String_SetIdx(String *inst, Char *item, int index);
 Status String_Literalise(String *inst, String *store);
-bool   String_Equals(String *arr1, String *arr2);
 
 /* Extensional. */
 Status StringUtils_FromInteger(String *inst, int value);
@@ -83,6 +82,7 @@ Status String_Decode(String *inst, StringEncoding encoding);
 int    StringUtils_Compare(String *a, String *b);
 
 static Status StringConversionPrecisionError = {
+  .value = 1,
   .description = "Unpreventable precision loss was found during conversion "
                  "between string and raw data.",
   .characteristic = STATUS_ERROR,

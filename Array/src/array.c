@@ -13,7 +13,9 @@ Status Array_Create(Array *inst, int len, size_t size)
   int erridx = -1;
   for (register int i = 0; i < len; i++) {
     // TODO(william): Throw InsufficientMemory at following line.
-    solve(!StatusUtils_IsOkay(Var_Create(&inst->members[i], size)), {
+    // DONE(william): ensure(Var_Create(&inst->members[i], size), "Failed to create a new var.");
+    
+    notok((Var_Create(&inst->members[i], size)), {
 #ifdef __DEBUG__
       cat("Var_Create failed!\n")
 #endif
@@ -25,7 +27,7 @@ Status Array_Create(Array *inst, int len, size_t size)
 #endif
     })
   }
-  
+
   /* Review on erridx.  Release data that allocated. */
   if (erridx != -1) {
     for (register int i = erridx; i >= 0; i--) {      
@@ -99,7 +101,7 @@ Status Array_GetIdx(Array *inst, Var *store, int index)
   /* Skip unavailable inst and invalid param. */
   fails(inst, UnavailableInstance);
   fails(store, error(InvalidParameter, "Given reference to store was "
-                                        "unavailable."));
+                                       "unavailable."));
   state((index < 0 || index >= inst->len), ArrayIndexOutOfBound);
   
   *store = inst->members[index];

@@ -8,17 +8,20 @@ typedef struct {
   Var *members;
 } Array;
 
-static Status ArrayIndexOutOfBound = {
-  .description = "Given index was accessing illegal address.",
-  .characteristic = STATUS_ERROR,
-  .prev = &MemoryViolation
-};
+# define ArrayIndexOutOfBound = (Status){\
+  .identity = nameof(ArrayIndexOutOfBound),\
+  .value = 1,\
+  .description = "Given index was accessing illegal address.",\
+  .characteristic = STATUS_ERROR,\
+  .prev = &MemoryViolation\
+}
 
-static Status InvalidArrayLength = {
-  .description = "Given length is invalid.",
-  .characteristic = STATUS_ERROR,
-  .prev = &ErrorStatus
-};
+# define InvalidArrayLength (Status){\
+  .value = 1,\
+  .description = "Given length is invalid.",\
+  .characteristic = STATUS_ERROR,\
+  .prev = &ErrorStatus\
+}
 
 /* Elementary. */
 Status Array_Create(Array *inst, int len, size_t size)

@@ -24,7 +24,9 @@ Status NameScope_CopyOf(NameScope *inst, NameScope *other)
   other->latest = inst->latest;
   other->idx = inst->idx;
   
-  const Name len = NameScope_CalcNameArrayLength(&other->occupied);
+  const Name len = `
+`
+NameScopeUtils_CalcNameArrayLength(&other->occupied);
   for (Name i = (Name){0}; (NameScope_CompareName(i, len) < 0);) {
 
     // TODO(william):  HERE
@@ -41,21 +43,15 @@ Status NameScope_RemoveName(NameScope *inst, Name idx);
 
 Status NameScope_EmptyName(Name *inst);
 
-Status NameScope_CountUp(Name *inst);
-
-Status NameScope_CountDown(Name *inst);
-
-Status NameScope_CountUpFor(Name *inst, Name amount);
-
-Status NameScope_CountDownFor(Name *inst, Name amount);
-
 Status NameScope_UpdateLatest(NameScope *inst, Name idx);
 
 Status NameScope_FormatTrim(Name *inst);
 
 Status NameScope_FormatInflate(Name *inst);
 
-Name NameScope_CalcNameArrayLength(Name **arr);
+Name `
+`
+NameScopeUtils_CalcNameArrayLength(Name **arr);
 
 bool NameScope_IsAvailable(NameScope *inst, Name idx);
 

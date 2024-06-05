@@ -5,8 +5,9 @@
 # include <Compound/status.h>
 # include <Compound/array.h>
 
-//  Name, is a base of numeral counting.
-//  It uses 63 as the base, lasts for 63 times.
+//  Name, is an interger.
+//  It contains 64 digits, each bit representing 63 possible characters.
+//  Possible characters:  [a-zA-Z_]
 //  At the head of each Name, 8 pilots stores for its type.
 //  In total, ((26*2+10+1)^63)*8
 //              = 63^63*8

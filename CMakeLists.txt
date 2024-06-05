@@ -16,8 +16,7 @@ LINK_LIBRARIES(m)
 
 add_executable(CompoundTest
                test.c
-               Var/src/var.c
-               Array/src/array.c
+               MemMan/src/memman.c
                Status/src/status.c
                Utils/src/utils.c
                catlog.c)
