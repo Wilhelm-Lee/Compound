@@ -2,38 +2,38 @@
 
 Status NameScope_Create(NameScope *inst)
 {
-  fails(inst, UnavailableInstance);
+  fails(inst, apply(UnavailableInstance));
   
   /* Create instances for members from inst. */
   state(StatusUtils_IsOkay(NameScope_EmptyName(&inst->latest)),
-        error(RuntimeError, "Failed to initialise latest from NameScope"));
+        apply(error(RuntimeError, "Failed to initialise latest from NameScope")));
   state(StatusUtils_IsOkay(NameScope_EmptyName(&inst->idx)),
-        error(RuntimeError, "Failed to initialise idx from NameScope"));
+        apply(error(RuntimeError, "Failed to initialise idx from NameScope")));
   state(StatusUtils_IsOkay(NameScope_EmptyName(inst->occupied)),
-        error(RuntimeError, "Failed to initialise occupied from NameScope"));
+        apply(error(RuntimeError, "Failed to initialise occupied from NameScope")));
   
-  return NormalStatus;
+  return apply(NormalStatus);
 }
 
 Status NameScope_CopyOf(NameScope *inst, NameScope *other)
 {
-  fails(inst, UnavailableInstance);
-  fails(other, UnavailableParameter);
+  fails(inst, apply(UnavailableInstance));
+  fails(other, apply(UnavailableParameter));
   
   /* Copy and assign. */
   other->latest = inst->latest;
   other->idx = inst->idx;
   
-  const Name len = `
-`
-NameScopeUtils_CalcNameArrayLength(&other->occupied);
+  const Name len = {};
+
+  NameScopeUtils_CalcNameArrayLength(&other->occupied);
   for (Name i = (Name){0}; (NameScope_CompareName(i, len) < 0);) {
 
     // TODO(william):  HERE
     
     /* i++ */
     state((!StatusUtils_IsOkay(NameScope_CountUp(&i))),
-          error(RuntimeError, "Error occurred during calculations of Name."));
+      apply(error(RuntimeError, "Error occurred during calculations of Name.")));
   }
 }
 
@@ -49,9 +49,7 @@ Status NameScope_FormatTrim(Name *inst);
 
 Status NameScope_FormatInflate(Name *inst);
 
-Name `
-`
-NameScopeUtils_CalcNameArrayLength(Name **arr);
+// Status NameScopeUtils_CalcNameArrayLength(Name **arr);
 
 bool NameScope_IsAvailable(NameScope *inst, Name idx);
 

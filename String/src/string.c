@@ -5,32 +5,42 @@ Status String_Create(String *inst, int len)
   /* Create an array has length len + 1, for termination character in string. */  
   ensure(Array_Create(inst, len + 1, sizeof(int)), "Failed to create a string.");
  
-  return NormalStatus;
+  return apply(NormalStatus);
 }
 
 Status String_CopyOf(String *inst, String *other)
 {
-  fails(inst, UnavailableInstance);
+  fails(inst, apply(UnavailableInstance));
+  
+  return apply(NormalStatus);
 }
 
 Status String_Delete(String *inst)
 {
-  fails(inst, UnavailableInstance);
+  fails(inst, apply(UnavailableInstance));
+  
+  return apply(NormalStatus);
 }
 
 Status String_GetAt(String *inst, Char *store, int index)
 {
-  fails(inst, UnavailableInstance);
+  fails(inst, apply(UnavailableInstance));
+  
+  return apply(NormalStatus);
 }
 
 Status String_SetAt(String *inst, Char *source, int index)
 {
-  fails(inst, UnavailableInstance);
+  fails(inst, apply(UnavailableInstance));
+  
+  return apply(NormalStatus);
 }
 
 Status String_Literalise(String *inst, String *store)
 {
-  fails(inst, UnavailableInstance);
+  fails(inst, apply(UnavailableInstance));
+  
+  return apply(NormalStatus);
 }
 
 int StringUtils_Compare(String *a, String *b)

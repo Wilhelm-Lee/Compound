@@ -73,7 +73,7 @@ Status StringUtils_ToUnsignedComplexLongLongInteger(String *inst, unsigned _Comp
 Status StringUtils_ToAddress(String *inst, void **store);
 Status StringUtils_ToCharBuff(String *inst, char const *buff, int base);
 Status StringUtils_ToWideCharBuff(String *inst, wchar_t const *wbuff, int base);
-Status StringUtils_Format(String *inst, const String *__restrict fmt, ...);
+Status StringUtils_Format(String *inst, const String *restrict fmt, ...);
 Status StringUtils_Tokenise(String *inst, const String *delim, String *store);
 Status String_Encode(String *inst, StringEncoding encoding)
        throws(UnsupportedEncoding  EncodingError  DecodingError);

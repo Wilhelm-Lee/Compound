@@ -5,45 +5,27 @@
 # include <stdlib.h>
 # include <stdbool.h>
 
-/**
- * @brief Return $n as the return value, once $o is NULL
- * @return given $n as the return value
- * @note "fails" stands for "Fails on Null Check"
- * @note 'o' stands for "Object"
- * @note 'n' stands for "Numeric on Return"
- */
-# define fails(o, n)  { if ((o) == NULL) return (n); }
+/* Get the literal. */
+# define nameof(obj)  #obj
 
-/**
- * @brief Return $e as the return value, once $v equals $e
- * @return given $e as the return value
- * @note "trans" stands for "Transits Error Code to Caller"
- * @note 'v' stands for "Value"
- * @note 'e' stands for "Error Code"
- */
+/* Return $n as the return value, once $o is NULL. */
+# define fails(o, n)  { if (!o) return (n); }
+
+/* Return $e as the return value, once $v equals $e. */
 # define trans(v, e)  { if ((v) == (e)) return (e); }
 
-/**
- * @brief Evaluate given statement while the ptr to $s is not NULL
- * @return given $n as the return value
- * @note "state" stands for "Statement Evaluation"
- * @note 's' stands for "Statement"
- * @note 'n' stands for "Numeric on Return"
- */
+/* Evaluate given statement while the ptr to $s is not NULL. */
 # define state(s, n)  { if ((s)) return (n); }
 
-/**
- * @brief Evaluate given statement while the ptr to $s is not NULL
- * @return nothing.
- * @note "svoid" stands for "Statement Evaluation in Void"
- * @note 's' stands for "Statement"
- */
+/* Evaluate given statement while the ptr to $s is not NULL. */
 # define svoid(s)  { if ((s)) return; }
 
+/* Another way to handle if statements more cleanly. */
+# define solve(s, b)  { if (s) b }
 
 /* Create a new UnknownStatus on the fly. */
 # define unknown(e, c, v)  ((Status) {\
-  .identity = nameof(UnknownStatus),\
+  .identity = e.identity,\
   .value = v,\
   .description = c,\
   .characteristic = STATUS_UNKNOWN,\
@@ -53,7 +35,7 @@
 
 /* Create a new NormalStatus on the fly. */
 # define normal(e, c)  ((Status) {\
-  .identity = nameof(NormalStatus),\
+  .identity = e.identity,\
   .value = 0,\
   .description = c,\
   .characteristic = STATUS_NORMAL,\
@@ -63,7 +45,7 @@
 
 /* Create a new ErrorStatus on the fly. */
 # define error(e, c)  ((Status) {\
-  .identity = nameof(ErrorStatus),\
+  .identity = e.identity,\
   .value = e.value,\
   .description = c,\
   .characteristic = STATUS_ERROR,\
@@ -71,38 +53,56 @@
   .prev = e.prev\
 })
 
-/* Extend the Status chain by giving 'p' for "predecessor"
-   and 'e' for "Eval-Status". */
+/* Extend the Status chain by giving 'p' for "predecessor" and 'e' for "Eval-Status". */
 # define extend(p, e)  ((Status) {\
   .identity = e.identity,\
   .value = p.value,\
   .description = e.description,\
   .characteristic = p.characteristic,\
-  .loc = e.loc,\
+  .loc = __HERE__,\
   .prev = &p\
 })
 
-/** @brief Create a report in place.
- * @return A instance of Status Report customised.
- * @note "stamp" stands for "Report Stamp"
- * @note 'e' stands for "Exception"
- * @note 'c' stands for "Char String of Originator"
- */
+# define value(e, v)  ((Status) {\
+  .identity = e.identity,\
+  .value = v,\
+  .description = e.description,\
+  .characteristic = e.characteristic,\
+  .loc = __HERE__,\
+  .prev = (Status *)e.prev\
+})
+
+# define apply(e)  ((Status) {\
+  .identity = e.identity,\
+  .value = e.value,\
+  .description = e.description,\
+  .characteristic = e.characteristic,\
+  .loc = __HERE__,\
+  .prev = (Status *)e.prev\
+})
+
+/* Create a report in place with $e for base and $c for initiator literal. */
 # define stamp(e, c)  ((Report) {\
   .status = e,\
   .initiator = c,\
   .time = time(NULL),\
   .priority = REPORT_SENDING_PRIORITY_NORMAL,\
-  .task_status = REPORT_SENDING_TASK_STATUS_PENDING\
+  .taskprint_status = REPORT_SENDING_TASK_STATUS_PENDING\
 })
 
-/**
- * @brief Another way to handle if statements more cleanly.
- * @note "solve" stands for "Solve with Statements."
- * @note 's' stands for "Statement"
- * @note 'b' stands for "Block of Forks"
- */
-# define solve(s, b)  if (s) b
+# define cat(s)  {\
+  CatlogMsg msg;\
+  CatlogMsg_Create(&msg, CATLOG_LEVEL_DEBUG, "CAT", s);\
+  CatlogSender sender;\
+  CatlogSender_Create(&sender, &msg, stderr);\
+  CatlogSender_Send(&sender);\
+}
+
+# define ok(s, b)  { Status _ = s;  if (StatusUtils_IsOkay(_))  b }
+
+# define notok(s, b)  { Status _ = s;  if (!StatusUtils_IsOkay(_))  b }
+
+# define seek(s, b)  { Status _ = s;  b }
 
 // /**
 //  * @brief Forcibly return desired value $v once $s is not $k.
@@ -116,8 +116,33 @@
 
 // # define sforce(s, k, v)  solve((!Status_Equal(s, k)), v)
 
-/* Get the literal. */
-# define nameof(obj)  #obj
+// # define print_status(s)  {\
+//   Status _ = s;\
+//   char buff[LITERALISATION_LENGTH_MAXIMUM];\
+//   notok(Status_Literalise(&_, buff), {\
+//     (void)printf("Failed to literalise a status\n");\
+//   });\
+//   (void)printf("%s\n", buff);\
+// }
+
+# define print_status(s)  {\
+  char buff[LITERALISATION_LENGTH_MAXIMUM];\
+  (void)Status_Literalise(&s, buff);\
+  (void)fprintf(stderr, "%s\n", buff);\
+}
+
+# define print_statusdump(s)  {\
+  Status _ = s;\
+  const int dump_len = StatusUtils_Depth(&_);\
+  Status dump[dump_len];\
+  StatusUtils_Dump(&_, dump, 0);\
+  for (register int i = 0; i < dump_len; i++) {\
+    (void)printf("%d/%d\n", i, dump_len - 1);\
+    print_status(dump[i]);\
+  }\
+}
+
+# define strnil(s)  (!s ? ("(null)") : s)
 
 # define type(T)
 
@@ -125,31 +150,6 @@
 # define Array(T) Array
 
 # define String(T) String
-
-# define cat(s)  {\
-  CatlogMsg msg;\
-  CatlogMsg_Create(&msg, CATLOG_LEVEL_DEBUG, "CAT", s);\
-  CatlogSender sender;\
-  CatlogSender_Create(&sender, &msg, stderr);\
-  CatlogSender_Send(&sender, "stdout", false);\
-}
-
-# define _status(s)  {\
-  const Status _ = s;\
-  char buff[LITERALISATION_LENGTH_MAXIMUM];\
-  (void)Status_Literalise((Status *)&_, buff);\
-  (void)printf("%s\n", buff);\
-}
-
-# define ok(s, b)  {\
-  const Status _ = s;\
-  if (StatusUtils_IsOkay(_))  b\
-}
-
-# define notok(s, b)  {\
-  const Status _ = s;\
-  if (!StatusUtils_IsOkay(_))  b\
-}
 
 typedef enum {
   COMMON_ERROR_NULLPTR = 1,

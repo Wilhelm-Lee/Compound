@@ -11,4 +11,7 @@
 #  error Platform not supported.  Please issue this on github.com/Wilhelm-Lee/Compound  --William
 # endif
 
+// # if defined _WIN16 || defined _WIN32 || defined _WIN64
+// #  define COMPOUND_STDIN_PATH 
+
 #endif  /* COMPOUND_PLATFORM_H */

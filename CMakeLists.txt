@@ -2,7 +2,10 @@ cmake_minimum_required (VERSION 3.5)
 
 project (Compound)
 
+add_compile_options(-g -std=c99 -Wall -Wextra -Wformat)
+
 set(SHARED_SOURCE
+    MemMan/src/memman.c
     Status/src/status.c
     Utils/src/utils.c
     Var/src/var.c
@@ -12,7 +15,6 @@ set(LIBCOMPOUND_SOURCE ${SHARED_SOURCE})
 
 add_library(compound SHARED ${LIBCOMPOUND_SOURCE})
 
-add_compile_options(-g -std=c99 -Wall -Wextra -Wformat)
 LINK_LIBRARIES(m)
 
 # add_executable(CompoundTest test.c

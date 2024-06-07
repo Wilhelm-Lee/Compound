@@ -4,9 +4,9 @@
 Status Array_Create(Array *inst, int len, size_t size)
 {
   /* Skip unavailable inst and invalid param. */
-  fails(inst, UnavailableInstance);
-  state((len < 0), InvalidArrayLength);
-  solve((!len), { inst->len = 0; inst->members = NULL; return NormalStatus; })
+  fails(inst, apply(UnavailableInstance));
+  state((len < 0), apply(InvalidArrayLength));
+  solve((!len), { inst->len = 0; inst->members = NULL; return apply(NormalStatus); })
   
   inst->len = len;
   inst->members = calloc(len, sizeof(Var));
@@ -40,22 +40,22 @@ Status Array_Create(Array *inst, int len, size_t size)
     /* Release array itself. */
     free(inst->members);
     
-    return InsufficientMemory;
+    return apply(InsufficientMemory);
   }
 
-  return NormalStatus;
+  return apply(NormalStatus);
 }
 
 Status Array_CopyOf(Array *inst, Array *other)
 {
   // /* Skip unavailable inst and invalid param. */
-  // fails(inst, UnavailableInstance);
+  // fails(inst, apply(UnavailableInstance));
   // fails(other, error(InvalidParameter, "Given other was unavailable."));
   
   // /* Assign value for len. */
   // inst->len = other->len;
   
-  // if (inst->members == NULL)  return NormalStatus;
+  // if (inst->members == NULL)  return apply(NormalStatus);
   // match(RuntimeError, Array_Create(inst, other->len), "Failed on recreating "
   //                                                     "array.");
   
@@ -64,7 +64,7 @@ Status Array_CopyOf(Array *inst, Array *other)
   //   inst[i] = other[i];
   // }
   
-  // return NormalStatus;
+  // return apply(NormalStatus);
   
   
   
@@ -86,40 +86,41 @@ Status Array_CopyOf(Array *inst, Array *other)
 Status Array_Delete(Array *inst)
 {
   /* Skip unavailable inst and invalid param. */
-  fails(inst, UnavailableInstance);
-  solve((inst->members == NULL), return NormalStatus);
+  fails(inst, apply(UnavailableInstance));
+  solve((inst->members == NULL), return apply(NormalStatus));
   
   inst->len = 0;
   free(inst->members);
   inst->members = NULL;
   
-  return NormalStatus;
+  return apply(NormalStatus);
 }
 
 Status Array_GetIdx(Array *inst, Var *store, int index)
 {
   /* Skip unavailable inst and invalid param. */
-  fails(inst, UnavailableInstance);
-  fails(store, error(InvalidParameter, "Given reference to store was "
-                                       "unavailable."));
-  state((index < 0 || index >= inst->len), ArrayIndexOutOfBound);
+  fails(inst, apply(UnavailableInstance));
+  fails(store,
+    apply(error(InvalidParameter, "Given reference to store was unavailable.")));
+  state((index < 0 || index >= inst->len), apply(ArrayIndexOutOfBound));
   
   *store = inst->members[index];
   
-  return NormalStatus;
+  return apply(NormalStatus);
 }
 
 Status Array_SetIdx(Array *inst, Var *source, int index)
 {
   /* Skip unavailable inst and invalid param. */
-  fails(inst, UnavailableInstance);
-  fails(source, error(InvalidParameter, "Given reference to source was "
-                                        "unavailable."));
-  state((index < 0 || index >= inst->len), ArrayIndexOutOfBound);
+  fails(inst, apply(UnavailableInstance));
+  fails(source,
+    apply(
+      error(InvalidParameter, "Given reference to source was unavailable.")));
+  state((index < 0 || index >= inst->len), apply(ArrayIndexOutOfBound));
   
   inst->members[index] = *source;
   
-  return NormalStatus;  
+  return apply(NormalStatus);  
 }
 
 bool Array_Equals(Array *a, Array *b)
@@ -141,14 +142,16 @@ bool Array_Equals(Array *a, Array *b)
 
 Status ArrayUtils_Fill(Array *inst, Var *elem, int off, int len)
 {
-  fails(inst, UnavailableInstance);
-  fails(elem, error(InvalidParameter, "Given reference to elem was unavailable."));
-  state((off + len > inst->len) || (off < 0) || (len < 0), ArrayIndexOutOfBound);
+  fails(inst, apply(UnavailableInstance));
+  fails(elem,
+    apply(error(InvalidParameter, "Given reference to elem was unavailable.")));
+  state((off + len > inst->len) || (off < 0) || (len < 0),
+    apply(ArrayIndexOutOfBound));
   
   /* Copy elem into each specified members from inst with off and len. */
   for (register int i = off; i < (off + len); i++) {
     inst->members[i] = *elem;
   }
   
-  return NormalStatus;
+  return apply(NormalStatus);
 }

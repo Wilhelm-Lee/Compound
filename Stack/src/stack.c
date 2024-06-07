@@ -21,6 +21,8 @@ Status Stack_Create(Stack *inst, int len)
   //     };
   //   }
   // }
+  
+  return apply(NormalStatus);
 }
 Status Stack_CopyOf(Stack *inst, Stack *other);
 Status Stack_Push(Stack *inst, Var *item);

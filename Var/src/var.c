@@ -2,22 +2,22 @@
 
 Status Var_Create(Var *inst, size_t size)
 {
-  fails(inst, UnavailableInstance);
-  state(inst->alive, InstanceStillAlive);
-  state(!size, normal(NormalStatus, "Exited with given parameter"
-                                    "size as ZERO."));
+  fails(inst, apply(UnavailableInstance));
+  state(inst->alive, apply(InstanceStillAlive));
+  state(!size,
+    apply(normal(NormalStatus, "Exited with given parameter size as ZERO.")));
   
-  state(((inst->addr = malloc(size)) == NULL), InsufficientMemory);
+  state(((inst->addr = malloc(size)) == NULL), apply(InsufficientMemory));
   inst->size = size;
   inst->alive = true;
   
-  return NormalStatus;
+  return apply(NormalStatus);
 }
 
 // Status Var_Create(Var *inst, void *addr, size_t size, char *identity)
 // {
 //   /* Skip when inst is unavailable. */
-//   fails(inst, UnavailableInstance);
+//   fails(inst, apply(UnavailableInstance));
 //   /* Skip when identity is unavailable. */
 //   fails(identity, NullPointerAccounted);
 //   /* Skip when identity does not pass the examine. */
@@ -27,22 +27,22 @@ Status Var_Create(Var *inst, size_t size)
 //   inst->size = size;
 //   *inst->identity = *identity;
   
-//   return NormalStatus;
+//   return apply(NormalStatus);
 // }
 
 Status Var_CopyOf(Var *inst, Var *other)
 {
   /* Skip when inst or other is unavailable. */
-  fails(inst, UnavailableInstance);
-  state(inst->alive, InstanceStillAlive);
-  fails(other, InvalidParameter);
+  fails(inst, apply(UnavailableInstance));
+  state(inst->alive, apply(InstanceStillAlive));
+  fails(other, apply(InvalidParameter));
   
   /* Copy members from other.  Only has to apply size, no addr is needed. */
-  state(!((inst->addr = malloc(other->size))), InsufficientMemory);
+  state(!((inst->addr = malloc(other->size))), apply(InsufficientMemory));
   inst->size = other->size;
   inst->alive = true;
   
-  return NormalStatus;
+  return apply(NormalStatus);
 }
 
 void Var_Delete(Var *inst)
@@ -77,13 +77,14 @@ void VarUtils_Swap(Var *v1, Var *v2)
 Status Var_Literalise(Var *inst, char *buff)
 {
   /* Skip when inst is unavailable. */
-  state(!inst, UnavailableInstance);
+  state(!inst, apply(UnavailableInstance));
   
   /* Write into buffer. */
   state(!sprintf(buff, VAR_LITERALISE_FORMAT"\n", inst->addr, inst->size),
-        error(RuntimeError, "Sprintf returned 0 where it should never do."));
+        apply(
+          error(RuntimeError, "Sprintf returned 0 where it should never do.")));
   
-  return NormalStatus;
+  return apply(NormalStatus);
 }
 
 bool Var_Equals(Var *a, Var *b)
