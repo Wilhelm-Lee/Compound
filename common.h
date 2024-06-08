@@ -23,6 +23,18 @@
 /* Another way to handle if statements more cleanly. */
 # define solve(s, b)  { if (s) b }
 
+/* Handling expression with its result. */
+# define when(expr, b)  { int _ = expr; if (expr) b }
+
+/* Handling expression with its calculated result. */
+# define where(expr, b)  { int _ = expr; b }
+
+# define ok(s, b)  { Status _ = s;  if (StatusUtils_IsOkay(_))  b }
+
+# define notok(s, b)  { Status _ = s;  if (!StatusUtils_IsOkay(_))  b }
+
+# define seek(s, b)  { Status _ = s;  b }
+
 /* Create a new UnknownStatus on the fly. */
 # define unknown(e, c, v)  ((Status) {\
   .identity = e.identity,\
@@ -60,7 +72,7 @@
   .description = e.description,\
   .characteristic = p.characteristic,\
   .loc = __HERE__,\
-  .prev = &p\
+  .prev = (Status *)&p\
 })
 
 # define value(e, v)  ((Status) {\
@@ -98,12 +110,6 @@
   CatlogSender_Send(&sender);\
 }
 
-# define ok(s, b)  { Status _ = s;  if (StatusUtils_IsOkay(_))  b }
-
-# define notok(s, b)  { Status _ = s;  if (!StatusUtils_IsOkay(_))  b }
-
-# define seek(s, b)  { Status _ = s;  b }
-
 // /**
 //  * @brief Forcibly return desired value $v once $s is not $k.
 //  * @return $v once state for $s is false.
@@ -125,22 +131,23 @@
 //   (void)printf("%s\n", buff);\
 // }
 
-# define print_status(s)  {\
-  char buff[LITERALISATION_LENGTH_MAXIMUM];\
-  (void)Status_Literalise(&s, buff);\
-  (void)fprintf(stderr, "%s\n", buff);\
-}
+// # define print_status(s)  {\
+//   char buff[LITERALISATION_LENGTH_MAXIMUM];\
+//   (void)Status_Literalise(&s, buff);\
+//   (void)fprintf(stderr, "%s\n", buff);\
+// }
 
-# define print_statusdump(s)  {\
-  Status _ = s;\
-  const int dump_len = StatusUtils_Depth(&_);\
-  Status dump[dump_len];\
-  StatusUtils_Dump(&_, dump, 0);\
-  for (register int i = 0; i < dump_len; i++) {\
-    (void)printf("%d/%d\n", i, dump_len - 1);\
-    print_status(dump[i]);\
-  }\
-}
+// # define print_statusdump(s)  {\
+//   Status _ = s;\
+//   const int dump_len = StatusUtils_Depth(&_);\
+//   Status dump[dump_len];\
+//   StatusUtils_Dump(&_, dump, 0);\
+//   for (register int i = 0; i < dump_len; i++) {\
+//     /* TODO(william): Replace following line with coloured-term-output function. */\
+//     (void)printf("\e[1m[%d/%d]\e[0m\n", i, dump_len - 1);\
+//     print_status(dump[i]);\
+//   }\
+// }
 
 # define strnil(s)  (!s ? ("(null)") : s)
 

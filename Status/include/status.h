@@ -222,7 +222,6 @@ bool   Status_Equal(Status *stat1, Status *stat2);
 void   StatusUtils_Dump(Status *inst, Status *store, int idx);
 bool   StatusUtils_HasPrev(Status inst);
 bool   StatusUtils_IsOkay(Status inst);
-bool   StatusUtils_IsValid(Status inst);
 bool   StatusUtils_IsRecursive(Status inst);
 int    StatusUtils_Depth(Status *inst);
 
@@ -331,6 +330,11 @@ DEFSTATUS(ImprecisionError, 1,
 
 // ---------------------USER DEFINED-----------------------
 
+// The meaning of value is defined by the function itself.
+DEFSTATUS(TraditionalFunctionReturn, 0,
+  "Function has returned an integer.",
+  STATUS_UNKNOWN, &UnknownStatus);
+
 DEFSTATUS(UnavailableInstance, 1,
   "An unavailable instance was given for initialisation.",
   STATUS_ERROR, &NullPointerAccounted);
@@ -399,6 +403,39 @@ DEFSTATUS(InvalidLiteralisingBuffer, 1,
   "Given buffer does not have a good integrity on its length.",
   STATUS_ERROR, &InvalidObject);
 
+// ========================================================
+
+static inline Status PrintStatus(Status s)
+{
+  char buff[LITERALISATION_LENGTH_MAXIMUM];
+  (void)Status_Literalise(&s, buff);
+  
+  where(fprintf(stderr, "%s\n", buff), {
+    return apply(value(TraditionalFunctionReturn, _));
+  })
+}
+
+static inline void PrintStatusDump(Status s)
+{
+  Status stat = s;
+  const int dump_len = StatusUtils_Depth(&stat);
+  Status dump[dump_len];
+  StatusUtils_Dump(&stat, dump, 0);
+  /* TODO(william): Replace following line with coloured-term-output function. */
+  (void)printf("\e[1m======== STATUS STACK DUMP: %s ========\e[0m\n",
+               stat.identity);
+  for (register int i = 0; i < dump_len; i++) {
+    /* TODO(william): Replace following line with coloured-term-output function. */
+    (void)printf("\e[1m[%d/%d]\e[0m\n", (dump_len - i), dump_len);
+    seek(PrintStatus(dump[i]), {
+      solve(!_.value, {
+        (void)fprintf(stderr, "\e[38;5;9m!!!!!!!! PRINT DUMP FAILED !!!!!!!!"
+                              "\e[0m\n");
+        (void)PrintStatus(_);
+      })
+    })
+  }
+}
 
 // ========================================================
 
@@ -424,14 +461,14 @@ DEFSTATUS(InvalidLiteralisingBuffer, 1,
 
 /* Add location parameter requirement in order to give proper information
  * before throwing the report out. */
-# define throw(report)  __throw(report, __HERE__)
+# define throw(report)  THROW(report, __HERE__)
 
 /* Useless in C, only for human to see.
    Probably rewrite this in Classify. */
 # define throws(e)
 
-ReportSendingTaskID __throw(Report report, Location loc);
-Report catch(ReportSendingTaskID taskid);
+ReportSendingTaskID THROW(Report report, Location loc);
+Report CATCH(ReportSendingTaskID taskid);
 int HANDLER(void *report);
 
 #endif  /* COMPOUND_STATUS_H */

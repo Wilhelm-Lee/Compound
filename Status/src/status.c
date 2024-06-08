@@ -11,8 +11,8 @@ Status Location_Literalise(Location *inst, char *buff)
   
   /* Concatenate every buff. */
   const long total_len = strlen(strnil(inst->file)) + strlen(strnil(line_buff))
-                           + strlen(strnil(inst->func))
-                           + LOCATION_LITERALISE_FORMAT_LENGTH;
+                         + strlen(strnil(inst->func))
+                         + LOCATION_LITERALISE_FORMAT_LENGTH;
 
   state(total_len > LITERALISATION_LENGTH_MAXIMUM,
     apply(MaximumLiteralisationLengthExceeded));
@@ -62,30 +62,31 @@ Status Status_Literalise(Status *inst, char *buff)
   /* Literalise loc. */
   char loc_buff[LITERALISATION_LENGTH_MAXIMUM];
   notok(Location_Literalise(&inst->loc, loc_buff), {
-    return _;
+    return apply(_);
   });
 
   /* Styling output. */
+  // TODO(william): Replace following lines with 
   const char *fmt;
   if (inst->characteristic == STATUS_ERROR) {
     // TODO(william): Replace following line with coloured-term-output function.
-    fmt = "\e[38;5;9m\e[4m\e[1m"STATUS_LITERALISE_FORMAT"\e[0m";
+    fmt = "\e[38;5;9m\e[1m"STATUS_LITERALISE_FORMAT"\e[0m";
   } else if (inst->characteristic == STATUS_UNKNOWN) {
     // TODO(william): Replace following line with coloured-term-output function.
-    fmt = "\e[38;5;11m\e[4m"STATUS_LITERALISE_FORMAT"\e[0m";
+    fmt = "\e[38;5;11m"STATUS_LITERALISE_FORMAT"\e[0m";
   } else {
     // TODO(william): Replace following line with coloured-term-output function.
-    fmt = "\e[38;5;10m\e[2m"STATUS_LITERALISE_FORMAT"\e[0m";
+    fmt = "\e[38;5;10m"STATUS_LITERALISE_FORMAT"\e[0m";
   }
 
   /* Concatenate every buffer. */
-  state(!sprintf(buff, fmt,
-                 inst->identity, inst->description,
-                 (!inst->prev ? "(null)" : (inst->prev->identity)),
-                 inst->value, inst->characteristic, loc_buff),
-    apply(error(ReadWriteError, "No bytes were written into buffer.")));
-
-  return apply(NormalStatus);
+  where(sprintf(buff, fmt, inst->identity, inst->description,
+                (!inst->prev
+                  ? "(null)"
+                  : (inst->prev->identity)),
+                inst->value, inst->characteristic, loc_buff), {
+    return apply(value(TraditionalFunctionReturn, _));
+  })
 }
 
 bool StatusUtils_HasPrev(Status stat)
@@ -98,12 +99,6 @@ bool StatusUtils_IsOkay(Status stat)
   return (!stat.characteristic);
 }
 
-bool StatusUtils_IsValid(Status stat)
-{
-  return (!strcmp(stat.description, "") && stat.characteristic >= 0
-          && !stat.prev);
-}
-
 bool StatusUtils_IsRecursive(Status stat)
 {
   return (stat.prev && stat.prev == &stat);
@@ -111,9 +106,8 @@ bool StatusUtils_IsRecursive(Status stat)
 
 void StatusUtils_Dump(Status *inst, Status *store, int idx)
 {
-
   /* Skip when either stat or stat.prev is unavailable, or, idx is invalid. */
-  svoid((!store || !StatusUtils_HasPrev(*inst) || idx < 0));
+  svoid((!inst || !store || idx < 0));
 
   store[idx] = *inst;
   
@@ -128,7 +122,9 @@ int StatusUtils_Depth(Status *stat)
   Status *p = stat;  // Include this layer of Status.
   register int cnt;
   for (cnt = 0; (!StatusUtils_IsRecursive(*p)
-       && StatusUtils_HasPrev(*p)); cnt++)  p = p->prev;
+                 && StatusUtils_HasPrev(*p)); cnt++) {
+    p = p->prev;
+  }
 
   return cnt;
 }
@@ -288,7 +284,7 @@ Status ReportSender_Send(ReportSender *inst, ReportSendingTask task)
 //           || (inst1->external_param == inst2->external_param);
 // }
 
-ReportSendingTaskID _throw(Report report, Location loc)
+ReportSendingTaskID THROW(Report report, Location loc)
 {
   // // /* Create new a instance of ReportSender. */
   // // ReportSender sender;

@@ -91,7 +91,7 @@ Status CatlogSender_Send(CatlogSender *inst)
   /* Skip unavailable instances and parameters. */
   fails(inst, apply(UnavailableInstance));
 
-  const int written = fprintf(inst->dst, "%s", inst->msg.content);
+  const int written = fprintf(inst->dst, "%s\n", inst->msg.content);
 
   /* Write msg. */
   state(!written, error(ReadWriteError, "No bytes were written into buffer."));
