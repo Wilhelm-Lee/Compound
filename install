@@ -35,7 +35,7 @@ done
 
 cp -v "common.h" "const.h" "platform.h"\
       "name.h" "namescope.h" "type.h" "catlog.h"\
-      "attr.h" "registry.h" "class.h" "$DST"
+      "attr.h" "registry.h" "class.h" "function.h" "$DST"
 
 echo "Installing libcompound:"
 cp -v "libcompound.so" "/usr/lib"

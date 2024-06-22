@@ -7,7 +7,7 @@ Status CatlogMsg_Create(CatlogMsg *inst, CatlogLevel level,
        char *initiator, char *msg)
 {
   /* Skip unavailable instances and parameters. */
-  fails(inst, apply(UnavailableInstance));
+  nonull(inst, apply(UnavailableInstance));
   state((initiator == NULL || msg == NULL), apply(InvalidParameter));
 
 	inst->time = time(NULL);
@@ -21,8 +21,8 @@ Status CatlogMsg_Create(CatlogMsg *inst, CatlogLevel level,
 Status CatlogMsg_CopyOf(CatlogMsg *inst, CatlogMsg *other)
 {
   /* Skip unavailable instances and parameters. */
-  fails(inst, apply(UnavailableInstance));
-  fails(other, apply(InvalidParameter));
+  nonull(inst, apply(UnavailableInstance));
+  nonull(other, apply(InvalidParameter));
 
 	*inst = *other;
 
@@ -45,8 +45,8 @@ bool CatlogMsg_Equals(CatlogMsg *inst, CatlogMsg *other)
 Status CatlogSender_Create(CatlogSender *inst, CatlogMsg *msg, FILE *dst)
 {
   /* Skip unavailable instances and parameters. */
-  fails(inst, apply(UnavailableInstance));
-  fails(msg, apply(InvalidParameter));
+  nonull(inst, apply(UnavailableInstance));
+  nonull(msg, apply(InvalidParameter));
 
   /* Copy and assign. */
   inst->msg = *msg;
@@ -60,8 +60,8 @@ Status CatlogSender_Create(CatlogSender *inst, CatlogMsg *msg, FILE *dst)
 Status CatlogSender_CopyOf(CatlogSender *inst, CatlogSender *other)
 {
   /* Skip unavailable instances and parameters. */
-  fails(inst, apply(UnavailableInstance));
-  fails(other, apply(InvalidParameter));
+  nonull(inst, apply(UnavailableInstance));
+  nonull(other, apply(InvalidParameter));
 
   /* Copy and assign */
   inst->msg = other->msg;
@@ -89,7 +89,7 @@ bool CatlogSender_Equals(CatlogSender *inst, CatlogSender *other)
 Status CatlogSender_Send(CatlogSender *inst)
 {
   /* Skip unavailable instances and parameters. */
-  fails(inst, apply(UnavailableInstance));
+  nonull(inst, apply(UnavailableInstance));
 
   const int written = fprintf(inst->dst, "%s\n", inst->msg.content);
 
@@ -103,9 +103,9 @@ Status CatlogUtils_OpenFile(FILE **fileptr, const char *filepath,
                             const char const *restrict mode)
 {
   /* Skip unavailable instances and parameters. */
-  fails(fileptr, apply(UnavailableBuffer));
-  fails(filepath, apply(UnavailableFileName));
-  fails(mode, apply(UnavailableFileAccessMode));
+  nonull(fileptr, apply(UnavailableBuffer));
+  nonull(filepath, apply(UnavailableFileName));
+  nonull(mode, apply(UnavailableFileAccessMode));
 
   /* Open the file.  Return CatCannotOpenFile once failed. */
   state(!(*fileptr = fopen(filepath, mode)), apply(CatCannotOpenFile));

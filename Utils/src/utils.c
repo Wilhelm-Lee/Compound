@@ -42,8 +42,8 @@ int Utils_LiteraliseInteger(long long int n, char *buff)
   return literalising_len;
 }
 
-int Utils_DateTimeLiteralise(time_t t, char *buff)
+int Utils_DateTimeLiteralise(time_t timer, char *buff,
+  const char *__restrict format)
 {
-  return 0;
+  
 }
-

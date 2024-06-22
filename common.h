@@ -1,6 +1,9 @@
-#ifndef COMPOUND_COMMON_h
-# define COMPOUND_COMMON_h
-// # define __DEBUG__  1
+#ifndef COMPOUND_COMMON_H
+# define COMPOUND_COMMON_H
+
+# ifdef __DEBUG__
+#  warning DEBUG IS ON
+# endif  /* __DEBUG__ */
 
 # include <stdlib.h>
 # include <stdbool.h>
@@ -8,60 +11,90 @@
 /* Get the literal. */
 # define nameof(obj)  #obj
 
-/* Return $n as the return value, once $o is NULL. */
-# define fails(o, n)  { if (!o) return (n); }
+/* Return n as the return value, once o is NULL. */
+# define nonull(o, n)  { if (!o) return (n); }
 
-/* Return $e as the return value, once $v equals $e. */
+/* Return e as the return value, once v equals e. */
 # define trans(v, e)  { if ((v) == (e)) return (e); }
 
-/* Evaluate given statement while the ptr to $s is not NULL. */
+/* Evaluate given statement while the ptr to s is not NULL. */
 # define state(s, n)  { if ((s)) return (n); }
 
-/* Evaluate given statement while the ptr to $s is not NULL. */
+/* Evaluate given statement while the ptr to s is not NULL. */
 # define svoid(s)  { if ((s)) return; }
 
 /* Another way to handle if statements more cleanly. */
 # define solve(s, b)  { if (s) b }
 
 /* Handling expression with its result. */
-# define when(expr, b)  { int _ = expr; if (expr) b }
+# define when(expr, b)  { int _ = expr; if (_) b }
 
-/* Handling expression with its calculated result. */
+/* Handling expression with its precalculated result. */
 # define where(expr, b)  { int _ = expr; b }
 
+/* Execute b whenever finds s is "okay". */
 # define ok(s, b)  { Status _ = s;  if (StatusUtils_IsOkay(_))  b }
 
+/* Execute b whenever finds s is "NOT okay". */
 # define notok(s, b)  { Status _ = s;  if (!StatusUtils_IsOkay(_))  b }
 
+/* Return e when passing a failing e commented with c. */
+# define fails(e, c)  { notok(e, return apply(annot(_, c));) }
+
+/* Return v when passing a failing e. */
+# define vfail(e, v)  { notok(e, return v;) }
+
+/* Execute b for handling UnknownStatus (TraditionalFunctionReturn). */
+# define unsure(s, expr, b)  { Status _ = s; \
+  if (_.characteristic < 0 && (expr))  b }
+
+/* Execute b whatsoever with s stored. */
 # define seek(s, b)  { Status _ = s;  b }
+
+/* Combinates seek and solve. */
+# define settle(e, s, b)  seek(e, solve(s, b))
+
+/* Clone a new varaible "v2" with "v1". */
+# define clone(v1, v2)  __typeof__(v1) v2 = v1;
+
+/* Allows different macros using "_" nested with each other. */
+# define nest(v1, v2, b)  { clone(v1, v2) b }
+
+// # define lambda(param, body, capfmt, ...)  {\
+//   /* Duplicate everything from cap. */\
+//   va_list ptr;\
+//   va_start(ptr, capfmt);\
+//   __typeof__(ptr) \
+//   va_end(ptr);\
+// }
 
 /* Create a new UnknownStatus on the fly. */
 # define unknown(e, c, v)  ((Status) {\
-  .identity = e.identity,\
+  .identity = nameof(e),\
   .value = v,\
   .description = c,\
   .characteristic = STATUS_UNKNOWN,\
-  .loc = __HERE__,\
+  .loc = e.loc,\
   .prev = e.prev\
 })
 
 /* Create a new NormalStatus on the fly. */
 # define normal(e, c)  ((Status) {\
-  .identity = e.identity,\
+  .identity = nameof(e),\
   .value = 0,\
   .description = c,\
   .characteristic = STATUS_NORMAL,\
-  .loc = __HERE__,\
+  .loc = e.loc,\
   .prev = e.prev\
 })
 
 /* Create a new ErrorStatus on the fly. */
 # define error(e, c)  ((Status) {\
-  .identity = e.identity,\
+  .identity = nameof(e),\
   .value = e.value,\
   .description = c,\
   .characteristic = STATUS_ERROR,\
-  .loc = __HERE__,\
+  .loc = e.loc,\
   .prev = e.prev\
 })
 
@@ -71,7 +104,7 @@
   .value = p.value,\
   .description = e.description,\
   .characteristic = p.characteristic,\
-  .loc = __HERE__,\
+  .loc = p.loc,\
   .prev = (Status *)&p\
 })
 
@@ -80,7 +113,7 @@
   .value = v,\
   .description = e.description,\
   .characteristic = e.characteristic,\
-  .loc = __HERE__,\
+  .loc = e.loc,\
   .prev = (Status *)e.prev\
 })
 
@@ -93,13 +126,24 @@
   .prev = (Status *)e.prev\
 })
 
-/* Create a report in place with $e for base and $c for initiator literal. */
-# define stamp(e, c)  ((Report) {\
-  .status = e,\
-  .initiator = c,\
+// Reannotate for e.
+# define annot(e, c)  ((Status) {\
+  .identity = e.identity,\
+  .value = e.value,\
+  .description = c,\
+  .characteristic = e.characteristic,\
+  .loc = e.loc,\
+  .prev = (Status *)e.prev\
+})
+
+/* Create a report on the fly. */
+# define stamp(e, ini)  ((Report) {\
+  .content = e,\
+  .initiator = ini,\
   .time = time(NULL),\
-  .priority = REPORT_SENDING_PRIORITY_NORMAL,\
-  .taskprint_status = REPORT_SENDING_TASK_STATUS_PENDING\
+  .level = REPORT_SENDING_PRIORITY_NORMAL,\
+  .status = REPORT_SENDING_TASK_STATUS_PENDING,\
+  .dst = stdout\
 })
 
 # define cat(s)  {\
@@ -109,45 +153,6 @@
   CatlogSender_Create(&sender, &msg, stderr);\
   CatlogSender_Send(&sender);\
 }
-
-// /**
-//  * @brief Forcibly return desired value $v once $s is not $k.
-//  * @return $v once state for $s is false.
-//  * @note "force" stands for "Forcible value"
-//  * @note 's' stands for "Statement"
-//  * @note 'k' stands for "Key Value", the value that is targeted to detect.
-//  * @note 'v' stands for "Desire Value", the value that desires.
-//  */
-// # define force(s, k, v)  solve((s) != (k), v)
-
-// # define sforce(s, k, v)  solve((!Status_Equal(s, k)), v)
-
-// # define print_status(s)  {\
-//   Status _ = s;\
-//   char buff[LITERALISATION_LENGTH_MAXIMUM];\
-//   notok(Status_Literalise(&_, buff), {\
-//     (void)printf("Failed to literalise a status\n");\
-//   });\
-//   (void)printf("%s\n", buff);\
-// }
-
-// # define print_status(s)  {\
-//   char buff[LITERALISATION_LENGTH_MAXIMUM];\
-//   (void)Status_Literalise(&s, buff);\
-//   (void)fprintf(stderr, "%s\n", buff);\
-// }
-
-// # define print_statusdump(s)  {\
-//   Status _ = s;\
-//   const int dump_len = StatusUtils_Depth(&_);\
-//   Status dump[dump_len];\
-//   StatusUtils_Dump(&_, dump, 0);\
-//   for (register int i = 0; i < dump_len; i++) {\
-//     /* TODO(william): Replace following line with coloured-term-output function. */\
-//     (void)printf("\e[1m[%d/%d]\e[0m\n", i, dump_len - 1);\
-//     print_status(dump[i]);\
-//   }\
-// }
 
 # define strnil(s)  (!s ? ("(null)") : s)
 
@@ -193,7 +198,6 @@ typedef bool _Bit;
 
 # define LITERALISATION_LENGTH_MAXIMUM  0xFFFFL
 
-
 /* Only effect (probably) when formal Attribute is defined. 
  * __ATTRIBUTABLE indicates this field is used for further process by Attribute.
  * Or, to put this way, this field has attributions not used so far, but
@@ -203,4 +207,4 @@ typedef bool _Bit;
 # define __ATTRIBUTABLE__
 # define attr(a)
 
-#endif /* NO COMPOUND_COMMON_h */
+#endif /* COMPOUND_COMMON_H */

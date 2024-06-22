@@ -2,7 +2,7 @@
 
 Status Var_Create(Var *inst, size_t size)
 {
-  fails(inst, apply(UnavailableInstance));
+  nonull(inst, apply(UnavailableInstance));
   state(inst->alive, apply(InstanceStillAlive));
   state(!size,
     apply(normal(NormalStatus, "Exited with given parameter size as ZERO.")));
@@ -17,9 +17,9 @@ Status Var_Create(Var *inst, size_t size)
 // Status Var_Create(Var *inst, void *addr, size_t size, char *identity)
 // {
 //   /* Skip when inst is unavailable. */
-//   fails(inst, apply(UnavailableInstance));
+//   nonull(inst, apply(UnavailableInstance));
 //   /* Skip when identity is unavailable. */
-//   fails(identity, NullPointerAccounted);
+//   nonull(identity, NullPointerAccounted);
 //   /* Skip when identity does not pass the examine. */
 //   state(!VarUtils_IsIdentityLegal(identity), IllegalVarIdentity);
     
@@ -33,9 +33,9 @@ Status Var_Create(Var *inst, size_t size)
 Status Var_CopyOf(Var *inst, Var *other)
 {
   /* Skip when inst or other is unavailable. */
-  fails(inst, apply(UnavailableInstance));
+  nonull(inst, apply(UnavailableInstance));
   state(inst->alive, apply(InstanceStillAlive));
-  fails(other, apply(InvalidParameter));
+  nonull(other, apply(InvalidParameter));
   
   /* Copy members from other.  Only has to apply size, no addr is needed. */
   state(!((inst->addr = malloc(other->size))), apply(InsufficientMemory));

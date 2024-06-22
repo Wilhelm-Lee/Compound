@@ -2,7 +2,7 @@
 
 Status Memory_Create(Memory *inst, size_t size)
 {
-  fails(inst, apply(UnavailableInstance));
+  nonull(inst, apply(UnavailableInstance));
   
   *inst = (Memory) {
     .addr = NULL,
@@ -16,7 +16,7 @@ Status Memory_Create(Memory *inst, size_t size)
 
 Status Memory_Allocate(Memory *inst)
 {
-  fails(inst, apply(UnavailableInstance));
+  nonull(inst, apply(UnavailableInstance));
   state(inst->alive, apply(InstanceStillAlive));
   
   /* When failed on allocating. */
@@ -28,7 +28,7 @@ Status Memory_Allocate(Memory *inst)
 
 Status Memory_Reallocate(Memory *inst, size_t size)
 {
-  fails(inst, apply(UnavailableBuffer));
+  nonull(inst, apply(UnavailableBuffer));
   state(!inst->alive, apply(InstanceNotAlive));
   
   /* When failed on reallocating. */
@@ -40,7 +40,7 @@ Status Memory_Reallocate(Memory *inst, size_t size)
 
 Status Memory_Release(Memory *inst)
 {
-  fails(inst, apply(UnavailableInstance));
+  nonull(inst, apply(UnavailableInstance));
   state(!inst->alive,
     apply(error(InstanceNotAlive, "Cannot release a non-alive instance.")));
 
@@ -52,7 +52,7 @@ Status Memory_Release(Memory *inst)
 
 Status Memory_Delete(Memory *inst)
 {
-  fails(inst, apply(UnavailableInstance));
+  nonull(inst, apply(UnavailableInstance));
   state(inst->alive,
     apply(
       error(InstanceStillAlive, "Cannot deinitialise a instance still alive.")));

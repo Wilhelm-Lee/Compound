@@ -3,8 +3,8 @@
 
 # include <Compound/name.h>
 
-typedef struct _Attribute{
-  int serialNo;
+typedef struct _Attribute {
+  Name identity;  // Numeral accumulative, not literal descriptive.
   int (*exec)(void *);
   struct _Attribute *prev;
 } attr(Executive) Attribute;

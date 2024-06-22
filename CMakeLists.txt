@@ -2,7 +2,9 @@ cmake_minimum_required (VERSION 3.5)
 
 project (Compound)
 
-add_compile_options(-g -std=c99 -Wall -Wextra -Wformat)
+set(CMAKE_C_COMPILER  gcc)
+
+add_compile_options(-g -std=c99 -Wall -Wextra -D__DEBUG__)
 
 set(SHARED_SOURCE
     MemMan/src/memman.c

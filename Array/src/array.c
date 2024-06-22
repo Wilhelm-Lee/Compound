@@ -4,7 +4,7 @@
 Status Array_Create(Array *inst, int len, size_t size)
 {
   /* Skip unavailable inst and invalid param. */
-  fails(inst, apply(UnavailableInstance));
+  nonull(inst, apply(UnavailableInstance));
   state((len < 0), apply(InvalidArrayLength));
   solve((!len), { inst->len = 0; inst->members = NULL; return apply(NormalStatus); })
   
@@ -49,8 +49,8 @@ Status Array_Create(Array *inst, int len, size_t size)
 Status Array_CopyOf(Array *inst, Array *other)
 {
   // /* Skip unavailable inst and invalid param. */
-  // fails(inst, apply(UnavailableInstance));
-  // fails(other, error(InvalidParameter, "Given other was unavailable."));
+  // nonull(inst, apply(UnavailableInstance));
+  // nonull(other, error(InvalidParameter, "Given other was unavailable."));
   
   // /* Assign value for len. */
   // inst->len = other->len;
@@ -86,7 +86,7 @@ Status Array_CopyOf(Array *inst, Array *other)
 Status Array_Delete(Array *inst)
 {
   /* Skip unavailable inst and invalid param. */
-  fails(inst, apply(UnavailableInstance));
+  nonull(inst, apply(UnavailableInstance));
   solve((inst->members == NULL), return apply(NormalStatus));
   
   inst->len = 0;
@@ -99,8 +99,8 @@ Status Array_Delete(Array *inst)
 Status Array_GetIdx(Array *inst, Var *store, int index)
 {
   /* Skip unavailable inst and invalid param. */
-  fails(inst, apply(UnavailableInstance));
-  fails(store,
+  nonull(inst, apply(UnavailableInstance));
+  nonull(store,
     apply(error(InvalidParameter, "Given reference to store was unavailable.")));
   state((index < 0 || index >= inst->len), apply(ArrayIndexOutOfBound));
   
@@ -112,8 +112,8 @@ Status Array_GetIdx(Array *inst, Var *store, int index)
 Status Array_SetIdx(Array *inst, Var *source, int index)
 {
   /* Skip unavailable inst and invalid param. */
-  fails(inst, apply(UnavailableInstance));
-  fails(source,
+  nonull(inst, apply(UnavailableInstance));
+  nonull(source,
     apply(
       error(InvalidParameter, "Given reference to source was unavailable.")));
   state((index < 0 || index >= inst->len), apply(ArrayIndexOutOfBound));
@@ -142,8 +142,8 @@ bool Array_Equals(Array *a, Array *b)
 
 Status ArrayUtils_Fill(Array *inst, Var *elem, int off, int len)
 {
-  fails(inst, apply(UnavailableInstance));
-  fails(elem,
+  nonull(inst, apply(UnavailableInstance));
+  nonull(elem,
     apply(error(InvalidParameter, "Given reference to elem was unavailable.")));
   state((off + len > inst->len) || (off < 0) || (len < 0),
     apply(ArrayIndexOutOfBound));

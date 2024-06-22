@@ -19,6 +19,8 @@ int Utils_CalcDigits(long long int n);
 
 int Utils_LiteraliseInteger(long long int n, char *buff);
 
-int Utils_DateTimeLiteralise(time_t t, char *buff);
+// int Utils_DateTimeLiteralise(time_t t, char *buff);
+int Utils_DateTimeLiteralise(time_t timer, char *buff,
+  const char *__restrict format);
 
 #endif  /* COMPOUND_UTILS_H */

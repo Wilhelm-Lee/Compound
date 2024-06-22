@@ -10,35 +10,35 @@ Status String_Create(String *inst, int len)
 
 Status String_CopyOf(String *inst, String *other)
 {
-  fails(inst, apply(UnavailableInstance));
+  nonull(inst, apply(UnavailableInstance));
   
   return apply(NormalStatus);
 }
 
 Status String_Delete(String *inst)
 {
-  fails(inst, apply(UnavailableInstance));
+  nonull(inst, apply(UnavailableInstance));
   
   return apply(NormalStatus);
 }
 
 Status String_GetAt(String *inst, Char *store, int index)
 {
-  fails(inst, apply(UnavailableInstance));
+  nonull(inst, apply(UnavailableInstance));
   
   return apply(NormalStatus);
 }
 
 Status String_SetAt(String *inst, Char *source, int index)
 {
-  fails(inst, apply(UnavailableInstance));
+  nonull(inst, apply(UnavailableInstance));
   
   return apply(NormalStatus);
 }
 
 Status String_Literalise(String *inst, String *store)
 {
-  fails(inst, apply(UnavailableInstance));
+  nonull(inst, apply(UnavailableInstance));
   
   return apply(NormalStatus);
 }

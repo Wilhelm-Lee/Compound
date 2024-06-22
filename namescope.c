@@ -2,7 +2,7 @@
 
 Status NameScope_Create(NameScope *inst)
 {
-  fails(inst, apply(UnavailableInstance));
+  nonull(inst, apply(UnavailableInstance));
   
   /* Create instances for members from inst. */
   state(StatusUtils_IsOkay(NameScope_EmptyName(&inst->latest)),
@@ -17,8 +17,8 @@ Status NameScope_Create(NameScope *inst)
 
 Status NameScope_CopyOf(NameScope *inst, NameScope *other)
 {
-  fails(inst, apply(UnavailableInstance));
-  fails(other, apply(UnavailableParameter));
+  nonull(inst, apply(UnavailableInstance));
+  nonull(other, apply(UnavailableParameter));
   
   /* Copy and assign. */
   other->latest = inst->latest;

@@ -2,30 +2,18 @@
 
 Status Location_Literalise(Location *inst, char *buff)
 {
-  fails(inst, apply(UnavailableInstance));
-  fails(buff, apply(UnavailableBuffer));
+  nonull(inst, apply(UnavailableInstance));
+  nonull(buff, apply(UnavailableBuffer));
   
   /* Literalise line. */
   char line_buff[LITERALISATION_LENGTH_MAXIMUM];
   Utils_LiteraliseInteger(inst->line, line_buff);
-  
-  /* Concatenate every buff. */
-  const long total_len = strlen(strnil(inst->file)) + strlen(strnil(line_buff))
-                         + strlen(strnil(inst->func))
-                         + LOCATION_LITERALISE_FORMAT_LENGTH;
 
-  state(total_len > LITERALISATION_LENGTH_MAXIMUM,
-    apply(MaximumLiteralisationLengthExceeded));
-  
-  /* Copy and assign. */
-  // return value(UnknownStatus,
-  //              !sprintf(buff, LOCATION_LITERALISE_FORMAT,
-  //                       inst->file, inst->line, inst->func));
-  const int written =
-    sprintf(buff, LOCATION_LITERALISE_FORMAT,inst->file,inst->line,inst->func);
-
-  // written in "value" is absolutely ZERO.
-  state(!written, apply(value(UnknownStatus, written)));
+  where(
+    !snprintf(buff, LITERALISATION_LENGTH_MAXIMUM,
+              LOCATION_LITERALISE_FORMAT,inst->file,inst->line,inst->func),
+    return apply(value(TraditionalFunctionReturn, _));
+  );
   
   return apply(NormalStatus);
 }
@@ -56,8 +44,8 @@ bool Status_Equal(Status *stat1, Status *stat2)
 Status Status_Literalise(Status *inst, char *buff)
 {
   /* Skip unavailable instance and invalid parameter. */
-  fails(inst, apply(UnavailableInstance));
-  fails(buff, apply(UnavailableBuffer));
+  nonull(inst, apply(UnavailableInstance));
+  nonull(buff, apply(UnavailableBuffer));
 
   /* Literalise loc. */
   char loc_buff[LITERALISATION_LENGTH_MAXIMUM];
@@ -80,13 +68,28 @@ Status Status_Literalise(Status *inst, char *buff)
   }
 
   /* Concatenate every buffer. */
-  where(sprintf(buff, fmt, inst->identity, inst->description,
-                (!inst->prev
-                  ? "(null)"
-                  : (inst->prev->identity)),
-                inst->value, inst->characteristic, loc_buff), {
+  where(
+    snprintf(buff, LITERALISATION_LENGTH_MAXIMUM, fmt, inst->identity,
+             inst->description,
+             (!inst->prev ? "(null)" : (inst->prev->identity)),
+             inst->value, inst->characteristic, loc_buff), {
     return apply(value(TraditionalFunctionReturn, _));
-  })
+  });
+}
+
+Status Status_LiteraliseForReport(Status *inst, char *buff)
+{
+  /* Skip unavailable instance and invalid parameter. */
+  nonull(inst, apply(UnavailableInstance));
+  nonull(buff, apply(UnavailableBuffer));
+
+  where(
+    snprintf(buff, LITERALISATION_LENGTH_MAXIMUM, REPORT_LITERALISE_FORMAT_DETAIL,
+             strnil(inst->identity), strnil(inst->prev->identity),
+             inst->value, inst->characteristic, inst->loc.file, inst->loc.line,
+             inst->loc.func), {
+    return apply(value(TraditionalFunctionReturn, _));
+  });
 }
 
 bool StatusUtils_HasPrev(Status stat)
@@ -111,7 +114,7 @@ void StatusUtils_Dump(Status *inst, Status *store, int idx)
 
   store[idx] = *inst;
   
-  StatusUtils_Dump(inst->prev, store, ++idx);
+  StatusUtils_Dump(inst->prev, store, --idx);
 }
 
 int StatusUtils_Depth(Status *stat)
@@ -123,9 +126,11 @@ int StatusUtils_Depth(Status *stat)
   register int cnt;
   for (cnt = 0; (!StatusUtils_IsRecursive(*p)
                  && StatusUtils_HasPrev(*p)); cnt++) {
+    (void)printf("Depth: %d\n", cnt);
     p = p->prev;
   }
 
+  (void)printf("Depth returns: %d\n", cnt);
   return cnt;
 }
 
@@ -133,35 +138,35 @@ Status Report_Create(Report *inst, Status *stat, FILE *dest, char *initiator,
                      int priority)
 {
   /* Skip unavailable parameters. */
-  fails(inst, apply(UnavailableInstance));
-  fails(stat, apply(error(InvalidParameter, "Given stat was null.")));
-  fails(initiator, apply(error(InvalidParameter, "Given initiator was null.")));
+  nonull(inst, apply(UnavailableInstance));
+  nonull(stat, apply(error(InvalidParameter, "Given stat was null.")));
+  nonull(initiator, apply(error(InvalidParameter, "Given initiator was null.")));
   state(priority < 0, apply(error(InvalidParameter, "Given priority was negative.")));
 
   /* Copy and assign. */
-  inst->status = *stat;
+  inst->content = *stat;
   inst->initiator = calloc(strlen(initiator), sizeof(char));
   (void)strcpy(inst->initiator, initiator);
   inst->time = time(NULL);
-  inst->priority = priority;
-  inst->taskprint_status = REPORT_SENDING_TASK_STATUS_PENDING;
-  inst->dest = (dest == NULL ? stdout : dest);
+  inst->level = priority;
+  inst->status = REPORT_SENDING_TASK_STATUS_PENDING;
+  inst->dst = (dest == NULL ? stdout : dest);
 
   return apply(NormalStatus);
 }
 
 Status Report_CopyOf(Report *inst, Report *other)
 {
-  fails(inst, apply(UnavailableInstance));
-  fails(other, apply(error(InvalidParameter, "Given report is unavailable.")));
+  nonull(inst, apply(UnavailableInstance));
+  nonull(other, apply(error(InvalidParameter, "Given report is unavailable.")));
 
   // Status status;
   // char *initiator;
   // time_t time;
-  // ReportSendingPriority priority;
-  // ReportSendingTaskStatus taskprint_status;
+  // ReportLevel priority;
+  // ReportTaskStatus taskprint_status;
   // FILE *dest;
-  inst->status = other->status;
+  inst->content = other->content;
 
   return apply(NormalStatus);
 }
@@ -172,94 +177,98 @@ void Report_Delete(Report *inst)
 
   free(inst->initiator);
   inst->initiator = NULL;
-  inst->dest = NULL;
-  inst->priority = 0;
-  inst->status = (Status){};
-  inst->taskprint_status = REPORT_SENDING_TASK_STATUS_NOTFOUND;
+  inst->dst = NULL;
+  inst->level = 0;
+  inst->content = (Status){};
+  inst->status = REPORT_SENDING_TASK_STATUS_NOTFOUND;
   inst->time = 0;
   inst = NULL;
 }
 
+/*
+  Status status;
+  char *initiator;
+  time_t time;
+  ReportLevel priority;
+  ReportTaskStatus taskprint_status;
+  FILE *dest;
+*/
 Status Report_Literalise(Report *inst, char *buff)
 {
-  fails(inst, apply(UnavailableInstance));
-  fails(buff, apply(UnavailableBuffer));
-  // state(strlen(buff) != LITERALISATION_LENGTH_MAXIMUM,
-  //       InvalidLiteralisingBuffer);
-  
+  nonull(inst, apply(UnavailableInstance));
+  nonull(buff, apply(UnavailableBuffer));
+
   /* Report literalisation. */
-  int idx = 0;
   char report_literalising[LITERALISATION_LENGTH_MAXIMUM];
-  
+
   /** Status literalisation. **/
   char status_literalising[LITERALISATION_LENGTH_MAXIMUM];
-  (void)Status_Literalise(&inst->status, status_literalising);
-  idx += strlen(status_literalising);
-  /** fin **/
-  
-  /** Initiator literalisation. **/
-  idx += strlen(inst->initiator);
-  /** fin **/
-  
-  /** Time literalisation. **/
-  char time_literalising[LITERALISATION_LENGTH_MAXIMUM];
-  idx += Utils_LiteraliseInteger(inst->time, time_literalising);
-  /** fin **/
-  
-  /** Priority literalisation. **/
-  char priority_literalising[LITERALISATION_LENGTH_MAXIMUM];
-  idx += Utils_LiteraliseInteger(inst->priority, priority_literalising);
-  /** fin **/
-  
-  /** Taskprint_status literalisation. **/
-  char taskprint_status_literalising[LITERALISATION_LENGTH_MAXIMUM];
-  idx += Utils_LiteraliseInteger(inst->taskprint_status, taskprint_status_literalising);
-  /** fin **/
-  
-  /** Dest literalisation. **/
-  char dest_literalising[LITERALISATION_LENGTH_MAXIMUM];
-  idx += Utils_LiteraliseInteger((long long int)inst->dest, dest_literalising);
-  /** fin **/
-  
-  if (idx >= LITERALISATION_LENGTH_MAXIMUM) {
-    buff = NULL;
-    return MaximumLiteralisationLengthExceeded;
-  }
 
-  strcpy(report_literalising, status_literalising);
-  strcpy(report_literalising, time_literalising);
-  strcpy(report_literalising, priority_literalising);
-  strcpy(report_literalising, taskprint_status_literalising);
-  strcpy(report_literalising, dest_literalising);
+  /* Fault detection on status literalisation. */
+  // settle(Status_LiteraliseForReport(&inst->status, status_literalising),
+  //     _.characteristic == STATUS_UNKNOWN, {
+  //   nest(_, __, {
+  //     /* Skip when ZERO byte were written. (failed to write) */
+  //     state(!__.value, apply(
+  //       error(value(TraditionalFunctionReturn, __.value),
+  //         "ZERO byte were written.")
+  //     ));
+  //   })
+  // });
+
+  /* Traditional function returning handling. */
+  settle(Status_LiteraliseForReport(&inst->content, status_literalising),
+    !_.value, {
+      return apply(annot(RuntimeError, "Failed to literalise status for report."));
+  });
+
+  /* Write result to buffer. */
+  /* Write the report "header". */
+  /* Literalise current time and date. */
+  char datetime[LITERALISATION_LENGTH_MAXIMUM];
+  // settle(strftime(datetime, 64, "%c", localtime(&inst->time)), )
   
-  strcpy(buff, report_literalising);
-  /* fin */
+  // DATETIME [LEVEL] STATUS.IDENTITY (INITIATOR): STATUS.DESCRIPTION
+  state(!snprintf(report_literalising, LITERALISATION_LENGTH_MAXIMUM,
+      REPORT_LITERALISE_FORMAT_HEADER, datetime, inst->level,
+      inst->content.identity, inst->initiator, inst->content.description),
+    apply(annot(NoBytesWereWritten, "Failed to literalise date and time."))
+  );
+   
+ /* Write the report "detail". */
   
   return apply(NormalStatus);
 }
 
+/*
+  thrd_t thread;
+  Report report;
+  time_t elapsed;
+  ReportResult result;
+*/
 Status ReportSender_Create(ReportSender *inst, Report *report)
 {
-  fails(inst, apply(UnavailableInstance));
-  fails(report, error(UnavailableParameter, "Given report was unavailable."));
+  nonull(inst, apply(UnavailableInstance));
+  nonull(report, error(UnavailableParameter, "Given report was unavailable."));
 
   thrd_create(&inst->thread, &HANDLER, report);
-  notok(Report_CopyOf(inst->report, report),
-    return error(ErrorStatus, "Cannot copy to create new instance of report.");
-  )  // *inst->report = *report;
+  notok(Report_CopyOf(&inst->report, report),
+    return apply(annot(InstanceCreatingFailure,
+      "Cannot copy to create new instance of report."));
+  );
+  inst->report = *report;
   inst->elapsed = 0;
-  inst->result = REPORT_SENDER_RESULT_PENDING;
-  inst->successful = false;
+  inst->result = REPORT_RESULT_PENDING;
 
   return apply(NormalStatus);
 }
 
-Status ReportSender_Send(ReportSender *inst, ReportSendingTask task)
+Status ReportSender_Send(ReportSender *inst, ReportTask task)
 {
   // /* Skip when inst or task is unavailable. */
-  // fails(inst,
+  // nonull(inst,
   //       error(UnavailableInstance, "Report sender was given unavailable."));
-  // fails(task, InvalidReportTask);
+  // nonull(task, InvalidReportTask);
 
   // /* Assign for dest. */
   // const FILE *dest = (inst->report->dest == NULL ? stdout : inst->report->dest);
@@ -284,7 +293,7 @@ Status ReportSender_Send(ReportSender *inst, ReportSendingTask task)
 //           || (inst1->external_param == inst2->external_param);
 // }
 
-ReportSendingTaskID THROW(Report report, Location loc)
+ReportTaskID THROW(Report report, Location loc)
 {
   // // /* Create new a instance of ReportSender. */
   // // ReportSender sender;

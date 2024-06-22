@@ -63,46 +63,18 @@ typedef struct _Status {
   struct _Status *prev;
 } Status;
 
-# define DEFSTATUS(i, v, d, c, p)\
-  static const Status i = {\
-    .identity = nameof(i),\
-    .value = v,\
-    .description = d,\
-    .characteristic = c,\
-    .loc = __GLOBAL__,\
-    .prev = (Status *)p\
+# define DEFSTATUS(i, v, d, c, p)                          \
+  static const Status i = {                                \
+    .identity = nameof(i),                                 \
+    .value = v,                                            \
+    .description = d,                                      \
+    .characteristic = c,                                   \
+    .loc = __GLOBAL__,                                     \
+    .prev = (Status *)p                                    \
   }
 
-/*
-
-{value "description" characteristic prev}
-
-"%d \"%s\" %d %p"
-
-*/
-
-/* line, func, file */
-// # define LOCATION_LITERALISE_FORMAT  "at line %d, in %s, %s"
-
-/* file, line, func */
 # define LOCATION_LITERALISE_FORMAT  "at %s:%d, in function `%s\'"
-# define LOCATION_LITERALISE_FORMAT_LENGTH  20
 
-/* value, description, characteristic, prev */
-// # define STATUS_LITERALISE_FORMAT  "%d \"%s\" %d %p"
-/* identity, prev->identity, value, characteristic, description, <loc> */
-// # define STATUS_LITERALISE_FORMAT  "%s (prev: %s): $=%d @=%d\n\t\"%s\"\n\t%s"
-
-// MaximumLiteralisationLengthExceeded (prev: MaximumLengthExceeded): $=1 @=1
-
-/*
-MaximumLengthExceeded:  "Buffer was too long."
-  predecessor=<ArrayLengthError> value=(1) characteristic=[1]
-  at line 40, in Main, /home/william/Documents/Projects/Compound/test.c
-
-*/
-
-// identity, description, prev->identity, value, characteristic, <loc>
 # define STATUS_LITERALISE_FORMAT \
     "%s:  \"%s\"\n\tpredecessor=<%s> value=(%d) characteristic=[%d]\n\t%s\n"
 
@@ -116,7 +88,7 @@ typedef enum {
   REPORT_SENDING_PRIORITY_MINOR,
   REPORT_SENDING_PRIORITY_DEBUG,
   REPORT_SENDING_PRIORITY_NONE,  // Lowest level, greatest value.
-} ReportSendingPriority;
+} ReportLevel;
 
 typedef enum {
   REPORT_SENDING_TASK_STATUS_FINISHED = 0,
@@ -124,21 +96,20 @@ typedef enum {
   REPORT_SENDING_TASK_STATUS_PROCEEDING,
   REPORT_SENDING_TASK_STATUS_PAUSED,
   REPORT_SENDING_TASK_STATUS_NOTFOUND
-} ReportSendingTaskStatus;
+} ReportStatus;
 
 /* "Report" recollects essential informations, included but not limited to
    Status and others for making an report for debugging and such. */
 typedef struct {
-  Status status;
+  Status content;
   char *initiator;
   time_t time;
-  ReportSendingPriority priority;
-  ReportSendingTaskStatus taskprint_status;
-  FILE *dest;  // The destination where the report is sending to.
+  ReportLevel level;
+  ReportStatus status;
+  FILE *dst;  // The destination where the report is sending to.
 } Report;
 
 /*
-
 DATETIME [PRIORITY] STATUSNAME (ORIGINATOR): STATUS.DESCRIPTION
     at LOCATION.FILE:LOCATION.LINE, LOCATION.FUNC
     at LOCATION.FILE:LOCATION.LINE, LOCATION.FUNC
@@ -146,7 +117,7 @@ DATETIME [PRIORITY] STATUSNAME (ORIGINATOR): STATUS.DESCRIPTION
     at LOCATION.FILE:LOCATION.LINE, LOCATION.FUNC
 
 
-Fri 10 May 03:02:37 CST 2024 [EXCEPTIONAL] InvalidParameter (Nullity): Given buffer was unavailable.
+Fri 10 May 03:02:37 CST 2024 [URGENT] InvalidParameter (Nullity): Given buffer was unavailable.
     at /external/Documents/Projects/Compound/Status/src/status.c:104, Report_Literalise
     at /external/Documents/Projects/Compound/Status/src/status.c:114, ReportSender_Send
     at /external/Documents/Projects/Compound/Status/src/status.c:69, _throw
@@ -155,33 +126,29 @@ Fri 10 May 03:02:37 CST 2024 [EXCEPTIONAL] InvalidParameter (Nullity): Given buf
 
 */
 
-# define REPORT_LITERALISE_HEADER_FORMAT          "%s [%s] %s (%s): %s"
-# define REPORT_LITERALISE_CHAINS_FORMAT          "    at %s:%d, %s"
-# define REPORT_LITERALISE_CHAINS_EXCLAIM_FORMAT  "!!!!at %s:%d, %s"
+// DATETIME [LEVEL] STATUS.IDENTITY (INITIATOR): STATUS.DESCRIPTION
+# define REPORT_LITERALISE_FORMAT_HEADER  "%s [%d] %s (%s): %s\n\tat %s:%d, %s\n%s"
+
+// STATUS.IDENTITY, STATUS.PREV.IDENTITY, STATUS.VALUE, STATUS.CHARACTERISTIC,
+// FILE, LINE, FUNC
+# define REPORT_LITERALISE_FORMAT_DETAIL  "\t%s(%s, %d, %d)  at %s:%d, %s\n"
 
 typedef enum {
-  REPORT_SENDER_RESULT_FINISHED,
-  REPORT_SENDER_RESULT_PROGRESSING,
-  REPORT_SENDER_RESULT_PENDING
-} ReportSenderResult;
+  REPORT_RESULT_SUCCEEDED,
+  REPORT_RESULT_FAILED,
+  REPORT_RESULT_PROGRESSING,
+  REPORT_RESULT_PENDING,
+} ReportResult;
 
 typedef struct {
   thrd_t thread;
-  Report *report;  // The report for sending.
-  time_t elapsed;  // The individual elapsed time for each report. (Array)
-  ReportSenderResult result;
-  bool successful;
+  Report report;
+  time_t elapsed;
+  ReportResult result;
 } ReportSender;
 
-typedef int (*ReportSendingTask)(Report *rep);
-typedef int ReportSendingTaskID;
-
-typedef struct {
-  ReportSendingTask *tasks;  // Array Ref
-  int sendercount;
-  int finishedcount;
-  int *results;  // Array
-} ReportSendingManager;
+typedef int (*ReportTask)(Report *);
+typedef int ReportTaskID;
 
 // typedef thrd_start_t  ArgueStart;
 
@@ -218,6 +185,7 @@ typedef struct {
 Status Location_Literalise(Location *inst, char *buff);
 bool   Location_Equals(Location lc1, Location lc2);
 Status Status_Literalise(Status *inst, char *buff);
+Status Status_LiteraliseForReport(Status *inst, char *buff);
 bool   Status_Equal(Status *stat1, Status *stat2);
 void   StatusUtils_Dump(Status *inst, Status *store, int idx);
 bool   StatusUtils_HasPrev(Status inst);
@@ -232,16 +200,12 @@ Status Report_Literalise(Report *inst, char *buff);
 void   Report_Delete(Report *inst);
 bool   Report_Equals(Report repo1, Report repo2);
 
+// Status ReportSender_Create(ReportSender *inst, Report *report, thrd_start_t *handler);
 Status ReportSender_Create(ReportSender *inst, Report *report);
-Status ReportSender_Send(ReportSender *inst, ReportSendingTask task);
-// ReportSendingTaskStatus
-// ReportSender_GetStatus(ReportSender *inst);
+Status ReportSender_Send(ReportSender *inst, ReportTask task);
 
-ReportSendingTaskID
-ReportSenderManager_AppendTask(ReportSendingManager *inst,
-                                ReportSendingTask task);
-Status ReportSenderManager_RemoveTask(ReportSendingManager *inst,
-                                      ReportSendingTaskID taskid);
+// ReportTaskStatus
+// ReportSender_GetStatus(ReportSender *inst);
 
 // Status
 // arguestarter_create(ArgueStartParam *inst, void *external_param);
@@ -314,6 +278,10 @@ DEFSTATUS(IntegerOverFlow, 1,
 DEFSTATUS(RuntimeError, 1,
   "A runtime error occurred.",
   STATUS_ERROR, &ErrorStatus);
+
+DEFSTATUS(InstanceCreatingFailure, 1,
+  "Cannot create the instance.",
+  STATUS_ERROR, &RuntimeError);
 
 DEFSTATUS(ArrayLengthError, 1,
   "Given array length does not meet the requirement.",
@@ -403,72 +371,78 @@ DEFSTATUS(InvalidLiteralisingBuffer, 1,
   "Given buffer does not have a good integrity on its length.",
   STATUS_ERROR, &InvalidObject);
 
+DEFSTATUS(NoBytesWereRead, 1,
+  "Called function had returned ZERO indicating no bytes were read.",
+  STATUS_ERROR, &ReadWriteError);
+
+DEFSTATUS(NoBytesWereWritten, 1,
+  "Called function had returned ZERO indicating no bytes were written.",
+  STATUS_ERROR, &ReadWriteError);
+
+// DEFSTATUS(ProgrammeConstructionError, 1,
+//   "Failed on constructing programme at the entrance.",
+//   STATUS_ERROR, &RuntimeError);
+
 // ========================================================
 
 static inline Status PrintStatus(Status s)
 {
+  /* Literalise. */
   char buff[LITERALISATION_LENGTH_MAXIMUM];
-  (void)Status_Literalise(&s, buff);
   
+  /* Handle returning value. */
+  /* No bytes were written to buffer. */
+  unsure(Status_Literalise(&s, buff), !_.value, {
+    return apply(NoBytesWereWritten);
+  })
+
+  /* Output. */
   where(fprintf(stderr, "%s\n", buff), {
+    /* Pass on returning value. */
     return apply(value(TraditionalFunctionReturn, _));
   })
 }
 
 static inline void PrintStatusDump(Status s)
 {
-  Status stat = s;
-  const int dump_len = StatusUtils_Depth(&stat);
+  /* Create dump. */
+  Status store = s;
+  const int dump_len = StatusUtils_Depth(&store);
   Status dump[dump_len];
-  StatusUtils_Dump(&stat, dump, 0);
-  /* TODO(william): Replace following line with coloured-term-output function. */
-  (void)printf("\e[1m======== STATUS STACK DUMP: %s ========\e[0m\n",
-               stat.identity);
+  StatusUtils_Dump(&store, dump, dump_len);
+
+  /* Output by iterating. */
   for (register int i = 0; i < dump_len; i++) {
-    /* TODO(william): Replace following line with coloured-term-output function. */
-    (void)printf("\e[1m[%d/%d]\e[0m\n", (dump_len - i), dump_len);
-    seek(PrintStatus(dump[i]), {
-      solve(!_.value, {
-        (void)fprintf(stderr, "\e[38;5;9m!!!!!!!! PRINT DUMP FAILED !!!!!!!!"
-                              "\e[0m\n");
-        (void)PrintStatus(_);
-      })
-    })
+    seek(PrintStatus(dump[i]), {  // Get returning status.
+
+      /* Handle TraditionalFunctionReturn. */
+      nest(_, __, unsure(__, !__.value, {  // No bytes were written to buffer.
+        (void)fprintf(stderr, "Unable to literalise.\n");
+        return;
+      }));
+
+      // Handle abnormal status.
+      nest(_, __, notok(__, {
+        /* Output the description as explanation. */
+        (void)fprintf(stderr, "%s\n", __.description);
+        return;
+      }));
+    });
   }
 }
 
 // ========================================================
 
-/* Throw the report created with $e if $e is abnormal, commented with $c. */
-# define ensure(e, c)  {                                   \
-  Status stat = e;                                         \
-  solve(!(StatusUtils_IsOkay(stat)), {                     \
-    Report rep = stamp(error(stat, c), (char *)__func__);  \
-    (void)throw(rep);                                      \
-    return ReportThrown;                                   \
-  })                                                       \
-}
-
-/* Throw the report created with $s if $e is abnormal, commented with $c. */
-# define match(s, e, c)  {                                 \
-  Status stat = s;                                         \
-  solve(!(StatusUtils_IsOkay(e)), {                        \
-    Report rep = stamp(error(stat, c), (char *)__func__);  \
-    (void)throw(rep);                                      \
-    return ReportThrown;                                   \
-  })                                                       \
-}
-
 /* Add location parameter requirement in order to give proper information
  * before throwing the report out. */
-# define throw(report)  THROW(report, __HERE__)
+// # define throw(report)  THROW(report, __HERE__)
 
 /* Useless in C, only for human to see.
    Probably rewrite this in Classify. */
 # define throws(e)
 
-ReportSendingTaskID THROW(Report report, Location loc);
-Report CATCH(ReportSendingTaskID taskid);
+// ReportTaskID THROW(Report report, Location loc);
+// Report CATCH(ReportTaskID taskid, Status (*handler)());
 int HANDLER(void *report);
 
 #endif  /* COMPOUND_STATUS_H */
