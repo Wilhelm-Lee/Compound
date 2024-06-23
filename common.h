@@ -8,6 +8,8 @@
 # include <stdlib.h>
 # include <stdbool.h>
 
+# define EMPTY  {0}
+
 /* Get the literal. */
 # define nameof(obj)  #obj
 

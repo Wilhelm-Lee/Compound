@@ -6,11 +6,11 @@ Status Location_Literalise(Location *inst, char *buff)
   nonull(buff, apply(UnavailableBuffer));
   
   /* Literalise line. */
-  char line_buff[LITERALISATION_LENGTH_MAXIMUM];
+  char line_buff[LITERALISATION_LENGTH_MAXIMUM] = EMPTY;
   Utils_LiteraliseInteger(inst->line, line_buff);
 
   where(
-    !snprintf(buff, LITERALISATION_LENGTH_MAXIMUM,
+    snprintf(buff, LITERALISATION_LENGTH_MAXIMUM,
               LOCATION_LITERALISE_FORMAT,inst->file,inst->line,inst->func),
     return apply(value(TraditionalFunctionReturn, _));
   );
@@ -48,8 +48,10 @@ Status Status_Literalise(Status *inst, char *buff)
   nonull(buff, apply(UnavailableBuffer));
 
   /* Literalise loc. */
-  char loc_buff[LITERALISATION_LENGTH_MAXIMUM];
-  notok(Location_Literalise(&inst->loc, loc_buff), {
+  char loc_buff[LITERALISATION_LENGTH_MAXIMUM] = EMPTY;
+  (void)printf("%s\n", loc_buff);
+  unsure(Location_Literalise(&inst->loc, loc_buff), !_.value, {
+    (void)printf("failed on loc liter.\n");
     return apply(_);
   });
 
@@ -107,31 +109,61 @@ bool StatusUtils_IsRecursive(Status stat)
   return (stat.prev && stat.prev == &stat);
 }
 
-void StatusUtils_Dump(Status *inst, Status *store, int idx)
+void StatusUtils_Dump(Status *inst, Status *store)
 {
-  /* Skip when either stat or stat.prev is unavailable, or, idx is invalid. */
-  svoid((!inst || !store || idx < 0));
-
-  store[idx] = *inst;
+  /* Skip when store is unavailable, or, inst is unavailable,
+     recursive or does not have any predecessor. */
+  svoid(!inst || !store
+        || StatusUtils_IsRecursive(*inst) || !StatusUtils_HasPrev(*inst));
   
-  StatusUtils_Dump(inst->prev, store, --idx);
+  *store = *inst->prev;
 }
+
+// void StatusUtils_Dump(Status *inst, Status **store, int idx)
+// {
+//   /* Skip when having invalid inst, store or idx. */
+//   svoid(!inst || !store || idx < 0 || StatusUtils_IsRecursive(*inst));
+  
+//   // store[idx] = *inst;
+//   *store[idx] = (Status){
+//     .identity = inst->identity,
+//     .value = inst->value,
+//     .description = inst->description,
+//     .characteristic = inst->characteristic,
+//     .loc = inst->loc,
+//     .prev = inst->prev
+//   };
+ 
+//   (void)printf("idx: %d\n", idx);
+  
+//   StatusUtils_Dump(inst->prev, store, (idx - 1));
+// }
 
 int StatusUtils_Depth(Status *stat)
 {
   /* Skip unavailable stat. */
   state((!stat || !stat->prev), -1);
-  
-  Status *p = stat;  // Include this layer of Status.
-  register int cnt;
-  for (cnt = 0; (!StatusUtils_IsRecursive(*p)
-                 && StatusUtils_HasPrev(*p)); cnt++) {
-    (void)printf("Depth: %d\n", cnt);
-    p = p->prev;
+
+  /* Set up counter. */
+  int cnt = 1;
+  /* Set up current status indication representor. */
+  Status current = *stat;
+  /* Iterate to accumulate. */
+  while (current.prev) {
+    current = *current.prev;
+    cnt += 1;
   }
 
-  (void)printf("Depth returns: %d\n", cnt);
   return cnt;
+  
+  // Status *current = stat;  // Include this layer of Status.
+  // register int cnt;
+  // for (cnt = 0; (!StatusUtils_IsRecursive(*current)
+  //                && StatusUtils_HasPrev(*current)); cnt++) {
+  //   current = current->prev;
+  // }
+  
+  // return cnt;
 }
 
 Status Report_Create(Report *inst, Status *stat, FILE *dest, char *initiator,
@@ -199,10 +231,10 @@ Status Report_Literalise(Report *inst, char *buff)
   nonull(buff, apply(UnavailableBuffer));
 
   /* Report literalisation. */
-  char report_literalising[LITERALISATION_LENGTH_MAXIMUM];
+  char report_literalising[LITERALISATION_LENGTH_MAXIMUM] = EMPTY;
 
   /** Status literalisation. **/
-  char status_literalising[LITERALISATION_LENGTH_MAXIMUM];
+  char status_literalising[LITERALISATION_LENGTH_MAXIMUM] = EMPTY;
 
   /* Fault detection on status literalisation. */
   // settle(Status_LiteraliseForReport(&inst->status, status_literalising),

@@ -187,7 +187,8 @@ bool   Location_Equals(Location lc1, Location lc2);
 Status Status_Literalise(Status *inst, char *buff);
 Status Status_LiteraliseForReport(Status *inst, char *buff);
 bool   Status_Equal(Status *stat1, Status *stat2);
-void   StatusUtils_Dump(Status *inst, Status *store, int idx);
+// void   StatusUtils_Dump(Status *inst, Status **store, int idx);
+void   StatusUtils_Dump(Status *inst, Status *store);
 bool   StatusUtils_HasPrev(Status inst);
 bool   StatusUtils_IsOkay(Status inst);
 bool   StatusUtils_IsRecursive(Status inst);
@@ -406,28 +407,39 @@ static inline Status PrintStatus(Status s)
 static inline void PrintStatusDump(Status s)
 {
   /* Create dump. */
-  Status store = s;
-  const int dump_len = StatusUtils_Depth(&store);
+  const int dump_len = StatusUtils_Depth(&s);
   Status dump[dump_len];
-  StatusUtils_Dump(&store, dump, dump_len);
+  Status current = s;
+  dump[0] = current;  // Put self at leading.
+  for (register int i = 1; i < dump_len; i++) {
+    // StatusUtils_Dump will only access (storage) the prev.
+    // It does not include this status itself.
+    StatusUtils_Dump(&current, &dump[i]);
+    current = *current.prev;
+  }
 
   /* Output by iterating. */
   for (register int i = 0; i < dump_len; i++) {
-    seek(PrintStatus(dump[i]), {  // Get returning status.
+    
+    unsure(PrintStatus(dump[i]), !_.value, {
+      (void)fprintf(stderr, "Unable to literalise.\n");
+    })
+    
+    // seek(PrintStatus(dump[i]), {  // Get returning status.
 
-      /* Handle TraditionalFunctionReturn. */
-      nest(_, __, unsure(__, !__.value, {  // No bytes were written to buffer.
-        (void)fprintf(stderr, "Unable to literalise.\n");
-        return;
-      }));
+    //   /* Handle TraditionalFunctionReturn. */
+    //   nest(_, __, unsure(__, !__.value, {  // No bytes were written to buffer.
+    //     (void)fprintf(stderr, "Unable to literalise.\n");
+    //     return;
+    //   }));
 
-      // Handle abnormal status.
-      nest(_, __, notok(__, {
-        /* Output the description as explanation. */
-        (void)fprintf(stderr, "%s\n", __.description);
-        return;
-      }));
-    });
+    //   // Handle abnormal status.
+    //   nest(_, __, notok(__, {
+    //     /* Output the description as explanation. */
+    //     (void)fprintf(stderr, "%s\n", __.description);
+    //     return;
+    //   }));
+    // });
   }
 }
 
