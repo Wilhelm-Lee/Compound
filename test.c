@@ -17,11 +17,9 @@
  * <https://www.gnu.org/licenses/>.
  */
 
-#include "inc/arrays.h"
 #include "inc/common.h"
 #include "inc/memory.h"
 #include "inc/platform.h"
-#include "inc/stacks.h"
 #include "inc/status.h"
 #include "inc/string.h"
 #include "inc/types.h"
