@@ -73,23 +73,6 @@ Status String_Update(String *inst, const char *content)
   RETURN(NormalStatus);
 }
 
-Status String_Fallback(char **inst, const size_t maxlen, const String string)
-{
-  avail(inst);
-  state(!*inst, UnavailableCharString);
-  state(!maxlen, InvalidMaximumSize);
-  
-  for (register size_t i = 0; i < maxlen; i++) {
-    if (i >= length(string)) {
-      break;
-    }
-    
-    *inst[i] = getbyte(string, i);
-  }
-  
-  RETURN(NormalStatus);
-}
-
 Status String_Concat(String *inst, const String string);
 Status String_Compare(int *result, const String str1, const String str2);
 // Status String_Format(String *inst, const String format, ...)

@@ -1,3 +1,5 @@
+#!/bin/sh
+
 # 
 #  This file is part of Compound library.
 #  Copyright (C) 2024-TODAY  William Lee
@@ -17,8 +19,6 @@
 #  <https://www.gnu.org/licenses/>.
 #
 
-#!/bin/sh
-
 echo "Modify this script to suit you best."
 echo "e.g. '--compiler /usr/bin/tcc' can be changed to --compiler /usr/bin/gcc."
 echo "More information is available by typing './build.sh'"
@@ -28,4 +28,4 @@ mkdir -p out/bin/
 ./build.sh --sources test.c,src/status.c,src/memory.c,src/arrays.c,src/stacks.c,src/string.c\
            --compiler /usr/bin/tcc\
            --compiler-flags -std=c99,-Wall,-Wextra,-Wunsupported,-g\
-           --install --complain --dumpenv && echo "Test entry is now available at 'out/bin/compound'."
+           --install --complain --dumpenv && echo "Test entry is now available in 'out/bin/compound'."

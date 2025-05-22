@@ -39,7 +39,6 @@ Status String_CopyOf(String *inst, const String other);
 Status String_Delete(String *inst);
 
 Status String_Update(String *inst, const char *content);
-Status String_Fallback(char **inst, const size_t maxlen, const String string);
 Status String_Concat(String *inst, const String string);
 Status String_Compare(int *result, const String str1, const String str2);
 Status String_Format(String *inst, const String format, ...);

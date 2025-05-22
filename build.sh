@@ -30,8 +30,9 @@ PROJECT="$(basename $PWD)"
 HEADER_SYSTEMINFO="[ $(uname -o) ($(uname -r)) |"
 HEADER_PROJECTNAME="$PROJECT"
 HEADER_DATETIME="| $(date) ]"
-OUTPUT="/tmp/$PROJECT""_OUTPUT"
-ERROR="/tmp/$PROJECT""_ERROR"
+SCRIPT_DIRECTORY="build.sh.d"
+OUTPUT="$SCRIPT_DIRECTORY/$PROJECT""_OUTPUT"
+ERROR="$SCRIPT_DIRECTORY/$PROJECT""_ERROR"
 NORMALISED_PROJECT_NAME="$(echo "$PROJECT" | awk '{ print tolower($0); }' | sed 's/ /_/g')"
 SHAREDOBJECT="lib$NORMALISED_PROJECT_NAME.so"
 EXECUTABLE="$NORMALISED_PROJECT_NAME"
@@ -209,6 +210,7 @@ DisplayHeader()
   PrintFor $(($(echo "$HEADER_SYSTEMINFO" | Length) + 2)) ' '
   PrintFor $(echo "$HEADER_PROJECTNAME" | Length) '`'
   PrintFor $(($(echo "$HEADER_DATETIME" | Length) + 2)) ' '
+  echo
 }
 
 DisplayFooter()
@@ -471,8 +473,6 @@ if [ $# -eq 0 ]; then
   PrintUsage
 fi
 
-ResetFileBuffer
-DisplayHeader
 while [ $# -gt 0 ]; do
   case "$1" in
     --sources)
@@ -546,12 +546,19 @@ while [ $# -gt 0 ]; do
       dumpenv=true ;;
 
     *)
-      echo "Invalid flag $1"
+      echo "Invalid flag '$1'"
       PrintUsage ;;
   esac
   
   shift
 done
+
+mkdir -p "$SCRIPT_DIRECTORY"
+mkdir -p "$OUTDIR"
+mkdir -p "$BINDIR"
+
+ResetFileBuffer
+DisplayHeader
 
 $dumpenv && DumpEnv
 CheckEnv
