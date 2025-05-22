@@ -20,9 +20,9 @@
 #ifndef COMPOUND_CLASS_CONSTRUCTOR_H
 # define COMPOUND_CLASS_CONSTRUCTOR_H
 
-# include <Compound/access_permission_qualifier.h>
-# include <Compound/lifespan_qualifier.h>
-# include <Compound/status.h>
+# include "Compound/access_permission_qualifier.h"
+# include "Compound/lifespan_qualifier.h"
+# include "Compound/status.h"
 
 # define CLASS_CONSTRUCTOR_IDENTITY_LENGTH_MAXIMUM  64
 

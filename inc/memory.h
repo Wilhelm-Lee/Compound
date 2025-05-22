@@ -20,8 +20,8 @@
 #ifndef COMPOUND_MEMORY_H
 # define COMPOUND_MEMORY_H
 
-# include <Compound/status.h>
-# include <Compound/literalisation.h>
+# include "Compound/status.h"
+# include "Compound/literalisation.h"
 
 //                                       data size signature
 # define MEMORY_LITERALISATION_FORMAT  "@%p+%lu<%s>"

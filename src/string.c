@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  */
 
-#include <Compound/string.h>
+#include "Compound/string.h"
 
 Status String_Create(String *inst, const size_t length, const size_t width)
 {

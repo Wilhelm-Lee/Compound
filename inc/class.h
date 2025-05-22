@@ -20,19 +20,19 @@
 #ifndef COMPOUND_CLASS_H
 # define COMPOUND_CLASS_H
 
-# include <Compound/access_permission_qualifier.h>
-# include <Compound/array.h>
-# include <Compound/class_constructor.h>
-# include <Compound/class_constructor_register.h>
-# include <Compound/class_field.h>
-# include <Compound/class_field_register.h>
-# include <Compound/class_method.h>
-# include <Compound/class_method_register.h>
-# include <Compound/common.h>
-# include <Compound/lifespan_qualifier.h>
-# include <Compound/literalisation.h>
-# include <Compound/stack.h>
-# include <Compound/status.h>
+# include "Compound/access_permission_qualifier.h"
+# include "Compound/array.h"
+# include "Compound/class_constructor.h"
+# include "Compound/class_constructor_register.h"
+# include "Compound/class_field.h"
+# include "Compound/class_field_register.h"
+# include "Compound/class_method.h"
+# include "Compound/class_method_register.h"
+# include "Compound/common.h"
+# include "Compound/lifespan_qualifier.h"
+# include "Compound/literalisation.h"
+# include "Compound/stack.h"
+# include "Compound/status.h"
 
 /* Inline current class in discussion (stack top). */
 # define this  (call(Stack, Class, GetTop) with (GlobalClassStack))

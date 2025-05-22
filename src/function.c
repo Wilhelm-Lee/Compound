@@ -17,4 +17,4 @@
  * <https://www.gnu.org/licenses/>.
  */
 
-#include <Compound/function.h>
+#include "Compound/function.h"

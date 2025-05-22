@@ -22,8 +22,8 @@
 
 # include <stdio.h>
 
-# include <Compound/stack.h>
-# include <Compound/status.h>
+# include "Compound/stack.h"
+# include "Compound/status.h"
 
 typedef FILE *Output;
 

@@ -22,10 +22,10 @@
 
 # include <stdarg.h>
 
-# include <Compound/access_permission_qualifier.h>
-# include <Compound/lifespan_qualifier.h>
-# include <Compound/status.h>
-# include <Compound/signature.h>
+# include "Compound/access_permission_qualifier.h"
+# include "Compound/lifespan_qualifier.h"
+# include "Compound/status.h"
+# include "Compound/signature.h"
 
 //  rtn id signature
 # define CLASS_METHOD_DECLARATION_LITERALISE_FORMAT        \

@@ -20,10 +20,10 @@
 #ifndef COMPOUND_STRING_H
 # define COMPOUND_STRING_H
 
-# include <Compound/array.h>
-# include <Compound/arrays.h>
-# include <Compound/common.h>
-# include <Compound/status.h>
+# include "Compound/array.h"
+# include "Compound/arrays.h"
+# include "Compound/common.h"
+# include "Compound/status.h"
 
 # define STRING_LENGTH_MAXIMUM  INT32_MAX
 

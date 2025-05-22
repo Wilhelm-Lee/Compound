@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  */
 
-#include <Compound/catlog.h>
+#include "Compound/catlog.h"
 
 Status CatlogMessage_Create(CatlogMessage *inst, const CatlogLevel level,
                             const char *initiator, const char *fmt, ...)

@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  */
 
-#include <Compound/memory.h>
+#include "Compound/memory.h"
 
 Status _Allocate(void **inst, const size_t nmemb, const size_t size)
 {
