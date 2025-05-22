@@ -490,15 +490,23 @@ while [ $# -gt 0 ]; do
       install=true ;;
 
     --preinstall-src)
+      [ $# -eq 1 ] && InsufficientArgument "$1"
+      shift
       preinstall_src="$1" ;;
       
     --preinstall-dst)
+      [ $# -eq 1 ] && InsufficientArgument "$1"
+      shift
       preinstall_dst="$1" ;;
     
     --postinstall-src)
+      [ $# -eq 1 ] && InsufficientArgument "$1"
+      shift
       postinstall_src="$1" ;;
       
     --postinstall-dst)
+      [ $# -eq 1 ] && InsufficientArgument "$1"
+      shift
       postinstall_dst="$1" ;;
 
     --complain)
@@ -521,6 +529,7 @@ while [ $# -gt 0 ]; do
       dumpenv=true ;;
 
     *)
+      echo "Invalid flag $1"
       PrintUsage ;;
   esac
   
