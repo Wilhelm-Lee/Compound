@@ -30,5 +30,6 @@ gen_type_attr.c
 build/
 .cache/
 *.drawio
-build.sh
-
+*.md
+incompleted_struct
+out/

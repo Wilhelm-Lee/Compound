@@ -1,88 +1,31 @@
-# COMPOUND
+# Compound
 
-Compound makes C more secure, and handy.  
+Compound is a library follows C99 and supports OOP built defaultly
+with [Tiny C Compiler](https://bellard.org/tcc/) by providing
+various utilities and data structures with corresponding
+manipulations available.  
 
-Compound is also recently getting developed with its Object-Oriented Programming
-functionalities.  
+Enjoy.  :)
 
-By the time, we've finished several things that worth mentioning.  
+## Building
 
-Such as:  
-  - `Catlog`  
-     A logging system with ease to use.  
+> Warning  
+> The script `build` will install header files and library output
+> into your system.  Make sure you have read the instruction from
+> `build.sh`, with or without modifying for your own configuration
+> before running.
+>  
+> Project contributors WILL NOT take any responsibilities for any
+> possible damage for abusing our scripts without following given
+> guidances.
+>  
+> YOU HAVE BEEN WARNED.
 
-  - `MemoryStack`  
-     Of which you can use it to release heap addresses automatically.  
+The script `build` is a convenient short hand for building project
+with default configurations.  
 
-  - `Status`  
-     Functions which returns `Status` can be gracefully handled and examined for
-     potential errors.  
+However, if you would like have more control over compiling this project, you
+can choose to use `build.sh`.  There are also many built-in guidances available
+in that script to look up.
 
-Comming up, we have OOP support, as mentioned before:  
-  - `Class`  
-     You may create `Class` in C.  
-
-About the `Class`, when you are creating one, you may write like this:  
-```C
-int main(void)
-{
-  class(PUBLIC, DYNAMIC, "BooleanSwitcher", {
-    field(PRIVATE, DYNAMIC, TBool, "state");
-
-    constructor(PUBLIC, {
-      THIS->state = false;
-    }, NULL, 0);
-
-    constructor(PUBLIC, {
-      THIS->state = state;
-    }, "b", "state");
-
-    method(PUBLIC, DYNAMIC, TVoid, "Toggle", {
-      THIS->state = !(THIS->state);
-    }, NULL, 0);
-
-    method(PUBLIC, DYNAMIC, TBool, "GetState", {
-      return THIS->state;
-    }, NULL, 0);
-
-    method(PUBLIC, DYNAMIC, TVoid, "SetState", {
-      THIS->state = state;
-    }, "b", "state");
-  })
-
-  return 0;
-}
-```
-Yes, you may need to use macros to express quickly and gracefully.  
-
-And with further development, implementing polymorphisms is possible.  
-
-But for now, we're concentrating on solving the "Type Reflecting" system.
-And if you happen to have such experiences, we sincerely welcome you to give us
-a hand.  
-
-## Building & Installing (GNU/Linux)
-```shell
-# You will have to install headers before building the project.
-./preinstall   # May need root privilege.
-
-cmake && make
-
-# Then, you will also need to install freshly built library into your system.
-./postinstall  # May need root privilege.
-```
-
-> We need installation instructions for MacOS and MS/Windows.
-
-## Platform specifications  
-
-Compound uses [LLVM/Clang](https://github.com/llvm/llvm-project) to compile, and
-uses [CMake](https://github.com/Kitware/CMake) to build.  
-
-As for MS/Windows building, we current need someone who's familiar with Windows
-building system to write the responding `CMakeLists`.
-
-In conclusion, Compound is now only tested on GNU/Linux, which runs just well.
-As for MacOS, technically able to run as fine as well, with a little adjustment
-on installation in addition, of course.
-
+> The default output for our executable and library file is at `out/bin/`.

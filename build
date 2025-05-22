@@ -1,0 +1,31 @@
+# 
+#  This file is part of Compound library.
+#  Copyright (C) 2024-TODAY  William Lee
+#  
+#  This library is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU Library General Public
+#  License as published by the Free Software Foundation; either
+#  version 2 of the License, or (at your option) any later version.
+#  
+#  This library is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+#  Library General Public License for more details.
+#  
+#  You should have received a copy of the GNU Library General Public
+#  License along with this library; if not, see
+#  <https://www.gnu.org/licenses/>.
+#
+
+#!/bin/sh
+
+echo "Modify this script to suit you best."
+echo "e.g. '--compiler /usr/bin/tcc' can be changed to --compiler /usr/bin/gcc."
+echo "More information is available by typing './build.sh'"
+
+mkdir -p out/bin/
+
+./build.sh --sources test.c,src/status.c,src/memory.c,src/arrays.c,src/stacks.c,src/string.c\
+           --compiler /usr/bin/tcc\
+           --compiler-flags -std=c99,-Wall,-Wextra,-Wunsupported,-g\
+           --install --complain --dumpenv && echo "Test entry is now available at 'out/bin/compound'."

@@ -1,6 +1,7 @@
 #!/bin/sh
 
-DST=/usr/include/Compound
+DST=/usr/include/"$(basename $PWD)"
+echo "Targeting destination: \"$DST\""
 
 # Create directory.
 [ ! -d "$DST" ] && mkdir -pv "$DST"
