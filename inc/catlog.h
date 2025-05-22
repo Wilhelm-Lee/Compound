@@ -22,10 +22,10 @@
 
 # include <stdarg.h>
 
-# include "Compound/common.h"
-# include "Compound/stacks.h"
-# include "Compound/status.h"
-# include "Compound/types.h"
+# include "../inc/common.h"
+# include "../inc/stacks.h"
+# include "../inc/status.h"
+# include "../inc/types.h"
 
 # define CATLOG_MESSAGE_CONTENT_LENGTH_MAXIMUM  1024
 # define CATLOG_MESSAGE_INITIATOR_LENGTH_MAXIMUM  64

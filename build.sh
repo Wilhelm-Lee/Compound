@@ -221,7 +221,7 @@ PreInstall()
 {
   AnnounceStage "PreInstall"
   
-  cp -vr $(CollectFiles $preinstall_src) "$preinstall_dst/$PROJECT" 2>> "$ERROR" 1>> "$OUTPUT"
+  cp -vr $(CollectFiles $preinstall_src) "$preinstall_dst/" 2>> "$ERROR" 1>> "$OUTPUT"
   _rtncode=$?
   
   $complain && Complain

@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  */
 
-#include "Compound/stacks.h"
+#include "../inc/stacks.h"
 
 IMPL_STACK(FILE,,);
 IMPL_STACK(Pointer,,);

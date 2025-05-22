@@ -17,14 +17,14 @@
  * <https://www.gnu.org/licenses/>.
  */
 
-#include "Compound/arrays.h"
-#include "Compound/common.h"
-#include "Compound/memory.h"
-#include "Compound/platform.h"
-#include "Compound/stacks.h"
-#include "Compound/status.h"
-#include "Compound/string.h"
-#include "Compound/types.h"
+#include "inc/arrays.h"
+#include "inc/common.h"
+#include "inc/memory.h"
+#include "inc/platform.h"
+#include "inc/stacks.h"
+#include "inc/status.h"
+#include "inc/string.h"
+#include "inc/types.h"
 
 Status Main(void)
 {

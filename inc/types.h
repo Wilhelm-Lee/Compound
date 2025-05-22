@@ -22,7 +22,7 @@
 
 # include <stdint.h>
 
-# include "Compound/boolean.h"
+# include "../inc/boolean.h"
 
 typedef unsigned char byte;
 

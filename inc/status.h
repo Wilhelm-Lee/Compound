@@ -25,10 +25,10 @@
 # include <string.h>
 # include <threads.h>
 
-# include "Compound/boolean.h"
-# include "Compound/common.h"
-# include "Compound/platform.h"
-# include "Compound/stack.h"
+# include "../inc/boolean.h"
+# include "../inc/common.h"
+# include "../inc/platform.h"
+# include "../inc/stack.h"
 
 /* Status characteristics */
 typedef enum {

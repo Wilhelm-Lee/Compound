@@ -22,7 +22,7 @@
 
 # include <stdlib.h>
 
-# include "Compound/types.h"
+# include "../inc/types.h"
 
 /********************************/
 /* Status & Returning Handling. */

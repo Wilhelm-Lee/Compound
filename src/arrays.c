@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  */
 
-#include "Compound/arrays.h"
+#include "../inc/arrays.h"
 
 IMPL_ARRAY(byte);
 IMPL_ARRAY(Pointer);

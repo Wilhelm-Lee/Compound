@@ -20,9 +20,9 @@
 #ifndef COMPOUND_ARRAY_H
 # define COMPOUND_ARRAY_H
 
-# include "Compound/common.h"
-# include "Compound/memory.h"
-# include "Compound/literalisation.h"
+# include "../inc/common.h"
+# include "../inc/memory.h"
+# include "../inc/literalisation.h"
 
 # define Array(type)  type##Array
 

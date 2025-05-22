@@ -20,7 +20,7 @@
 #ifndef COMPOUND_CLASS_METHOD_REGISTER_H
 # define COMPOUND_CLASS_METHOD_REGISTER_H
 
-# include "Compound/class_method.h"
+# include "../inc/class_method.h"
 
 typedef struct {
   ClassMethod *data;
