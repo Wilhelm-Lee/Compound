@@ -443,25 +443,25 @@ CheckEnv()
     DirectoryDoesNotExist "$bindir"
   fi
   
-  if [ ! -d "$preinstall_src" ]; then
+  if $install && [ ! -d "$preinstall_src" ]; then
     echo
     echo "  Checking failed on preinstall_src." >&2
     DirectoryDoesNotExist "$preinstall_src"
   fi
   
-  if [ ! -d "$preinstall_dst" ]; then
+  if $install && [ ! -d "$preinstall_dst" ]; then
     echo
     echo "  Checking failed on preinstall_dst." >&2
     DirectoryDoesNotExist "$preinstall_dst"
   fi
   
-  if [ ! -d "$postinstall_src" ]; then
+  if $install && [ ! -d "$postinstall_src" ]; then
     echo
     echo "  Checking failed on postinstall_src." >&2
     DirectoryDoesNotExist "$postinstall_src"
   fi
   
-  if [ ! -d "$postinstall_dst" ]; then
+  if $install && [ ! -d "$postinstall_dst" ]; then
     echo
     echo "  Checking failed on postinstall_dst." >&2
     DirectoryDoesNotExist "$postinstall_dst"
