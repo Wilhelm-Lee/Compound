@@ -17,8 +17,8 @@
  * <https://www.gnu.org/licenses/>.
  */
 
-#include "../inc/status.h"
-#include "../inc/literalisation.h"
+#include <Compound/status.h>
+#include <Compound/literalisation.h>
 
 // //   id     description          prev.id    value               char   loc_buff
 // size_t Location_Literalise(char *buff, const void *object, const char *format,

@@ -22,10 +22,10 @@
 
 # include <stdarg.h>
 
-# include "../inc/access_permission_qualifier.h"
-# include "../inc/lifespan_qualifier.h"
-# include "../inc/status.h"
-# include "../inc/signature.h"
+# include "access_permission_qualifier.h"
+# include "lifespan_qualifier.h"
+# include "status.h"
+# include "signature.h"
 
 //  rtn id signature
 # define CLASS_METHOD_DECLARATION_LITERALISE_FORMAT        \

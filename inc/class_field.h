@@ -20,9 +20,9 @@
 #ifndef COMPOUND_CLASS_FIELD_H
 # define COMPOUND_CLASS_FIELD_H
 
-# include "../inc/access_permission_qualifier.h"
-# include "../inc/lifespan_qualifier.h"
-# include "../inc/status.h"
+# include "access_permission_qualifier.h"
+# include "lifespan_qualifier.h"
+# include "status.h"
 
 # define CLASS_FIELD_IDENTITY_LENGTH_MAX  64
 

@@ -27,5 +27,5 @@ mkdir -p out/bin/
 
 ./build.sh --sources test.c,src/status.c,src/memory.c,src/arrays.c,src/stacks.c,src/string.c\
            --compiler /usr/bin/tcc\
-           --compiler-flags -std=c99,-Wall,-Wextra,-Wunsupported,-g\
+           --flags -std=c99,-Wall,-Wextra,-Wunsupported,-g\
            --install --complain --dumpenv && echo "Test entry is now available in 'out/bin/compound'."

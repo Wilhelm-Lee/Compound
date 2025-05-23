@@ -20,9 +20,9 @@
 #ifndef COMPOUND_RECOLLECTOR_H
 # define COMPOUND_RECOLLECTOR_H
 
-# include "../inc/arrays.h"
-# include "../inc/boolean.h"
-# include "../inc/status.h"
+# include "arrays.h"
+# include "boolean.h"
+# include "status.h"
 
 typedef struct {
   void *obj;

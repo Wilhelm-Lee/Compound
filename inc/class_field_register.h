@@ -20,7 +20,7 @@
 #ifndef COMPOUND_CLASS_FIELD_REGISTER_H
 # define COMPOUND_CLASS_FIELD_REGISTER_H
 
-# include "../inc/class_field.h"
+# include "class_field.h"
 
 typedef struct {
   ClassField *data;

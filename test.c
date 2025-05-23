@@ -17,26 +17,40 @@
  * <https://www.gnu.org/licenses/>.
  */
 
-#include "inc/common.h"
-#include "inc/memory.h"
-#include "inc/platform.h"
-#include "inc/status.h"
-#include "inc/string.h"
-#include "inc/types.h"
+#include <Compound/common.h>
+#include <Compound/memory.h>
+#include <Compound/platform.h>
+#include <Compound/status.h>
+#include <Compound/string.h>
+#include <Compound/types.h>
 
 Status Main(void)
 {
-  String message = string("Delightful encountering, Compound!");
-  iterate (i, message.data) {
-    ig putchar(getbyte(message, i));
-  }
+  String msg1 = string("Apples ");
+  String msg2 = string("are sometimes red.");
+  String sub = EMPTY;
+  
+  
+  fail(call(String,, Concat) with (&msg1, msg2));
+  stringing (ch, msg1, {
+    ig putchar(ch);
+  })
   ig printf(NEWLINE);
   
-  byte *buff = fallback(message);
-  ig printf("%s"NEWLINE, buff);
   
-  ig Deallocate(buff);
-  ig call(String,, Delete) with (&message);
+  ig printf("%d"NEWLINE, compare(msg1, msg2));
+  
+  
+  fail(call(String,, Substr) with (msg2, &sub, 4, 9));
+  stringing (ch, sub, {
+    ig putchar(ch);
+  })
+  ig printf(NEWLINE);
+  
+
+  fail(call(String,, Delete) with (&sub));
+  fail(call(String,, Delete) with (&msg2));
+  fail(call(String,, Delete) with (&msg1));
   
   RETURN(NormalStatus);
 }

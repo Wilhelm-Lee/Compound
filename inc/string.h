@@ -20,10 +20,10 @@
 #ifndef COMPOUND_STRING_H
 # define COMPOUND_STRING_H
 
-# include "../inc/array.h"
-# include "../inc/arrays.h"
-# include "../inc/common.h"
-# include "../inc/status.h"
+# include "array.h"
+# include "arrays.h"
+# include "common.h"
+# include "status.h"
 
 # define STRING_LENGTH_MAXIMUM  INT32_MAX
 
@@ -40,10 +40,9 @@ Status String_Delete(String *inst);
 
 Status String_Update(String *inst, const char *content);
 Status String_Concat(String *inst, const String string);
-Status String_Compare(int *result, const String str1, const String str2);
 Status String_Format(String *inst, const String format, ...);
-Status String_Substring(const String source, String *store,
-                        const size_t off, const size_t len);
+Status String_Substr(const String source, String *store,
+                     const size_t off, const size_t len);
 // int String_First(const String source, const String target);
 // int String_Last(const String source, const String target);
 
@@ -56,20 +55,37 @@ Status String_Substring(const String source, String *store,
 })
 
 # define length(string)                                    \
-  ((string).data.length ? ((string).data.length - 2) : 0)
+  ((string).data.length ? ((string).data.length - 1) : 0)
 
 # define getbyte(string, idx)                              \
-  get(string.data, byte, idx)
+  get((string).data, byte, idx)
+
+# define setbyte(string, idx, elem)                        \
+  set(&((string)->data), byte, idx, elem)
 
 # define fallback(string)                                  \
   ({                                                       \
     byte *_fallback_bptr = NULL;                           \
-    fail(Allocate(&_fallback_bptr, length(string) + 2, sizeof(byte)));\
+    fail(Allocate(&_fallback_bptr, length(string) + 1, sizeof(byte)));\
     iterate (i, string.data) {                             \
       _fallback_bptr[i] = getbyte(string, i);              \
     }                                                      \
     _fallback_bptr[length(string)] = '\0';                 \
     _fallback_bptr;                                        \
+  })
+
+# define compare(string1, string2)                         \
+  ({                                                       \
+    int _compare_result = 0;                               \
+    int _compare_maxlen = max(length(string1), length(string2));\
+    iterate (i, ((_compare_maxlen == (string1).data.length)\
+                 ? (string1).data : (string2).data)) {     \
+      if (getbyte(string1, i) == getbyte(string2, i)) {    \
+        continue;                                          \
+      }                                                    \
+      _compare_result = (getbyte(string1, i) - getbyte(string2, i));\
+    }                                                      \
+    _compare_result;                                       \
   })
 
 STATUS(UnavailableString, 1,
@@ -79,6 +95,10 @@ STATUS(UnavailableString, 1,
 STATUS(UnavailableCharString, 1,
        "Given char string is null.",
        STATUS_ERROR, &UnavailableObject);
+
+STATUS(StringIndexOutOfBound, 1,
+       "Accessing elements out of bound.",
+       STATUS_ERROR, &IndexOutOfBound);
 
 STATUS(StringNotNullTerminated, 1,
        "The given string is not terminated with \\0.",

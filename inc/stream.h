@@ -20,12 +20,12 @@
 #ifndef COMPOUND_STREAM_H
 # define COMPOUND_STREAM_H
 
-# include "../inc/array.h"
-# include "../inc/arrays.h"
-# include "../inc/common.h"
-# include "../inc/platform.h"
-# include "../inc/status.h"
-# include "../inc/string.h"
+# include "array.h"
+# include "arrays.h"
+# include "common.h"
+# include "platform.h"
+# include "status.h"
+# include "string.h"
 
 # define Stream(type)  type##Stream
 

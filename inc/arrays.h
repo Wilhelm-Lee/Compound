@@ -20,9 +20,9 @@
 #ifndef COMPOUND_ARRAYS_H
 # define COMPOUND_ARRAYS_H
 
-# include "../inc/array.h"
-# include "../inc/status.h"
-# include "../inc/types.h"
+# include "array.h"
+# include "status.h"
+# include "types.h"
 
 ARRAY(byte);
 ARRAY(Pointer);

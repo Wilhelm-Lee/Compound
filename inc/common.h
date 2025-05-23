@@ -22,7 +22,7 @@
 
 # include <stdlib.h>
 
-# include "../inc/types.h"
+# include "types.h"
 
 /********************************/
 /* Status & Returning Handling. */
@@ -463,11 +463,26 @@ typedef struct {
 # define set(inst, type, index, elem)                      \
   call(Array, type, SetIdx) with ((inst), (index), (elem)) \
 
-# define iterate(it, collection)                           \
-  for (register __typeof__((collection).length) it = 0;    \
-       it < (collection).length; it++)
+# define iterate(idx, collection)                          \
+  for (register __typeof__((collection).length) idx = 0;   \
+       idx < (collection).length; idx++)
+
+# define foreach(type, it, collection, block)              \
+  {                                                        \
+    type it = EMPTY;                                       \
+    iterate (_foreach_idx, (collection)) {                 \
+      it = get((collection), type, _foreach_idx);          \
+      block                                                \
+    }                                                      \
+  }
+
+# define stringing(it, string, block)                      \
+  foreach (byte, it, (string).data, block)
 
 # define last(collection)                                  \
   ((collection).length)
+
+# define max(a, b)                                         \
+  (a <= b ? a : b)
 
 #endif /* COMPOUND_COMMON_H */

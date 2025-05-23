@@ -30,14 +30,15 @@ PROJECT="$(basename $PWD)"
 HEADER_SYSTEMINFO="[ $(uname -o) ($(uname -r)) |"
 HEADER_PROJECTNAME="$PROJECT"
 HEADER_DATETIME="| $(date) ]"
-SCRIPT_DIRECTORY="build.sh.d"
-OUTPUT="$SCRIPT_DIRECTORY/$PROJECT""_OUTPUT"
-ERROR="$SCRIPT_DIRECTORY/$PROJECT""_ERROR"
+SCRIPT_DIRECTORY=".build.sh.d"
+OUTPUT="$SCRIPT_DIRECTORY/OUTPUT"
+ERROR="$SCRIPT_DIRECTORY/ERROR"
 NORMALISED_PROJECT_NAME="$(echo "$PROJECT" | awk '{ print tolower($0); }' | sed 's/ /_/g')"
 SHAREDOBJECT="lib$NORMALISED_PROJECT_NAME.so"
 EXECUTABLE="$NORMALISED_PROJECT_NAME"
 USAGE=\
-"Usage:
+"
+Usage:
 $0 [OPTION...] - Execute a single building procedure with given sources.
 
 Required:
@@ -45,7 +46,7 @@ Required:
 
 Additional:
   --compiler <compiler_path>
-  --compiler-flags <flag1,flag2,...,flagN>
+  --flags <flag1,flag2,...,flagN>
   --shared    # Target will be compiled as a shared object (.so).
   --outdir <dir>
   --bindir <dir>
@@ -59,6 +60,7 @@ Additional:
     --linkdir <dir>
   --output    # Display generated files.
   --dumpenv   # Display script parameters.
+  --color     # Print with color.
 
 Example:
   # Building a shared object.
@@ -70,7 +72,7 @@ Example:
 
 sources=""
 compiler="/usr/bin/gcc"
-compiler_flags=""
+flags=""
 shared=false
 outdir="out"
 bindir="$outdir/bin"
@@ -84,7 +86,7 @@ link=""
 linkdir="/usr/lib"
 output=false
 dumpenv=false
-dependencies=""
+color=false
 
 elapse_nano_begin=""
 elapse_begin=""
@@ -96,7 +98,11 @@ has_error=false
 Dye()
 {
   while IFS= read -r line; do
-    printf "\e[%sm%s\e[%s""m\n" "$1" "$line" "$RESET"
+    if $color; then
+      printf "\e[%sm%s\e[%s""m\n" "$1" "$line" "$RESET"
+    else
+      echo "$line"
+    fi
   done
 }
 
@@ -148,14 +154,13 @@ HasError()
 ReportError()
 {
   has_error=true
-  test -s "$1" && echo "$1" >> "$ERROR"
+  echo "  $1" >&2
+  exit 1
 }
 
 PrintUsage()
 {
-  echo "$USAGE"
-  
-  exit 1
+  ReportError "$USAGE"
 }
 
 PrintStatus()
@@ -210,7 +215,6 @@ DisplayHeader()
   PrintFor $(($(echo "$HEADER_SYSTEMINFO" | Length) + 2)) ' '
   PrintFor $(echo "$HEADER_PROJECTNAME" | Length) '`'
   PrintFor $(($(echo "$HEADER_DATETIME" | Length) + 2)) ' '
-  echo
 }
 
 DisplayFooter()
@@ -255,7 +259,7 @@ CompileObject()
   AnnounceStage "CompileObject"
   
   for source in $sources; do
-    "$compiler" $compiler_flags -c "$source" -o "$outdir/$(basename $source).o" 2>> "$ERROR" 1>> "$OUTPUT"
+    "$compiler" $flags -c "$source" -o "$outdir/$(basename $source).o" 2>> "$ERROR" 1>> "$OUTPUT"
     _rtncode=$?
   
     test -z $_rtncode && output_files="$output_files $outdir/$(basename $source).o"
@@ -277,10 +281,10 @@ CompileExecutable()
   AnnounceStage "CompileExecutable"
   
   if [ -n "$link" ]; then
-    "$compiler" $compiler_flags -L"$linkdir/"$link $sources -o "$bindir/$EXECUTABLE" 2>> "$ERROR" 1>> "$OUTPUT"
+    "$compiler" $flags -L"$linkdir/"$link $sources -o "$bindir/$EXECUTABLE" 2>> "$ERROR" 1>> "$OUTPUT"
     _rtncode=$?
   else
-    "$compiler" $compiler_flags $sources -o "$bindir/$EXECUTABLE" 2>> "$ERROR" 1>> "$OUTPUT"
+    "$compiler" $flags $sources -o "$bindir/$EXECUTABLE" 2>> "$ERROR" 1>> "$OUTPUT"
     _rtncode=$?
   fi
   
@@ -300,9 +304,9 @@ CompileSharedObject()
   AnnounceStage "CompileSharedObject"
 
   if [ -n "$link" ]; then  
-    "$compiler" $compiler_flags -L"$linkdir/"$link -shared $(CollectFiles "$outdir") -o "$bindir/$SHAREDOBJECT" 2>> "$ERROR" 1>> "$OUTPUT"
+    "$compiler" $flags -L"$linkdir/"$link -shared $(CollectFiles "$outdir") -o "$bindir/$SHAREDOBJECT" 2>> "$ERROR" 1>> "$OUTPUT"
   else
-    "$compiler" $compiler_flags -shared $(CollectFiles "$outdir") -o "$bindir/$SHAREDOBJECT" 2>> "$ERROR" 1>> "$OUTPUT"
+    "$compiler" $flags -shared $(CollectFiles "$outdir") -o "$bindir/$SHAREDOBJECT" 2>> "$ERROR" 1>> "$OUTPUT"
   fi
   _rtncode=$?
 
@@ -397,74 +401,75 @@ Output()
 DumpEnv()
 {
   echo
-  echo "  sources:  $(echo $sources | Dye $DIM)"
-  echo "  compiler:  $(echo $compiler | Dye $DIM)"
-  echo "  compiler-flags:  $(echo $compiler_flags | Dye $DIM)"
-  echo "  shared:  $(echo $shared | Dye $DIM)"
-  echo "  outdir:  $(echo $outdir | Dye $DIM)"
-  echo "  bindir:  $(echo $bindir | Dye $DIM)"
-  echo "  install:  $(echo $install | Dye $DIM)"
-  echo "  preinstall-source:  $(echo $preinstall_src | Dye $DIM)"
-  echo "  preinstall-destination:  $(echo $preinstall_dst | Dye $DIM)"
-  echo "  postinstall-source:  $(echo $postinstall_src | Dye $DIM)"
-  echo "  postinstall-destination:  $(echo $postinstall_dst | Dye $DIM)"
-  echo "  complain:  $(echo $complain | Dye $DIM)"
-  echo "  link:  $(echo $link | Dye $DIM)"
-  echo "  linkdir:  $(echo $linkdir | Dye $DIM)"
-  echo "  output:  $(echo $output | Dye $DIM)"
-  echo "  dumpenv:  $(echo $dumpenv | Dye $DIM)"
-  echo "  dependencies:  $(echo $dependencies | Dye $DIM)"
+  echo "      sources: $(echo $sources | Dye $DIM)"
+  echo "     compiler: $(echo $compiler | Dye $DIM)"
+  echo "        flags: $(echo $flags | Dye $DIM)"
+  echo "       shared: $(echo $shared | Dye $DIM)"
+  echo "       outdir: $(echo $outdir | Dye $DIM)"
+  echo "       bindir: $(echo $bindir | Dye $DIM)"
+  echo "      install: $(echo $install | Dye $DIM)"
+  echo "   preinstall: $(echo $preinstall_src'  --> '$preinstall_dst | Dye $DIM)"
+  echo "  postinstall: $(echo $postinstall_src'  --> '$postinstall_dst | Dye $DIM)"
+  echo "     complain: $(echo $complain | Dye $DIM)"
+  echo "         link: $(echo $link | Dye $DIM)"
+  echo "      linkdir: $(echo $linkdir | Dye $DIM)"
+  echo "       output: $(echo $output | Dye $DIM)"
+  echo "        color: $(echo $color | Dye $DIM)"
 }
 
 CheckEnv()
 {
-  if [ -z "$sources" ]; then
-    echo "Checking failed on sources:" >&2
-    EmptySources
-  fi
-  for source in $sources; do
+  [ -n "$sources" ] && for source in $sources; do
     if [ ! -f "$source" ]; then
       FileDoesNotExist "$source"
     fi
   done
   
   if [ ! -f "$compiler" ]; then
-    echo "Checking failed on compiler:" >&2
+    echo
+    echo "  Checking failed on compiler." >&2
     FileDoesNotExist "$compiler"
   fi
   
   if [ ! -d "$outdir" ]; then
-    echo "Checking failed on outdir:" >&2
+    echo
+    echo "  Checking failed on outdir." >&2
     DirectoryDoesNotExist "$outdir"
   fi
   
   if [ ! -d "$bindir" ]; then
-    echo "Checking failed on bindir:" >&2
+    echo
+    echo "  Checking failed on bindir." >&2
     DirectoryDoesNotExist "$bindir"
   fi
   
   if [ ! -d "$preinstall_src" ]; then
-    echo "Checking failed on preinstall_src:" >&2
+    echo
+    echo "  Checking failed on preinstall_src." >&2
     DirectoryDoesNotExist "$preinstall_src"
   fi
   
   if [ ! -d "$preinstall_dst" ]; then
-    echo "Checking failed on preinstall_dst:" >&2
+    echo
+    echo "  Checking failed on preinstall_dst." >&2
     DirectoryDoesNotExist "$preinstall_dst"
   fi
   
   if [ ! -d "$postinstall_src" ]; then
-    echo "Checking failed on postinstall_src:" >&2
+    echo
+    echo "  Checking failed on postinstall_src." >&2
     DirectoryDoesNotExist "$postinstall_src"
   fi
   
   if [ ! -d "$postinstall_dst" ]; then
-    echo "Checking failed on postinstall_dst:" >&2
+    echo
+    echo "  Checking failed on postinstall_dst." >&2
     DirectoryDoesNotExist "$postinstall_dst"
   fi
   
   if [ ! -d "$linkdir" ]; then
-    echo "Checking failed on linkdir:" >&2
+    echo
+    echo "  Checking failed on linkdir." >&2
     DirectoryDoesNotExist "$linkdir"
   fi
 }
@@ -485,10 +490,10 @@ while [ $# -gt 0 ]; do
       shift
       compiler="$1" ;;
 
-    --compiler-flags)
+    --flags)
       [ $# -eq 1 ] && InsufficientArgument "$1"
       shift
-      compiler_flags="$(echo "$1" | sed 's/,/ /g')" ;;
+      flags="$(echo "$1" | sed 's/,/ /g')" ;;
 
     --shared)
       shared=true ;;
@@ -545,6 +550,9 @@ while [ $# -gt 0 ]; do
     --dumpenv)
       dumpenv=true ;;
 
+    --color)
+      color=true ;;
+
     *)
       echo "Invalid flag '$1'"
       PrintUsage ;;
@@ -554,8 +562,8 @@ while [ $# -gt 0 ]; do
 done
 
 mkdir -p "$SCRIPT_DIRECTORY"
-mkdir -p "$OUTDIR"
-mkdir -p "$BINDIR"
+mkdir -p "$outdir"
+mkdir -p "$bindir"
 
 ResetFileBuffer
 DisplayHeader
@@ -564,24 +572,25 @@ $dumpenv && DumpEnv
 CheckEnv
 
 StartTimer
-$install && { PreInstall || RuntimeError; } \
-  && { CompileObject || RuntimeError; } \
-  && if $shared; then
-       CompileSharedObject || RuntimeError
-     else
-       CompileExecutable || RuntimeError
-     fi \
-  && { $install && $shared && { PostInstall || RuntimeError; }; }
+$install && { PreInstall || RuntimeError; }
+[ -n "$source" ] && { CompileObject || RuntimeError; }
+if $shared; then
+  [ -n "$source" ] && { CompileSharedObject || RuntimeError; }
+else
+  [ -n "$source" ] && { CompileExecutable || RuntimeError; }
+fi
+$install && $shared && { PostInstall || RuntimeError; }
 StopTimer
 
 $output && Output
 
 Elapse
-
+  
 DisplayFooter
 
 rm "$OUTPUT"
 rm "$ERROR"
+rmdir "$SCRIPT_DIRECTORY"
 
 echo
 HasError

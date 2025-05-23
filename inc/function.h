@@ -20,12 +20,12 @@
 #ifndef COMPOUND_FUNCTION_H
 # define COMPOUND_FUNCTION_H
 
-# include "../inc/array.h"
-# include "../inc/signature.h"
-# include "../inc/status.h"
-# include "../inc/stack.h"
-# include "../inc/string.h"
-# include "../inc/literalisation.h"
+# include "array.h"
+# include "signature.h"
+# include "status.h"
+# include "stack.h"
+# include "string.h"
+# include "literalisation.h"
 
 typedef struct Function {
   /* Types and parametres. */

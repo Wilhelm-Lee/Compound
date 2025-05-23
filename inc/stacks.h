@@ -20,9 +20,9 @@
 #ifndef COMPOUND_STACKS_H
 # define COMPOUND_STACKS_H
 
-# include "../inc/types.h"
-# include "../inc/stack.h"
-# include "../inc/status.h"
+# include "types.h"
+# include "stack.h"
+# include "status.h"
 
 STACK(FILE);
 STACK(Pointer);

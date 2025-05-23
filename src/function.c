@@ -17,4 +17,4 @@
  * <https://www.gnu.org/licenses/>.
  */
 
-#include "../inc/function.h"
+#include "function.h"

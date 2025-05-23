@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  */
 
-#include "../inc/signature.h"
+#include "signature.h"
 
 Status Expression_Create(Expression *inst, const char *content)
 {

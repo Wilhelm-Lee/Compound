@@ -33,3 +33,4 @@ build/
 *.md
 incompleted_struct
 out/
+preinstall

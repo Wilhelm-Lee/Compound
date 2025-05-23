@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  */
 
-#include "../inc/string.h"
+#include <Compound/string.h>
 
 Status String_Create(String *inst, const size_t length, const size_t width)
 {
@@ -61,20 +61,43 @@ Status String_Update(String *inst, const char *content)
   avail(inst);
   state(!content, UnavailableCharString);
   
-  ig call(String,, Delete(inst));
+  ig call(String,, Delete) with (inst);
   
   const size_t length = strlen(content);
   fail(call(String,, Create(inst, length, sizeof(char))));
   for (register size_t i = 0; i < length; i++) {
     fail(set(&inst->data, byte, i, content[i]));
   }
-  fail(call(Array, byte, Insert) with (&inst->data, last(inst->data), '\0'));
   
   RETURN(NormalStatus);
 }
 
-Status String_Concat(String *inst, const String string);
-Status String_Compare(int *result, const String str1, const String str2);
+Status String_Concat(String *inst, const String string)
+{
+  avail(inst);
+  
+  String tmp = EMPTY;
+  fail(call(String,, Create)
+       with (&tmp, length(*inst) + length(string),
+             max(inst->width, string.width)));
+  
+  iterate (i, tmp.data) {
+    if (i < length(*inst)) {
+      fail(setbyte(&tmp, i, getbyte(*inst, i)));
+      continue;
+    }
+    
+    fail(setbyte(&tmp, i, getbyte(string, i - length(*inst))));
+  }
+  
+  fail(call(String,, Delete) with (inst));
+  fail(call(String,, CopyOf) with (inst, tmp));
+  
+  fail(call(String,, Delete) with (&tmp));
+  
+  RETURN(NormalStatus);
+}
+
 // Status String_Format(String *inst, const String format, ...)
 // {
 //   avail(inst);
@@ -89,5 +112,15 @@ Status String_Compare(int *result, const String str1, const String str2);
 //   fail(call(String,, Delete(&buff)));
 // }
 
-Status String_Substring(const String source, String *store,
-                        const size_t off, const size_t len);
+Status String_Substr(const String source, String *store,
+                     const size_t off, const size_t len)
+{
+  state(off + len > length(source), StringIndexOutOfBound);
+  
+  fail(call(String,, Create) with (store, len, source.width));
+  iterate (i, store->data) {
+    fail(setbyte(store, i, getbyte(source, i + off)));
+  }
+  
+  RETURN(NormalStatus);
+}

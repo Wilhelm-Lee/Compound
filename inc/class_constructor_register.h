@@ -20,7 +20,7 @@
 #ifndef COMPOUND_CLASS_CONSTRUCTOR_REGISTER_H
 # define COMPOUND_CLASS_CONSTRUCTOR_REGISTER_H
 
-# include "../inc/class_constructor.h"
+# include "class_constructor.h"
 
 typedef struct {
   ClassConstructor *data;

@@ -22,7 +22,7 @@
 
 # include <stdlib.h>
 
-# include "../inc/string.h"
+# include "string.h"
 
 # define SIGNATURE_LENGTH_MAXIMUM  1024
 

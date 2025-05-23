@@ -25,10 +25,10 @@
 # include <string.h>
 # include <threads.h>
 
-# include "../inc/boolean.h"
-# include "../inc/common.h"
-# include "../inc/platform.h"
-# include "../inc/stack.h"
+# include "boolean.h"
+# include "common.h"
+# include "platform.h"
+# include "stack.h"
 
 /* Status characteristics */
 typedef enum {
@@ -243,7 +243,7 @@ STATUS(InvalidStackLength, 1,
           STATUS_ERROR, &InvalidObject);
 
 STATUS(IndexOutOfBound, 1,
-          "Given index was accessing illegal address.",
+          "Accessing elements out of bound.",
           STATUS_ERROR, &MemoryViolation);
 
 STATUS(VariableFormatMismatch, 1,

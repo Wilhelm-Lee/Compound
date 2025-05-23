@@ -22,8 +22,8 @@
 
 # include <stdio.h>
 
-# include "../inc/stack.h"
-# include "../inc/status.h"
+# include "stack.h"
+# include "status.h"
 
 typedef FILE *Output;
 
