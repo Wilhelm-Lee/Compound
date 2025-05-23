@@ -28,8 +28,7 @@ Status Main(void)
 {
   String msg1 = string("Apples ");
   String msg2 = string("are sometimes red.");
-  String sub = EMPTY;
-  
+  String sub = EMPTY;  
   
   fail(call(String,, Concat) with (&msg1, msg2));
   stringing (ch, msg1, {
@@ -37,16 +36,13 @@ Status Main(void)
   })
   ig printf(NEWLINE);
   
-  
   ig printf("%d"NEWLINE, compare(msg1, msg2));
-  
   
   fail(call(String,, Substr) with (msg2, &sub, 4, 9));
   stringing (ch, sub, {
     ig putchar(ch);
   })
   ig printf(NEWLINE);
-  
 
   fail(call(String,, Delete) with (&sub));
   fail(call(String,, Delete) with (&msg2));
