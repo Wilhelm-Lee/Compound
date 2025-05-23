@@ -564,6 +564,8 @@ done
 mkdir -p "$SCRIPT_DIRECTORY"
 mkdir -p "$outdir"
 mkdir -p "$bindir"
+mkdir -p "$preinstall_dst"
+mkdir -p "$postinstall_dst"
 
 ResetFileBuffer
 DisplayHeader
