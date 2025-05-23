@@ -23,7 +23,6 @@
 # include <stdint.h>
 # include <stdio.h>
 # include <string.h>
-# include <threads.h>
 
 # include "boolean.h"
 # include "common.h"
