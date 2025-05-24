@@ -19,7 +19,7 @@
 
 # Compound
 
-Compound is a library follows C99 and supports OOP built defaultly
+Compound is a library that follows C99 and supports OOP built default.
 with [Tiny C Compiler](https://bellard.org/tcc/), providing
 various utilities and data structures with corresponding
 manipulations available.  
@@ -41,10 +41,10 @@ Enjoy.  :)
 >  
 > YOU HAVE BEEN WARNED.
 
-The script `build` is a convenient short hand for building project
+The script `build` is a convenient shorthand for building project
 with default configurations.  
 
-However, if you would like have more control over compiling this project, you
+However, if you would like to have more control over compiling this project, you
 can choose to use `build.sh`.  There are also many built-in guidances available
 in that script to look up.
 
@@ -53,11 +53,11 @@ in that script to look up.
 ### Executable
 
 Compound is originally designed to be a library, meaning there will be no actual
-executable files generated.  But, it can be achieved by giving an entry along
+executable files generated.  But it can be achieved by giving an entry along
 with other library sources.
 
 Here is a demonstration of how you would build an executable file with Compound
-using `test.c` included in repository as an entry.
+using `test.c` included in the repository as an entry.
 
 ```sh
 ./build.sh --sources test.c,src/status.c,src/memory.c,src/arrays.c,src/stacks.c,src/string.c\
@@ -66,35 +66,35 @@ using `test.c` included in repository as an entry.
            --install --complain --dumpenv
 ```
 
- - The flag `--sources` specifies source files included sending to compiler.
+ - The flag `--sources` specifies source files included sending to the compiler.
 
  - `--compiler` is optional, and it tells where the compiler user wanted 
    otherwise is located.
 
  - `--flags` is also optional.  Its value is passed to the compiler.
 
- - Flag `--install` is usually used when both header files and shared object are 
-   needed to be installed into system.  The default locations are 
+ - The flag `--install` is usually used when both header files and shared objects are 
+   needed to be installed into the system.  The default locations are 
    `/usr/include/$(ProjectName)` and `/usr/lib`.
 
  - If you use `--complain`, the output from commands run in each stage is 
-   delivered onto screen.
+   delivered onto the screen.
 
  - Lastly, when the flag `--dumpenv` is used, there will be a summary of every 
    variable this script applies printed at the beginning.
 
-For more details about `build.sh`, type `build.sh` to check out.
+For more details about `build.sh`, type `build.sh` to check it out.
 
 > Tips & Tricks  
 > 
-> You can checkout the default configuration of `build.sh` without doing any 
+> You can check out the default configuration of `build.sh` without doing any 
 > computing work by only giving `--dumpenv` to its parameter list.
 >
 > If you don't use the `--complain` flag though, there will be an `okay` when 
 > commands are successfully executed, or an `failed` with error message for 
 > failure.
 
-And finally, you may replace `test.c` with any of your entry source file to 
+And finally, you may replace `test.c` with any of your entry source files to 
 build your desired executable.
 
 ### Shared Object
@@ -109,7 +109,7 @@ To build a shared object of Compound, you may use `build.sh` as shown below.
  - `--shared` tells the compiler to treat those source files with `-shared` 
    flag.
 
- - After giving `--color` flag, you may have the script output rendered with 
+ - After giving the `--color` flag, you may have the script output rendered with 
    colors.
  
  - When giving `--output` to the script, it will now tell where the generated 
@@ -130,14 +130,14 @@ If you have any intention to offer your valuable ideas and/or implementations to
 this project, then we are most delighted to welcome them.  
 
 And while your ideas and/or implementations are being accepted into this 
-project's code base, there are some crutial points that you may be interested to 
+project's code base, there are some crucial points that you may be interested to 
 acknowledge beforehand.
 
  1. Please ensure that you have read at least once our 
     [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) before doing anything specific.
 
- 2. If an issue were to be put up, try browse the previously asked questions and 
-    make sure that there are no same or similar ones were discussed before.
+ 2. If an issue were to be put up, try browsing the previously asked questions and 
+    make sure that there are no same or similar ones that were discussed before.
 
  3. If you don't get an immediate response on whatever you were asking, it 
     doesn't mean your question was ignored.
@@ -151,12 +151,12 @@ And now, welcome!
  1. "The script `build`/`build.sh` cannot do things right, and it just says 
     `failed` everytime I perform the execution."
     
-    Try add `--complain` to the command line, and you'll see the extra message.
+    Try adding `--complain` to the command line, and you'll see the extra message.
 
- 2. "It kept reporting that I have passed invalid flags when I was just trying
+ 2. "It kept reporting that I had passed invalid flags when I was just trying
      to set the `--sources`/`--flags`."
 
-    These two flags require an input with special format.  Take look at this:
+    These two flags require an input with a special format.  Take a look at this:
       ```sh
       --sources file1,file2,file3
       --flags flag1,flag2,flag3
@@ -168,13 +168,13 @@ And now, welcome!
      same output of helping message again and again."
 
     When a helping screen is presented, that only means one thing: "at least 
-    one of your input is not recognized."
+    one of your inputs is not recognized."
     
-    Try look closely at the top of every output, there is a brief message that
+    Try looking closely at the top of every output; there is a brief message that
     tells which input was not accepted.
 
- 4. "I want ice-cream."
- 
+ 4. "I want ice cream."
+
     ```
          . ,
           *    ,
@@ -187,6 +187,6 @@ And now, welcome!
            %---'`"y
             \    /
              \  /
-            __)(__     
+            __)(__
            '------`
     ```
