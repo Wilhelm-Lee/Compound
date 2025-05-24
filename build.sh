@@ -367,7 +367,7 @@ Elapse()
   echo "  Elapsed:  $elapse_calchours$(echo h | Dye $DIM)"\
                    "$elapse_calcminutes$(echo m | Dye $DIM)"\
                    "$elapse_calcseconds$(echo s | Dye $DIM)"\
-                   "$elapse_calcmilliseconds$(echo ms | Dye)"
+                   "$elapse_calcmilliseconds$(echo ms | Dye $DIM)"
 }
 
 ColorIndication()
