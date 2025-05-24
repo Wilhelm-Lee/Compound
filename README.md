@@ -60,7 +60,7 @@ Here is a demonstration of how you would build an executable file with Compound
 using `test.c` included in repository as an entry.
 
 ```sh
-./build.sh --sources test.c,src/status.c,src/memory.c,src/string.c\
+./build.sh --sources test.c,src/status.c,src/memory.c,src/arrays.c,src/stacks.c,src/string.c\
            --compiler /usr/bin/tcc\
            --flags -std=c99,-Wall,-Wextra,-Wunsupported,-g\
            --install --complain --dumpenv
