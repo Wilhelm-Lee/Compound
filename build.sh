@@ -86,11 +86,14 @@ dumpenv=false
 color=false
 
 elapse_begin=""
+elapse_nano_begin=""
 elapse_end=""
+elapse_nano_end=""
 elapse_totalseconds=""
 elapse_calchours=""
 elapse_calcminutes=""
 elapse_calcseconds=""
+elapse_calcmilliseconds=""
 output_files=""
 has_error=false
 
@@ -343,11 +346,28 @@ Complain()
 StartTimer()
 {
   elapse_begin="$(date '+%s')"
+  elapse_nano_begin="$(date '+%N')"
 }
 
 StopTimer()
 {
   elapse_end="$(date '+%s')"
+  elapse_nano_end="$(date '+%N')"
+}
+
+Elapse()
+{
+  elapse_totalseconds=$(($elapse_end - $elapse_begin))
+  elapse_calcseconds=$(($elapse_totalseconds % 60))
+  elapse_calcminutes=$(($elapse_totalseconds / 60 % 60))
+  elapse_calchours=$(($elapse_totalseconds / 3600 % 60))
+  elapse_calcmilliseconds=$(( ( $elapse_nano_end + 1000000000 - $elapse_nano_begin ) / 1000000 % 1000 ))
+  
+  echo
+  echo "  Elapsed:  $elapse_calchours$(echo h | Dye $DIM)"\
+                   "$elapse_calcminutes$(echo m | Dye $DIM)"\
+                   "$elapse_calcseconds$(echo s | Dye $DIM)"\
+                   "$elapse_calcmilliseconds$(echo ms | Dye)"
 }
 
 ColorIndication()
@@ -372,19 +392,6 @@ ColorIndication()
         echo "$line" ;;
     esac
   done
-}
-
-Elapse()
-{
-  elapse_totalseconds=$(($elapse_end - $elapse_begin))
-  elapse_calcseconds=$(($elapse_totalseconds % 60))
-  elapse_calcminutes=$(($elapse_totalseconds / 60 % 60))
-  elapse_calchours=$(($elapse_totalseconds / 3600 % 60))
-  
-  echo
-  echo "  Elapsed:  $elapse_calchours$(echo h | Dye $DIM)"\
-                   "$elapse_calcminutes$(echo m | Dye $DIM)"\
-                   "$elapse_calcseconds$(echo s | Dye $DIM)"
 }
 
 Output()
