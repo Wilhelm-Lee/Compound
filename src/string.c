@@ -143,3 +143,10 @@ Status String_Substr(const String source, String *store,
   
   RETURN(NormalStatus);
 }
+
+// Status String_Format(String *inst, const String format, ...)
+// {
+//   avail(inst);
+  
+  
+// }

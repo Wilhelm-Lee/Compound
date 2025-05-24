@@ -82,6 +82,9 @@ Status String_Substr(const String source, String *store,
     result;                                                \
   })
 
+# define stringing(it, string, block)                      \
+  foreach (byte, it, (string).data, block)
+
 STATUS(UnavailableString, 1,
        "Given string is null.",
        STATUS_ERROR, &UnavailableObject);

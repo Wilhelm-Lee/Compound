@@ -446,42 +446,6 @@ typedef struct {
 
 # define pos(number)  ((number) < 0 ? neg(number) : (number))
 
-# define ref(inst, type, index)                            \
-  ({                                                       \
-    type *_ref = NULL;                                     \
-    ig call(Array, type, RefIdx) with (inst, (index), &_ref);\
-    _ref;                                                  \
-  })
-
-# define get(inst, type, index)                            \
-  ({                                                       \
-    type _get = EMPTY;                                     \
-    ig call(Array, type, GetIdx) with (inst, (index), &_get);\
-    _get;                                                  \
-  })
-
-# define set(inst, type, index, elem)                      \
-  call(Array, type, SetIdx) with ((inst), (index), (elem)) \
-
-# define iterate(idx, collection)                          \
-  for (register __typeof__((collection).length) idx = 0;   \
-       idx < (collection).length; idx++)
-
-# define foreach(type, it, collection, block)              \
-  {                                                        \
-    type it = EMPTY;                                       \
-    iterate (_foreach_idx, (collection)) {                 \
-      it = get((collection), type, _foreach_idx);          \
-      block                                                \
-    }                                                      \
-  }
-
-# define stringing(it, string, block)                      \
-  foreach (byte, it, (string).data, block)
-
-# define last(collection)                                  \
-  ((collection).length)
-
 # define max(a, b)                                         \
   (a <= b ? a : b)
 

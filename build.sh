@@ -156,8 +156,7 @@ HasError()
 ReportError()
 {
   has_error=true
-  echo "  $1" >&2
-  exit 1
+  printf "%s" "  $1" >&2
 }
 
 PrintUsage()
@@ -169,8 +168,7 @@ PrintStatus()
 {
   [ $1 -eq 0 ] && echo "okay" | Dye $FGRE | Echo '  '
  
-  # Print "failed" when $complain is off but there is error.
-  ! [ $1 -eq 0 ] && ! $complain && echo "failed" | Dye $FRED | Echo '  '
+  ! [ $1 -eq 0 ] && echo "failed" | Dye $FRED | Echo '  '
 }
 
 InsufficientArgument()
@@ -261,10 +259,8 @@ CompileObject()
   AnnounceStage "CompileObject"
   
   for source in $sources; do
-    "$compiler" $flags -c "$source" -o "$outdir/$(basename $source).o" 2>> "$ERROR" 1>> "$OUTPUT"
+    "$compiler" $flags -c "$source" -o "$outdir/$(basename $source).o" 2>> "$ERROR" 1>> "$OUTPUT" && output_files="$output_files $outdir/$(basename $source).o"
     _rtncode=$?
-  
-    test -z $_rtncode && output_files="$output_files $outdir/$(basename $source).o"
   
     cat "$OUTPUT" | Echo '  '
     
@@ -283,14 +279,12 @@ CompileExecutable()
   AnnounceStage "CompileExecutable"
   
   if [ -n "$link" ]; then
-    "$compiler" $flags -L"$linkdir/"$link $sources -o "$bindir/$EXECUTABLE" 2>> "$ERROR" 1>> "$OUTPUT"
+    "$compiler" $flags -L"$linkdir/"$link $sources -o "$bindir/$EXECUTABLE" 2>> "$ERROR" 1>> "$OUTPUT" && output_files="$output_files $bindir/$EXECUTABLE"
     _rtncode=$?
   else
-    "$compiler" $flags $sources -o "$bindir/$EXECUTABLE" 2>> "$ERROR" 1>> "$OUTPUT"
+    "$compiler" $flags $sources -o "$bindir/$EXECUTABLE" 2>> "$ERROR" 1>> "$OUTPUT" && output_files="$output_files $bindir/$EXECUTABLE"
     _rtncode=$?
   fi
-  
-  test -z $_rtncode && output_files="$output_files $bindir/$EXECUTABLE"
   
   cat "$OUTPUT" | Echo '  '
   
@@ -306,13 +300,11 @@ CompileSharedObject()
   AnnounceStage "CompileSharedObject"
 
   if [ -n "$link" ]; then  
-    "$compiler" $flags -L"$linkdir/"$link -shared $(CollectFiles "$outdir") -o "$bindir/$SHAREDOBJECT" 2>> "$ERROR" 1>> "$OUTPUT"
+    "$compiler" $flags -L"$linkdir/"$link -shared $(CollectFiles "$outdir") -o "$bindir/$SHAREDOBJECT" 2>> "$ERROR" 1>> "$OUTPUT" && output_files="$output_files $bindir/$SHAREDOBJECT"
   else
-    "$compiler" $flags -shared $(CollectFiles "$outdir") -o "$bindir/$SHAREDOBJECT" 2>> "$ERROR" 1>> "$OUTPUT"
+    "$compiler" $flags -shared $(CollectFiles "$outdir") -o "$bindir/$SHAREDOBJECT" 2>> "$ERROR" 1>> "$OUTPUT" && output_files="$output_files $bindir/$SHAREDOBJECT"
   fi
   _rtncode=$?
-
-  test -z $_rtncode && output_files="$output_files $bindir/$SHAREDOBJECT"
   
   cat "$OUTPUT" | Echo '  '
   
@@ -361,7 +353,9 @@ Elapse()
   elapse_calcseconds=$(($elapse_totalseconds % 60))
   elapse_calcminutes=$(($elapse_totalseconds / 60 % 60))
   elapse_calchours=$(($elapse_totalseconds / 3600 % 60))
-  elapse_calcmilliseconds=$(( ( $elapse_nano_end + 1000000000 - $elapse_nano_begin ) / 1000000 % 1000 ))
+  elapse_calcmilliseconds=\
+$(( ( $(RemoveLeadingZero $elapse_nano_end) + 1000000000 \
+     - $(RemoveLeadingZero $elapse_nano_begin) ) / 1000000 % 1000 ))
   
   echo
   echo "  Elapsed:  $elapse_calchours$(echo h | Dye $DIM)"\
