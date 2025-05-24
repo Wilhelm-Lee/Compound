@@ -39,11 +39,11 @@ Status String_CopyOf(String *inst, const String other);
 Status String_Delete(String *inst);
 
 Status String_Update(String *inst, const char *content);
-Status String_Concat(String *inst, const String string);
 Status String_Compare(int *store, const String string1, const String string2);
-Status String_Format(String *inst, const String format, ...);
+Status String_Concat(String *inst, const String string);
 Status String_Substr(const String source, String *store,
                      const size_t off, const size_t len);
+Status String_Format(String *inst, const String format, ...);
 // int String_First(const String source, const String target);
 // int String_Last(const String source, const String target);
 
@@ -80,6 +80,19 @@ Status String_Substr(const String source, String *store,
     int result = 0;                                        \
     fail(call(String,, Compare) with (&result, (string1), (string2)));\
     result;                                                \
+  })
+
+# define concat(string1, string2)                          \
+  ({                                                       \
+    fail(call(String,, Concat) with (&(string1), (string2)));\
+    string1;                                               \
+  })
+
+# define substr(string, off, len)                          \
+  ({                                                       \
+    String _substr_store = EMPTY;                          \
+    fail(call(String,, Substr) with ((string), &_substr_store, (off), (len)));\
+    _substr_store;                                         \
   })
 
 # define stringing(it, string, block)                      \

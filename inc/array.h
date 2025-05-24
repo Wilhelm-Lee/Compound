@@ -268,8 +268,7 @@ Status type##Array_Reverse(type##Array *inst)\
   call(Array, type, SetIdx) with ((inst), (index), (elem)) \
 
 # define iterate(idx, collection)                          \
-  for (register __typeof__((collection).length) idx = 0;   \
-       idx < (collection).length; idx++)
+  for (register ullong idx = 0; idx < (collection).length; idx++)
 
 # define foreach(type, it, collection, block)              \
   {                                                        \

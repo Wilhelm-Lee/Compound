@@ -29,17 +29,25 @@ Status Main(void)
   String msg1 = string("Apples ");
   String msg2 = string("are sometimes red.");
 
-  stringing (ch1, msg1, {
-    stringing (ch2, msg2, {
-      if (ch1 == ch2) {
-        ig putchar(ch1);
-      }
-    })
+  int versus = compare(msg1, msg2);
+  String merge = concat(msg1, msg2);
+  String subseq = substr(msg2, 4, 9);  // Requires deallocation afterwards.
+  
+  ig printf("%d"NEWLINE, versus);
+  
+  stringing (ch, merge, {
+    ig putchar(ch);
   })
   ig printf(NEWLINE);
-
-  fail(call(String,, Delete) with (&msg2));
-  fail(call(String,, Delete) with (&msg1));
+  
+  stringing (ch, subseq, {
+    ig putchar(ch);
+  })
+  ig printf(NEWLINE);
+  
+  ig call(String,, Delete) with (&subseq);
+  ig call(String,, Delete) with (&msg2);
+  ig call(String,, Delete) with (&msg1);
   
   RETURN(NormalStatus);
 }
