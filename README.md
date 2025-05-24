@@ -19,7 +19,7 @@
 
 # Compound
 
-Compound is a library that follows C99 and supports OOP built default.
+Compound is a library that follows C99 standard with OOP supports that is built
 with [Tiny C Compiler](https://bellard.org/tcc/), providing
 various utilities and data structures with corresponding
 manipulations available.  
