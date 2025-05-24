@@ -148,13 +148,13 @@ And now, welcome!
 
 ## Troubleshooting
 
- 1. "The script `build`/`build.sh` cannot do things right, and it just says 
-    `failed` everytime I perform the execution."
+ 1. "*The script `build`/`build.sh` cannot do things right, and it just says 
+     `failed` everytime I perform the execution.*"
     
     Try adding `--complain` to the command line, and you'll see the extra message.
 
- 2. "It kept reporting that I had passed invalid flags when I was just trying
-     to set the `--sources`/`--flags`."
+ 2. "*It kept reporting that I had passed invalid flags when I was just trying
+      to set the `--sources`/`--flags`.*"
 
     These two flags require an input with a special format.  Take a look at this:
       ```sh
@@ -164,8 +164,8 @@ And now, welcome!
     There is *NO SPACE OR TABS* between two files/flags but a comma to separate
     them.
 
- 3. "I typed every flag along with their values correctly, but I still only get
-     same output of helping message again and again."
+ 3. "*I typed every flag along with their values correctly, but I still only get
+      same output of helping message again and again.*"
 
     When a helping screen is presented, that only means one thing: "at least 
     one of your inputs is not recognized."
@@ -173,7 +173,7 @@ And now, welcome!
     Try looking closely at the top of every output; there is a brief message that
     tells which input was not accepted.
 
- 4. "I want ice cream."
+ 4. "*I want ice cream.*"
 
     ```
          . ,
