@@ -40,6 +40,7 @@ Status String_Delete(String *inst);
 
 Status String_Update(String *inst, const char *content);
 Status String_Concat(String *inst, const String string);
+Status String_Compare(int *store, const String string1, const String string2);
 Status String_Format(String *inst, const String format, ...);
 Status String_Substr(const String source, String *store,
                      const size_t off, const size_t len);
@@ -76,16 +77,9 @@ Status String_Substr(const String source, String *store,
 
 # define compare(string1, string2)                         \
   ({                                                       \
-    int _compare_result = 0;                               \
-    int _compare_maxlen = max(length(string1), length(string2));\
-    iterate (i, ((_compare_maxlen == (string1).data.length)\
-                 ? (string1).data : (string2).data)) {     \
-      if (getbyte(string1, i) == getbyte(string2, i)) {    \
-        continue;                                          \
-      }                                                    \
-      _compare_result = (getbyte(string1, i) - getbyte(string2, i));\
-    }                                                      \
-    _compare_result;                                       \
+    int result = 0;                                        \
+    fail(call(String,, Compare) with (&result, (string1), (string2)));\
+    result;                                                \
   })
 
 STATUS(UnavailableString, 1,

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # This file is part of Compound library.
 # Copyright (C) 2024-TODAY  William Lee
@@ -41,10 +41,7 @@ USAGE=\
 Usage:
 $0 [OPTION...] - Execute a single building procedure with given sources.
 
-Required:
   --sources <file1,file2,...,fileN>
-
-Additional:
   --compiler <compiler_path>
   --flags <flag1,flag2,...,flagN>
   --shared    # Target will be compiled as a shared object (.so).
@@ -88,10 +85,12 @@ output=false
 dumpenv=false
 color=false
 
-elapse_nano_begin=""
 elapse_begin=""
-elapse_nano_end=""
 elapse_end=""
+elapse_totalseconds=""
+elapse_calchours=""
+elapse_calcminutes=""
+elapse_calcseconds=""
 output_files=""
 has_error=false
 
@@ -343,14 +342,12 @@ Complain()
 
 StartTimer()
 {
-  elapse_nano_begin="$(date -u '+%N')"
-  elapse_begin="$(date -u '+%s')"
+  elapse_begin="$(date '+%s')"
 }
 
 StopTimer()
 {
-  elapse_nano_end="$(date -u '+%N')"
-  elapse_end="$(date -u '+%s')"
+  elapse_end="$(date '+%s')"
 }
 
 ColorIndication()
@@ -379,12 +376,15 @@ ColorIndication()
 
 Elapse()
 {
+  elapse_totalseconds=$(($elapse_end - $elapse_begin))
+  elapse_calcseconds=$(($elapse_totalseconds % 60))
+  elapse_calcminutes=$(($elapse_totalseconds / 60 % 60))
+  elapse_calchours=$(($elapse_totalseconds / 3600 % 60))
+  
   echo
-  echo "Elapsed:  "\
-       "$(echo $(($(RemoveLeadingZero $(date -d @$(( $(RemoveLeadingZero $elapse_end) - $(RemoveLeadingZero $elapse_begin) )) '+%H')) - 8))h | Dye $DIM)"\
-       "$(echo $(date -d @$(( $(RemoveLeadingZero $elapse_end) - $(RemoveLeadingZero $elapse_begin) )) '+%M')m | Dye $DIM)"\
-       "$(echo $(date -d @$(( $(RemoveLeadingZero $elapse_end) - $(RemoveLeadingZero $elapse_begin) )) '+%S')s | Dye $DIM)"\
-       "$(echo $(( ( $(RemoveLeadingZero $elapse_nano_end) + 1000000000 - $(RemoveLeadingZero $elapse_nano_begin) ) / 1000000 % 1000 ))ms | Dye $DIM)" | Echo '  '
+  echo "  Elapsed:  $elapse_calchours$(echo h | Dye $DIM)"\
+                   "$elapse_calcminutes$(echo m | Dye $DIM)"\
+                   "$elapse_calcseconds$(echo s | Dye $DIM)"
 }
 
 Output()

@@ -98,6 +98,25 @@ Status String_Concat(String *inst, const String string)
   RETURN(NormalStatus);
 }
 
+Status String_Compare(int *store, const String string1, const String string2)
+{
+  avail(store);
+
+  *store = 0;
+  const int maxlen = max(length(string1), length(string2));
+  String *longer_string = ((maxlen == (string1).data.length) ? (&string1) : (&string2));
+  iterate (i, longer_string->data) {
+    if (getbyte(string1, i) == getbyte(string2, i)) {
+      continue;
+    }
+    
+    *store = (getbyte(string1, i) - getbyte(string2, i));
+    break;
+  }
+  
+  RETURN(NormalStatus);
+}
+
 // Status String_Format(String *inst, const String format, ...)
 // {
 //   avail(inst);
