@@ -1,123 +1,92 @@
-/*
- * This file is part of Compound library.
- * Copyright (C) 2024-TODAY  William Lee
- * 
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Library General Public
- * License as published by the Free Software Foundation; either
- * version 2 of the License, or (at your option) any later version.
- * 
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Library General Public License for more details.
- * 
- * You should have received a copy of the GNU Library General Public
- * License along with this library; if not, see
- * <https://www.gnu.org/licenses/>.
- */
+#include <Compound/signature.h>
 
-#include "signature.h"
-
-Status Expression_Create(Expression *inst, const char *content)
+Status Signature_Create(Signature *inst, const String expression)
 {
   avail(inst);
-  state(!content, InvalidSignatureExpressionParsingSourceString);
+
+  fail(call(String,, Create) with (&inst->type, 1, sizeof(char)));
+  fail(call(String,, Create) with (&inst->param, 1, sizeof(char)));
+
+  // fail(call(Signature,, Parse) with (inst, expression));
   
   RETURN(NormalStatus);
 }
 
-Status Expression_Parse(Expression *inst, const char *cstr)
+Status Signature_CopyOf(Signature *inst, const Signature other);
+
+Status Signature_Delete(Signature *inst)
 {
   avail(inst);
-  state(!cstr, InvalidSignatureExpressionParsingSourceString);
-
-  parse(cstr, {
-    enter(inst->parentheses, {
-      inst->content = (char *)app;
-    })
-    
-    /* The statement of conditional termination. */
-    leave(inst->parentheses, {
-      fail(Expression_Parse(inst, ++app));
-    })
-  })
+  
+  fail(call(String,, Delete) with (&inst->type));
+  inst->type = (String)EMPTY;
+  fail(call(String,, Delete) with (&inst->param));
+  inst->param = (String)EMPTY;
   
   RETURN(NormalStatus);
 }
 
-IMPL_LITERALISATION(Expression);
-
-Status Key_Parse(Key *inst, const char *cstr)
+Status Signature_Parse(Signature *store, const String expression)
 {
-  avail(inst);
-  state(!cstr, InvalidSignatureKeyParsingSourceString);
-  
-  parse(cstr, {
+  avail(store);
+  state(!length(expression), EmptyString);
+
+  module(braces, '{', '}');
+  String *write = &store->type;
+  parse(fallback(expression), {
+    ig printf("Step %d"NEWLINE
+              "%s"NEWLINE  // Signature.
+              "%*c^"NEWLINE  // Indicator.
+              "%s"NEWLINE,  // Production.
+
+              (int)(app - fmt),
+              fallback(expression),
+              (int)(app - fmt),
+              ' ',
+              fallback(store->type));
     
-  })
-  
-  RETURN(NormalStatus);
-}
+    keep(',')
+    keep('*')
+    keep('.')
 
-IMPL_LITERALISATION(Key);
-
-size_t Signature_Parse(char *buff, const size_t buff_length, size_t buff_offset,
-                       int *item_count, Module braces, Module parentheses,
-                       const char *signature)
-{
-  // (iS{_IO_FILE}ppi(p{func})(kvpr){item}U{obj_t}E{obj2_t}(){a}()(){b}{c}())()
-  if (!buff || !signature
-      || !ensure(braces, '{', '}')
-      || !ensure(parentheses, '(', ')'))  return 0;
-
-  (void)printf(NEWLINE"Signature: %s", signature);
-
-  parse(signature, {
-    (void)printf(NEWLINE"(step %lu) \'%c\'\t", STEP, *app);
-    
-    enter(parentheses, {
-      (void)printf("level %d"NEWLINE, parentheses.level);
-      buff_offset += Signature_Parse(buff, buff_length, buff_offset, item_count, braces, parentheses, ++app);
-    });
-    leave(parentheses, {
-      (void)printf("level %d"NEWLINE, parentheses.level);
-      if (parentheses.level <= 0) {
-        return buff_offset;
-      }
+    // update(braces)
+    at(braces.opt_enter, {
+      braces.level += 1;
     })
     
-    /* Keys. */
-    at('b', {(void)printf("Replacing key. "); append("boolean "); ++(*item_count); continue;});
-    at('c', {(void)printf("Replacing key. "); append("char "); ++(*item_count); continue;});
-    at('i', {(void)printf("Replacing key. "); append("int "); ++(*item_count); continue;});
-    at('f', {(void)printf("Replacing key. "); append("float "); ++(*item_count); continue;});
-    at('d', {(void)printf("Replacing key. "); append("double "); ++(*item_count); continue;});
-    at('v', {(void)printf("Replacing key. "); append("void "); ++(*item_count); continue;});
-    at('w', {(void)printf("Replacing key. "); append("wchar_t "); ++(*item_count); continue;});
-  })
-
-  return buff_offset;
-}
-
-inline boolean Signature_IsPrefix(const char item)
-{
-  for (register int i = 0; SIGNATURE_PREFIXES[i]; i++) {
-    if (item == SIGNATURE_PREFIXES[i]) {
-      return true;
+    at(braces.opt_leave, {
+      braces.level -= 1;
+    })
+    
+    if (inside(braces)) {
+      appendch(CURRENT)
+      continue;
     }
-  }
+    
+    skip(' ')
+    
+    at(':', {
+      write = &store->param;
+    })
+    
+    at('b', append("boolean"))
+    at('c', append("char"))
+    at('i', append("int"))
+    at('f', append("float"))
+    at('d', append("double"))
+    at('u', append("unsigned"))
+    at('v', append("void"))
+    at('w', append("wchar_t"))
+    at('E', append("enum "))
+    at('S', append("struct "))
+    at('U', append("union "))
+    at('r', append(" restrict "))
+    at('p', append("*"))
+    at('l', append(" long "))
+    at('s', append(" short "))
+  })
   
-  return false;
+  RETURN(NormalStatus);
 }
 
-inline boolean Signature_IsHeader(const char item)
-{
-  for (register int i = 0; SIGNATURE_HEADERS[i]; i++) {
-    if (item == SIGNATURE_HEADERS[i]) {
-      return true;
-    }
-  }
-  
-  return false;
-}
+# undef append

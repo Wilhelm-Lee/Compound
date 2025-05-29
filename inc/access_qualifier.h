@@ -17,14 +17,14 @@
  * <https://www.gnu.org/licenses/>.
  */
 
-#ifndef COMPOUND_CLASS_FIELD_REGISTER_H
-# define COMPOUND_CLASS_FIELD_REGISTER_H
+#ifndef COMPOUND_ACCESS_QUALIFIER_H
+# define COMPOUND_ACCESS_QUALIFIER_H
 
-# include "class_field.h"
+typedef enum {
+  PRIVATE = 0,
+  PROTECTED = 1,
+  PACKAGE = 2,
+  PUBLIC = 3,
+} AccessQualifier;
 
-typedef struct {
-  ClassField *data;
-  size_t length;
-} ClassFieldRegister;
-
-#endif  /* COMPOUND_CLASS_FIELD_REGISTER_H */
+#endif  /* COMPOUND_ACCESS_QUALIFIER_H */

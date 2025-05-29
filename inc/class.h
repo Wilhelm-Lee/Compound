@@ -20,27 +20,26 @@
 #ifndef COMPOUND_CLASS_H
 # define COMPOUND_CLASS_H
 
-# include "access_permission_qualifier.h"
+# include "access_qualifier.h"
 # include "array.h"
 # include "class_constructor.h"
-# include "class_constructor_register.h"
 # include "class_field.h"
-# include "class_field_register.h"
 # include "class_method.h"
-# include "class_method_register.h"
 # include "common.h"
 # include "lifespan_qualifier.h"
 # include "literalisation.h"
 # include "stack.h"
 # include "status.h"
+# include "pointer.h"
+# include "struct.h"
 
 /* Inline current class in discussion (stack top). */
 # define this  (call(Stack, Class, GetTop) with (GlobalClassStack))
 
-# define __method(perm, lfspn, virtual,override,identity,content,signature,...)\
+# define __method(perm, lfspn, virtual, identity, content, signature, ...)     \
   fail(Class_AddMethod(this, ({                                                \
     ClassMethod m_##identity = EMPTY;                                          \
-    fail(ClassMethod_Create(&m_##identity, perm, lfspn, virtual, override,     \
+    fail(ClassMethod_Create(&m_##identity, perm, lfspn, virtual,               \
                             nameof(identity), content, signature, __VA_ARGS__))\
     m_##identity;                                                              \
   })))
@@ -75,25 +74,13 @@ Status ClassArray_Create(ClassArray *inst, const size_t length);
   fail(Class_AddField(this, ({                                                 \
     ClassField f_##identity = EMPTY;                                           \
     fail(ClassField_Create(&f_##identity, perm, lfspn,                         \
-                           signature, nameof(identity), value));               \
+                           nameof(signature), nameof(identity), value));       \
     f_##identity;                                                              \
   })))
 
 # define method(perm, lfspn, identity, content, signature, ...)                \
-  __method(perm, lfspn, false, false, identity,                                \
-           nameof(content), signature, __VA_ARGS__)
-
-# define virtual(perm, lfspn, identity, signature, ...)                        \
-  __method(perm, lfspn, true, false, identity,                                 \
-           nameof(RETURN(FunctionNotDeployed)), signature, __VA_ARGS__)
-
-/* A method overrides another is not virtual for sure.
-
-   Therefor, it is never true to have both "virtual" and "override"
-   switches on, at the same time. */
-# define override(perm, lfspn, identity, content, signature, ...)              \
-  __method(perm, lfspn, false, true, identity,                                 \
-           nameof(content), signature, __VA_ARGS__)
+  __method(perm, lfspn, false, identity, nameof(content), nameof(signature),   \
+           __VA_ARGS__)
 
 /* When a class inherits another class, calling a constructor from it that is
    already defined in that super class, would always perform the one from super
@@ -107,7 +94,17 @@ Status ClassArray_Create(ClassArray *inst, const size_t length);
    constructor from super class is all done automatically without the need
    to write super(), or things as such. */
 # define constructor(perm, content, signature, ...)                            \
-  __constructor(perm, nameof(content), signature, __VA_ARGS__)
+  __constructor(perm, nameof(content), nameof(signature), __VA_ARGS__)
+
+# define virtual(perm, lfspn, identity, signature, ...)                        \
+  __method(perm, lfspn, true, identity, "",nameof(signature),__VA_ARGS__)
+
+/* A method overrides another is not virtual for sure.
+
+   Therefor, it is never true to have both "virtual" and "override"
+   switches on, at the same time. */
+# define override(perm, lfspn, identity, content, signature, ...)              \
+  __method(perm, lfspn, false, identity, nameof(content), signature,__VA_ARGS__)
 
 # define record(incompleted)                               \
   fail(Class_RecordIncompleted(this, nameof(incompleted)))
@@ -115,7 +112,7 @@ Status ClassArray_Create(ClassArray *inst, const size_t length);
 # define implement(class)                                  \
   fail(Class_ImplementByName(this, nameof(class)))
 
-# define extend(class)                                     \
+# define inherit(class)                                    \
   fail(Class_ExtendByName(this, nameof(class)))
 
 /* Inline the class *object* in class pool. */
@@ -140,35 +137,31 @@ Status ClassArray_Create(ClassArray *inst, const size_t length);
 /* Inline the available members of the class. */
 # define thatof(class, member)
 
-/*# define execute(function)                                 \*/
-
 typedef struct Class {
-  char *identity;
+  String identity;
 
-  ClassField *fields;
-  ClassMethod *methods;
-  ClassConstructor *constructors;
+  Array(ClassField) fields;
+  Array(ClassMethod) methods;
+  Array(ClassConstructor) constructors;
 
-  /* References to relevant classes. */
   struct Class *super;
   struct Class *self;
-  struct Class **implementations;  // An array of references.
-  struct Class **inners;  // An array of references.
 
-  AccessPermissionQualifier perm;
+  AccessQualifier perm;
   LifespanQualifier lfspn;
 } Class;
 
-Status Class_Create(Class *inst, const AccessPermissionQualifier perm,
+ARRAY(Class);
+STACK(Class);
+
+Status Class_Create(Class *inst, const AccessQualifier perm,
                     const LifespanQualifier lfspn, const char *identity);
 Status Class_CopyOf(Class *inst, const Class other);
 Status Class_Delete(Class *inst);
-boolean   Class_Equals(const Class class1, const Class class2);
+boolean Class_Equals(const Class class1, const Class class2);
 
 Status Class_Extend(Class *inst, const Class other);
-Status Class_ExtendByName(Class *inst, const char *name);
 Status Class_Implement(Class *inst, const Class other);
-Status Class_ImplementByName(Class *inst, const char *name);
 Status Class_AddField(Class *inst, const ClassField field);
 Status Class_AddMethod(Class *inst, const ClassMethod method);
 Status Class_AddConstructor(Class *inst, const ClassConstructor constructor);
@@ -176,15 +169,12 @@ Status Class_AddConstructor(Class *inst, const ClassConstructor constructor);
 Status Class_CallMethod(Class *inst, const ClassMethod method);
 Status Class_CallConstructor(Class *inst, const ClassConstructor constructor);
 
-Status Class_FindField(Class *inst, ClassField *field);
-Status Class_FindMethod(Class *inst, ClassMethod *method);
-Status Class_FindConstructor(Class *inst, ClassConstructor *constructor);
+Status Class_GetField(Class *inst, ClassField *field);
+Status Class_GetMethod(Class *inst, ClassMethod *method);
+Status Class_GetConstructor(Class *inst, ClassConstructor *constructor);
 
 Status Class_RecordIncompleted(Class *inst, const char *incompleted);
 
-LITERALISATION(Class, "%p");
-ARRAY(Class);
-STACK(Class);
 STATUS(InvalidClassIdentity, 1,
           "Given class identity is invalid.",
           STATUS_ERROR, &InvalidObject);

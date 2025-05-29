@@ -19,14 +19,23 @@
 
 #include <Compound/string.h>
 
+IMPL_ARRAY(String)
+
 Status String_Create(String *inst, const size_t length, const size_t width)
 {
   avail(inst);
   state(!width, InvalidStringWidth);
   state(length == UINT32_MAX, StringTooLong);
+
+  if (!length) {
+    fail(call(Array, byte, Create) with (&inst->data, 1));
+    fail(set(&inst->data, byte, 0, 0));  // Null-terminator.
+  } else {
+    fail(call(Array, byte, Create) with (&inst->data, length));
+    fail(call(Array, byte, Insert) with (&inst->data, last(inst->data), '\0'));
+  }
   
-  fail(call(Array, byte, Create) with (&inst->data, length));
-  fail(call(Array, byte, Insert) with (&inst->data, last(inst->data), '\0'));
+  fail(call(Array, size_t, Create) with (&inst->breaks, 0));
   
   inst->width = width;
   
@@ -48,6 +57,8 @@ Status String_CopyOf(String *inst, const String other)
 Status String_Delete(String *inst)
 {
   avail(inst);
+  
+  fail(call(Array, size_t, Delete) with (&inst->breaks));
   
   fail(call(Array, byte, Delete) with (&inst->data));
   
@@ -104,7 +115,7 @@ Status String_Compare(int *store, const String string1, const String string2)
 
   *store = 0;
   const int maxlen = max(length(string1), length(string2));
-  String *longer_string = ((maxlen == (string1).data.length) ? (&string1) : (&string2));
+  String *longer_string = (String *)((maxlen == (string1).data.length) ? (&string1) : (&string2));
   iterate (i, longer_string->data) {
     if (getbyte(string1, i) == getbyte(string2, i)) {
       continue;
@@ -131,22 +142,130 @@ Status String_Compare(int *store, const String string1, const String string2)
 //   fail(call(String,, Delete(&buff)));
 // }
 
-Status String_Substr(const String source, String *store,
+Status String_Substr(String *store, const String source,
                      const size_t off, const size_t len)
 {
   state(off + len > length(source), StringIndexOutOfBound);
+
+  if (!len) {
+    *store = (String)EMPTY;
+    
+    RETURN(NormalStatus);
+  }
   
   fail(call(String,, Create) with (store, len, source.width));
-  iterate (i, store->data) {
+  for (register size_t i = 0; i < len; i++) {
     fail(setbyte(store, i, getbyte(source, i + off)));
   }
   
   RETURN(NormalStatus);
 }
 
-// Status String_Format(String *inst, const String format, ...)
-// {
-//   avail(inst);
+boolean _String_MatchesAny(const byte source, const String targets)
+{
+  if (!source || !length(targets)) {
+    return false;
+  }
   
+  stringing (t, targets, {
+    if (source == t) {
+      return true;
+    }
+  })
   
-// }
+  return false;
+}
+
+Status String_Tokens(String *inst, const String delim, size_t *count)
+{
+  avail(inst);
+  state(!length(*inst) || !length(delim), NormalStatus);
+
+  size_t tokenth = 0;
+  size_t begin = 0;
+  size_t end = 0;
+  boolean refreshed = false;
+  for (register size_t i = 0; i < length(*inst); i++) {
+    const boolean delimed = _String_MatchesAny(getbyte(*inst, i), delim);
+
+    /* First byte of a token. */
+    if (!refreshed && !delimed) {
+      refreshed = true;
+      tokenth++;
+      begin = i;
+      fail(call(Array, size_t, Insert)
+           with (&inst->breaks, last(inst->breaks), begin));
+    }
+    
+    /* The byte should be skipped. */
+    if (!refreshed && delimed) {
+      continue;
+    }
+    
+    /* A byte within a token. */
+    if (refreshed && !delimed) {
+      continue;
+    }
+
+    /* One byte right after a token. */
+    if (refreshed && delimed) {
+      refreshed = false;
+      end = i - 1;
+      fail(call(Array, size_t, Insert)
+           with (&inst->breaks, last(inst->breaks), end - begin + 1));
+    }
+  }
+  
+  if (count) {
+    *count = tokenth;
+  }
+  
+  RETURN(NormalStatus);
+}
+
+Status String_Breaks(String *store, const String source, const size_t tokenth)
+{
+  const size_t off = get(source.breaks, size_t, tokenth * 2);
+  size_t len = get(source.breaks, size_t, tokenth * 2 + 1);
+  
+  /* Set @len as the remaining length of string if no value provided. */
+  if (!len) {
+    len = last(source.data) - off - 1;
+  }
+  
+  fail(call(String,, Substr) with (store, source, off, len));
+
+  RETURN(NormalStatus);
+}
+
+size_t String_FirstOf(const String source, const byte target,
+                      const size_t offset)
+{
+  if (offset >= length(source)) {
+    return -1;
+  }
+  
+  for (register size_t i = offset; i < length(source); i++) {
+    if (target == getbyte(source, i)) {
+      return i;
+    }
+  }
+  
+  return -1;
+}
+
+size_t String_LastOf(const String source, const byte target,
+                     const size_t offset)
+{
+  if (offset >= length(source)) {
+    return -1;
+  }
+  
+  for (register size_t i = offset; i < length(source); i++) {
+    if (target == getbyte(source, (length(source) - i - 1))) {
+      return i;
+    }
+  }
+  
+  return -1;
+}

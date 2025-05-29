@@ -58,3 +58,4 @@ IMPL_ARRAY(uint_fast32_t);
 IMPL_ARRAY(uint_fast64_t);
 IMPL_ARRAY(uintptr_t);
 IMPL_ARRAY(uintmax_t);
+IMPL_ARRAY(size_t);

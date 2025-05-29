@@ -203,7 +203,7 @@ NoFileCollected()
 
 AnnounceStage()
 {
-  printf '' > "$OUTPUT"
+  ResetFileBuffer
   echo
   echo " $(echo @ | Dye $FYEL)$1"
 }
@@ -590,10 +590,6 @@ $output && Output
 Elapse
   
 DisplayFooter
-
-rm "$OUTPUT"
-rm "$ERROR"
-rmdir "$SCRIPT_DIRECTORY"
 
 echo
 HasError

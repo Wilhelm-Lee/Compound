@@ -29,6 +29,46 @@
 # include "platform.h"
 # include "stack.h"
 
+/* Overwrite @stat.value with @val. */
+# define value(stat, val)  ((Status){                      \
+  .identity = (stat).identity;                             \
+  .value = val;                                            \
+  .description = (stat).description;                       \
+  .characteristic = (stat).characteristic;                 \
+  .location = (stat).location;                             \
+  .prev = (stat).prev;                                     \
+})
+
+/* Overwrite @stat.location with @__HERE__. */
+# define apply(stat)  ((Status){                           \
+  .identity = (stat).identity,                             \
+  .value = (stat).value,                                   \
+  .description = (stat).description,                       \
+  .characteristic = (stat).characteristic,                 \
+  .location = __HERE__,                                    \
+  .prev = (stat).prev,                                     \
+})
+
+/* Overwrite @stat.description with @desc. */
+# define annot(stat, desc)  ((Status){                     \
+  .identity = (stat).identity,                             \
+  .value = (stat).value,                                   \
+  .description = desc,                                     \
+  .characteristic = (stat).characteristic,                 \
+  .location = (stat).location,                             \
+  .prev = (stat).prev,                                     \
+})
+
+# define STATUS(i, v, d, c, p)                             \
+  static Status i = {                                      \
+    .identity = nameof(i),                                 \
+    .value = v,                                            \
+    .description = d,                                      \
+    .characteristic = c,                                   \
+    .location = __GLOBAL__,                                \
+    .prev = (Status *)p                                    \
+  }
+
 /* Status characteristics */
 typedef enum {
   STATUS_UNKNOWN  = -1,
@@ -59,82 +99,28 @@ typedef struct {
    information about the procedure. */
 typedef struct Status {
   char *identity;
-  int value;  /* Traditional returning data "int". Only used when the function
-                 called and received legacy functions that uses "int" as the
-                 returning type that wish to have place to hold the value.
-                 Otherwise, the function would just return the structure Status. */
+  int value;
   char *description;
   int characteristic;
   Location location;
   struct Status *prev;
 } Status;
 
-typedef struct _StatusStack {
-  Status *data;
-  size_t length;
-  size_t offset;
-} StatusStack;
-Status StatusStack_Create(StatusStack *inst, const size_t length);
-Status StatusStack_CopyOf(StatusStack *inst, const StatusStack other);
-Status StatusStack_Delete(StatusStack *inst);
-Status StatusStack_Push(StatusStack *inst, const Status elem);
-Status StatusStack_Pop(StatusStack *inst);
-void StatusStack_PopAll(StatusStack *inst);
-inline Status *StatusStack_GetTop(StatusStack *inst);
-size_t StatusStack_Literalise(char *buff, void *object, int countdown,
-                              struct StatusStack_lit_callback *callback,
-                              const char *format, ...);
-void StatusStackLiteralise_SetFormat(const char *format);
-;
-static StatusStack *GlobalStatusStack = ((void *)0);
-static inline void StatusStack_SetGlobal(StatusStack *stk) {
-  GlobalStatusStack = stk;
-};
-typedef struct StatusStack_lit_callback {
-  size_t offset;
-  size_t (*Literalise)(char *buff, void *object, int countdown,
-                       struct StatusStack_lit_callback *callback,
-                       const char *format, ...);
-  char *format;
-  struct LiteralisationCallback *next;
-} StatusStack_lit_callback;
-// size_t StatusStack_Literalise(char *buff, void *object, int countdown,
-//                               struct StatusStack_lit_callback *callback,
-//                               const char *format, ...);
-// void StatusStackLiteralise_SetFormat(const char *format);
-// static char *StatusStack_LITERALISATION_FORMAT = ("[>%s]");
-// static StatusStackLiteralisationCallback StatusStack_lit_callback = {
-//     .offset = 0,
-//     .Literalise = StatusStack_Literalise,
-//     .format = ("[>%s]"),
-//     .next = ((void *)0)};
-// ;
-
-# define STATUS(i, v, d, c, p)                             \
-  static Status i = {                                      \
-    .identity = nameof(i),                                 \
-    .value = v,                                            \
-    .description = d,                                      \
-    .characteristic = c,                                   \
-    .location = __GLOBAL__,                                \
-    .prev = (Status *)p                                    \
-  }
+STACK(Status);
 
 # define LOCATION_LITERALISE_FORMAT  "in file %s, line %d, function %s"
 
-# define STATUS_REGISTRY_BUFFER_MAXIMUM_LENGTH  0xFFFF
+# define STATUS_REGISTRY_BUFFER_MAXIMUM_LENGTH  0xFFFFL
 
-/* Returns bytes written. */
-boolean   Location_Equals(const Location loc1, const Location loc2);
-/* Returns bytes written. */
-boolean   Status_Equal(const Status stat1, const Status stat2);
-boolean   Status_Match(const Status stat1, const Status stat2);
-boolean   Status_Belong(const Status stat1, const Status stat2);
-void   Status_Dump(const Status inst, Status *store);
-boolean   Status_HasPrev(const Status inst);
-boolean   Status_IsOkay(const Status inst);
-boolean   Status_IsRecursive(const Status inst);
-int    Status_Depth(const Status inst);
+boolean Location_Equals(const Location loc1, const Location loc2);
+boolean Status_Equal(const Status stat1, const Status stat2);
+boolean Status_Match(const Status stat1, const Status stat2);
+boolean Status_Belong(const Status stat1, const Status stat2);
+void Status_Dump(const Status inst, Status *store);
+boolean Status_HasPrev(const Status inst);
+boolean Status_IsOkay(const Status inst);
+boolean Status_IsRecursive(const Status inst);
+int Status_Depth(const Status inst);
 
 // LITERALISATION(Location, "at %s:%d, in function `%s\'");
 // LITERALISATION(Status, "%s:  \"%s\"\n\tpredecessor=<%p> value=(%d) characteristic=(%d)\n\t%s");
@@ -145,7 +131,6 @@ int    Status_Depth(const Status inst);
 STATUS(UnknownStatus, -1, "Status Unknown.", STATUS_UNKNOWN, &UnknownStatus);
 STATUS(NormalStatus, 0, "Status Normal.", STATUS_NORMAL, &NormalStatus);
 STATUS(ErrorStatus, 1, "Status Error.", STATUS_ERROR, &ErrorStatus);
-STATUS(ErrNo, -1, "ErrNo.", STATUS_ERROR, &ErrNo);
 
 // ----------------------EXTENDED--------------------------
 

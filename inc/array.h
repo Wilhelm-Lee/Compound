@@ -22,7 +22,38 @@
 
 # include "common.h"
 # include "memory.h"
-# include "literalisation.h"
+
+# define ref(inst, type, index)                            \
+  ({                                                       \
+    type *_ref = NULL;                                     \
+    ig call(Array, type, RefIdx) with (inst, (index), &_ref);\
+    _ref;                                                  \
+  })
+
+# define get(inst, type, index)                            \
+  ({                                                       \
+    type _get = EMPTY;                                     \
+    ig call(Array, type, GetIdx) with (inst, (index), &_get);\
+    _get;                                                  \
+  })
+
+# define set(inst, type, index, elem)                      \
+  call(Array, type, SetIdx) with ((inst), (index), (elem)) \
+
+# define iterate(idx, collection)                          \
+  for (register ullong idx = 0; idx < (collection).length; idx++)
+
+# define foreach(type, it, collection, block)              \
+  {                                                        \
+    type it = EMPTY;                                       \
+    iterate (_foreach_##it##_idx, (collection)) {          \
+      it = get((collection), type, _foreach_##it##_idx);   \
+      block                                                \
+    }                                                      \
+  }
+
+# define last(collection)                                  \
+  ((collection).length)
 
 # define Array(type)  type##Array
 
@@ -30,6 +61,7 @@
   struct type##Array {                                     \
     type *data;                                            \
     size_t length;                                         \
+    boolean reserved;                                      \
     void *nested;                                          \
   }
 
@@ -37,6 +69,7 @@
   struct name##Array {                                     \
     type *data;                                            \
     size_t length;                                         \
+    boolean reserved;                                      \
     void *nested;                                          \
   }
 
@@ -88,10 +121,7 @@ Status call(Array, type, Create)\
 \
   fail(Allocate(&inst->data, length, sizeof(type)));\
   inst->length = length;\
-  /* Initialise for each member. */\
-  for (register size_t i = 0; i < length; i++) {\
-    ig set(inst, type, i, 0);\
-  }\
+  inst->reserved = (!length);\
 \
   RETURN(NormalStatus);\
 }\
@@ -100,10 +130,10 @@ Status call(Array, type, CopyOf)\
        with (Array(type) *inst, const Array(type) other)\
 {\
   avail(inst);\
-  state(!other.length, InvalidArrayLength);\
 \
   fail(Allocate(&inst->data, other.length, sizeof(type)));\
   inst->length = other.length;\
+  inst->reserved = other.reserved;\
   /* Copying for each member. */\
   for (register size_t i = 0; i < other.length; i++) {\
     fail(set(inst, type, i, get(other, type, i)));\
@@ -116,23 +146,23 @@ Status call(Array, type, Delete) with (Array(type) *inst)\
 {\
   avail(inst);\
 \
-  if (inst->data && inst->length) {\
+  if (inst->length || inst->reserved) {\
     for (register size_t i = 0; i < inst->length; i--) {\
-      ig set(inst, type, (inst->length - 1 - i), 0);  /* Reset. */\
+      ig set(inst, type, (inst->length - 1 - i), (type)EMPTY);\
     }\
-    ig Deallocate(inst->data);  /* Free. */\
+    ig Deallocate(inst->data);\
   }\
-  inst->data = NULL;  /* Reset. */\
+  inst->data = NULL;\
   inst->length = 0;\
 \
   RETURN(NormalStatus);\
 }\
 \
-Status type##Array_RefIdx(const type##Array array, const size_t index, type **data)\
+Status type##Array_RefIdx(const type##Array array, const size_t index,\
+                          type **data)\
 {\
   avail(data);\
   state(!array.data, InvalidArrayData);\
-  state(!array.length, InvalidArrayLength);\
   state(index >= array.length, IndexOutOfBound);\
 \
   *data = &array.data[index];\
@@ -145,7 +175,6 @@ Status call(Array, type, GetIdx)\
 {\
   avail(data);\
   state(!array.data, InvalidArrayData);\
-  state(!array.length, InvalidArrayLength);\
   state(index >= array.length, IndexOutOfBound);\
 \
   *data = array.data[index];\
@@ -158,7 +187,6 @@ Status call(Array, type, SetIdx)\
 {\
   avail(inst);\
   state(!inst->data, InvalidArrayData);\
-  state(!inst->length, InvalidArrayLength);\
   state(index >= inst->length, IndexOutOfBound);\
 \
   inst->data[index] = data;\
@@ -172,7 +200,6 @@ Status call(Array, type, Insert)\
 {\
   avail(inst);\
   state(!inst->data, InvalidArrayData);\
-  state(!inst->length, InvalidArrayLength);\
   state(index > inst->length, IndexOutOfBound);\
 \
   Array(type) tmp = EMPTY;\
@@ -249,37 +276,5 @@ Status type##Array_Reverse(type##Array *inst)\
 \
   RETURN(NormalStatus);\
 }
-
-# define ref(inst, type, index)                            \
-  ({                                                       \
-    type *_ref = NULL;                                     \
-    ig call(Array, type, RefIdx) with (inst, (index), &_ref);\
-    _ref;                                                  \
-  })
-
-# define get(inst, type, index)                            \
-  ({                                                       \
-    type _get = EMPTY;                                     \
-    ig call(Array, type, GetIdx) with (inst, (index), &_get);\
-    _get;                                                  \
-  })
-
-# define set(inst, type, index, elem)                      \
-  call(Array, type, SetIdx) with ((inst), (index), (elem)) \
-
-# define iterate(idx, collection)                          \
-  for (register ullong idx = 0; idx < (collection).length; idx++)
-
-# define foreach(type, it, collection, block)              \
-  {                                                        \
-    type it = EMPTY;                                       \
-    iterate (_foreach_idx, (collection)) {                 \
-      it = get((collection), type, _foreach_idx);          \
-      block                                                \
-    }                                                      \
-  }
-
-# define last(collection)                                  \
-  ((collection).length)
 
 #endif  /* COMPOUND_ARRAY_H */

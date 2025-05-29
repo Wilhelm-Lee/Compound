@@ -20,6 +20,16 @@
 #ifndef COMPOUND_STACK_H
 # define COMPOUND_STACK_H
 
+# define isfull(stk)  ((stk).offset == (stk).length)
+
+# define isempty(stk)  ((stk).offset == 0)
+
+# define push(stk, type, obj)                              \
+  call(Stack, type, Push) with (stk, (obj))
+
+# define pop(stk, type)                                    \
+  call(Stack, type, Pop) with (stk)
+
 # define Stack(name)                                       \
   name##Stack
 
@@ -158,8 +168,5 @@ inline type *type##Stack_GetTop(type##Stack *inst)\
 \
   return &inst->data[inst->offset];\
 }
-
-# define isfull(stk)  ((stk).offset == (stk).length)
-# define isempty(stk)  ((stk).offset == 0)
 
 #endif  /* COMPOUND_STACK_H */

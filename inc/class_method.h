@@ -22,10 +22,11 @@
 
 # include <stdarg.h>
 
-# include "access_permission_qualifier.h"
+# include "access_qualifier.h"
+# include "array.h"
 # include "lifespan_qualifier.h"
-# include "status.h"
 # include "signature.h"
+# include "status.h"
 
 //  rtn id signature
 # define CLASS_METHOD_DECLARATION_LITERALISE_FORMAT        \
@@ -43,47 +44,33 @@
 # define CLASS_METHOD_ARGUMENTS_LENGTH_MAXIMUM  127
 
 typedef struct {
-  AccessPermissionQualifier perm;  // Public, Protected, Package or Private.
-  LifespanQualifier lfspn;         // Static or Dynamic.
-  boolean virtual;                    // Virtual method should not have @content.
-  boolean override;                   // The one that this method overrides.
-  char *identity;                  // Method identity.
-  char *content;                   // Only when non-virtual to apply.
-  char *signature;                 // See doc/SIGNATURE.md for more.
-  int argc;                        // Count for args.  ranged: [0, 127]
-  char **args;                     // The identifiers of args.
+  AccessQualifier perm;     // Public, Protected, Package or Private.
+  LifespanQualifier lfspn;  // Static or Dynamic.
+  boolean virtual;          // Virtual method always return @NOCONTENT.
+  String identity;
+  String content;           // Method body.
+  String signature;         // See doc/SIGNATURE.md.
+  Array(String) args;       // Arguments passed in.
 } ClassMethod;
 
+ARRAY(ClassMethod);
+
 Status ClassMethod_Create(ClassMethod *inst,
-                          const AccessPermissionQualifier perm,
+                          const AccessQualifier perm,
                           const LifespanQualifier lfspn, const boolean virtual,
-                          const boolean override, const char *identity,
-                          const char *content, const char *signature, ...);
+                          const String identity, const String content,
+                          const String signature, ...);
 Status ClassMethod_CopyOf(ClassMethod *inst, const ClassMethod other);
 Status ClassMethod_Delete(ClassMethod *inst);
-boolean   ClassMethod_Equals(const ClassMethod method1, const ClassMethod method2);
-Status ClassMethod_Override(ClassMethod *inst, const char *content);
-size_t ClassMethod_Export(const ClassMethod method, FILE *dst);
-size_t ClassMethod_Literalise(const ClassMethod method, char *buff);
+boolean ClassMethod_Equals(const ClassMethod method1, const ClassMethod method2);
+Status ClassMethod_Override(ClassMethod *inst, const String content);
 
-STATUS(InvalidClassMethodIdentity, 1,
-  "Class method identity cannot be null or empty.",
-  STATUS_ERROR, &InvalidObject);
+STATUS(InvalidMethodIdentity, 1,
+       "Method identity cannot be empty.",
+       STATUS_ERROR, &InvalidObject);
 
-STATUS(InvalidClassMethodContent, 1,
-  "Class method content cannot be null.",
-  STATUS_ERROR, &InvalidObject);
-
-STATUS(InvalidClassMethodSignature, 1,
-  "Class method signature cannot be null.",
-  STATUS_ERROR, &InvalidObject);
-
-STATUS(InvalidClassMethodParameterItemName, 1,
-  "Class method parameter item name cannot be null.",
-  STATUS_ERROR, &InvalidObject);
-
-STATUS(VirtualClassMethodCannotHaveContent, 1,
-  "Any virtual class method cannot have content.",
-  STATUS_ERROR, &ErrorStatus);
+STATUS(InvalidMethodSignature, 1,
+       "Method signature cannot be empty.",
+       STATUS_ERROR, &InvalidObject);
 
 #endif  /* COMPOUND_CLASS_METHOD_H */

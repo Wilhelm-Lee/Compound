@@ -23,10 +23,9 @@
 # include <stdint.h>
 
 # include "boolean.h"
+# include "pointer.h"
 
 typedef unsigned char byte;
-
-typedef void *Pointer;
 
 /* Signed. */
 typedef signed long long int llong;

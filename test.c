@@ -17,40 +17,60 @@
  * <https://www.gnu.org/licenses/>.
  */
 
+#include <Compound/class.h>
 #include <Compound/common.h>
 #include <Compound/memory.h>
 #include <Compound/platform.h>
+#include <Compound/signature.h>
 #include <Compound/status.h>
 #include <Compound/string.h>
 #include <Compound/types.h>
 
 Status Main(void)
 {
-  String msg1 = string("Apples ");
-  String msg2 = string("are sometimes red.");
+  String source = string("  This is not an   apple.");
+  const String delim = string(" aeiou");
+  const size_t count = tokens(&source, delim);
 
-  int versus = compare(msg1, msg2);
-  String merge = concat(msg1, msg2);
-  String subseq = substr(msg2, 4, 9);  // Requires deallocation afterwards.
-  
-  ig printf("%d"NEWLINE, versus);
-  
-  stringing (ch, merge, {
-    ig putchar(ch);
-  })
-  ig printf(NEWLINE);
-  
-  stringing (ch, subseq, {
-    ig putchar(ch);
-  })
-  ig printf(NEWLINE);
-  
-  ig call(String,, Delete) with (&subseq);
-  ig call(String,, Delete) with (&msg2);
-  ig call(String,, Delete) with (&msg1);
+  for (register size_t i = 0; i < count; i++) {
+    String token = breaks(source, i);
+    
+    ig putchar('\'');
+    stringing (ch, token, {
+      ig putchar(ch);
+    })
+    ig putchar('\'');
+    ig printf(NEWLINE);
+    
+    ig call(String,, Delete) with (&token);
+  }
+
+  ig call(String,, Delete) with ((String *)&delim);
+  ig call(String,, Delete) with ((String *)&source);
   
   RETURN(NormalStatus);
 }
+
+// void f(void)
+// {
+//   /* Sample To: Array_ComposeContent. */
+//   iterate (i, source.breaks) {
+//     const size_t current = get(source.breaks, size_t, i);
+    
+//     if (!i) {
+//       ig printf("[%lu", current);
+//       continue;
+//     }
+    
+//     if (i == last(source.breaks) - 1) {
+//       ig printf(", %lu]", current);
+//       continue;
+//     }
+    
+//     ig printf(", %lu", current);
+//   }
+//   ig printf(NEWLINE);
+// }
 
 int main(void)
 {

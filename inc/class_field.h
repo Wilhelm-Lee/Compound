@@ -20,25 +20,37 @@
 #ifndef COMPOUND_CLASS_FIELD_H
 # define COMPOUND_CLASS_FIELD_H
 
-# include "access_permission_qualifier.h"
+# include "access_qualifier.h"
+# include "array.h"
 # include "lifespan_qualifier.h"
 # include "status.h"
+# include "string.h"
 
 # define CLASS_FIELD_IDENTITY_LENGTH_MAX  64
 
 typedef struct {
-  AccessPermissionQualifier perm;
+  AccessQualifier perm;
   LifespanQualifier lfspn;
-  char *signature;
-  char *identity;
-  char *value;
+  String signature;
+  String identity;
+  String value;
 } ClassField;
 
-Status ClassField_Create(ClassField *inst, const AccessPermissionQualifier perm,
-                         const LifespanQualifier lfspn, const char *signature,
-                         const char *identity, const char *value);
+ARRAY(ClassField);
+
+Status ClassField_Create(ClassField *inst, const AccessQualifier perm,
+                         const LifespanQualifier lfspn, const String signature,
+                         const String identity, const String value);
 Status ClassField_CopyOf(ClassField *inst, const ClassField other);
 Status ClassField_Delete(ClassField *inst);
-boolean   ClassField_Equals(const ClassField field1, const ClassField field2);
+boolean ClassField_Equals(const ClassField field1, const ClassField field2);
+
+STATUS(InvalidFieldIdentity, 1,
+       "Field identity cannot be empty.",
+       STATUS_ERROR, &InvalidObject);
+
+STATUS(InvalidFieldSignature, 1,
+       "Field signature cannot be empty.",
+       STATUS_ERROR, &InvalidObject);
 
 #endif  /* COMPOUND_CLASS_FIELD_H */

@@ -26,6 +26,86 @@ manipulations available.
 
 Enjoy.  :)
 
+## Features
+
+Compound offers many appoarches for building robust softwares with the great
+compatibility towards early-aged standards.
+
+In general, there are some key features that worth your noticing:
+
+ - **Object Oriented Programming**
+ 
+   Compound supports OOP by providing a neatly structured simulation with the
+   great help of macros.
+   
+   Here is a demonstration of how they are used:
+   ```C
+   Status Main(void) {
+     class (PUBLIC, DYNAMIC, Animal, {
+       field (PRIVATE, DYNAMIC, int, age, "");
+       field (PRIVATE, DYNAMIC, double, weight, "");
+         
+       constructor (PUBLIC, {
+         this->age = age;
+         this->weight = weight;
+       }, (int, double), "age", "weight");
+        
+       virtual (PUBLIC, DYNAMIC, Eat, (void:double), "foodWeight");
+          
+       method (PUBLIC, DYNAMIC, GetAge, {
+         return this->age;
+       }, (int:void), NOPARAM);
+          
+       method (PUBLIC, DYNAMIC, GetWeight, {
+         return this->weight;
+       }, (double:void), NOPARAM);
+     })
+     
+     class (PUBLIC, DYNAMIC, Cat, {
+       inherit(Animal);
+     
+       override (PUBLIC, DYNAMIC, Eat, {
+         this->weight += foodWeight * 0.9;  // Because she drops a lot.
+       }, (void:double), "foodWeight");
+     })
+
+     /* This outputs the meta data @identity of @Cat, which is "Cat". */
+     stringing (ch, of(Cat).identity, {
+       ig putchar(ch);
+     })
+     ig printf(NEWLINE);
+     
+     Class *c_Cat = new(Cat, 5, 8.8);
+
+     invoke(Cat, Eat, 3);
+     
+     const double weight = invoke(Cat, GetWeight, NOPARAM);
+     
+     delete(c_Cat);
+     
+     RETURN(NormalStatus);
+   }
+   ```
+
+ - **Incompleted Objects**
+ 
+   Objects like `Array` and `Stack` are commonly used with a type, meaning
+   themselves alone are "incompleted".
+   
+   And when an incompleted object like that need to be defined and used,
+   Compound have your back with several options.  Let's take a look.
+
+<!-- Rewrite this. -->   
+<!--    - **Defining**
+   ```C
+   ARRAY(YourType);
+   ```
+   
+   - **Usage**
+   ```C
+   Array(YourType) variable;
+   ```
+ -->
 ## Building
 
 > Warning  
@@ -44,6 +124,15 @@ Enjoy.  :)
 The script `build` is a convenient shorthand for building project
 with default configurations.  
 
+Here is how you use it:
+
+```sh
+./build
+```
+
+And just for a reminder, that this script installs files into system directories,
+so you might want to use it with a root privilege.  
+
 However, if you would like to have more control over compiling this project, you
 can choose to use `build.sh`.  There are also many built-in guidances available
 in that script to look up.
@@ -54,7 +143,7 @@ in that script to look up.
 
 Compound is originally designed to be a library, meaning there will be no actual
 executable files generated.  But it can be achieved by giving an entry along
-with other library sources.
+with library sources.
 
 Here is a demonstration of how you would build an executable file with Compound
 using `test.c` included in the repository as an entry.
@@ -68,8 +157,8 @@ using `test.c` included in the repository as an entry.
 
  - The flag `--sources` specifies source files included sending to the compiler.
 
- - `--compiler` is optional, and it tells where the compiler user wanted 
-   otherwise is located.
+ - `--compiler` is optional, and it tells where the compiler user wants
+   alternatively is located.
 
  - `--flags` is also optional.  Its value is passed to the compiler.
 
@@ -86,9 +175,12 @@ using `test.c` included in the repository as an entry.
 For more details about `build.sh`, type `build.sh` to check it out.
 
 > Tips & Tricks  
-> 
-> You can check out the default configuration of `build.sh` without doing any 
-> computing work by only giving `--dumpenv` to its parameter list.
+>
+> Source specification can be used with shell expansion by an asterisk:
+> `--source test.c,src/*`
+>
+> You can check out the default configuration without doing any compiling work 
+> by only giving `--dumpenv` to its parameter list.
 >
 > If you don't use the `--complain` flag though, there will be an `okay` when 
 > commands are successfully executed, or an `failed` with error message for 
@@ -139,7 +231,7 @@ acknowledge beforehand.
  2. If an issue were to be put up, try browsing the previously asked questions and 
     make sure that there are no same or similar ones that were discussed before.
 
- 3. If you don't get an immediate response on whatever you were asking, it 
+ 3. If you don't get an immediate response on whatever you are asking, it 
     doesn't mean your question was ignored.
 
  4. Remember those rules, please.

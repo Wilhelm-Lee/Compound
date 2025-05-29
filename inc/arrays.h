@@ -63,5 +63,6 @@ ARRAY(uint_fast32_t);
 ARRAY(uint_fast64_t);
 ARRAY(uintptr_t);
 ARRAY(uintmax_t);
+ARRAY(size_t);
 
 #endif  /* COMPOUND_ARRAYS_H */

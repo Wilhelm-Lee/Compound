@@ -17,18 +17,12 @@
  * <https://www.gnu.org/licenses/>.
  */
 
-#ifndef COMPOUND_CLASS_CONSTRUCTOR_REGISTER_H
-# define COMPOUND_CLASS_CONSTRUCTOR_REGISTER_H
+#ifndef COMPOUND_LIFESPAN_QUALIFIER_H
+# define COMPOUND_LIFESPAN_QUALIFIER_H
 
-# include "class_constructor.h"
+typedef enum {
+  STATIC = 0,  // Through out the entire lifespan of current programme.
+  DYNAMIC = 1,
+} LifespanQualifier;
 
-typedef struct {
-  ClassConstructor *data;
-  size_t length;
-} ClassConstructorRegister;
-
-/* Shorthand for declaring ClassConstructorRegister @ccr in function.
-   "CCREG" stands for "Class Constructor Register". */
-# define CCREG  ClassConstructorRegister *ccr
-
-#endif  /* COMPOUND_CLASS_CONSTRUCTOR_REGISTER_H */
+#endif  /* COMPOUND_LIFESPAN_QUALIFIER_H */

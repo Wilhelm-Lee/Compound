@@ -20,20 +20,23 @@
 #ifndef COMPOUND_CLASS_CONSTRUCTOR_H
 # define COMPOUND_CLASS_CONSTRUCTOR_H
 
-# include "access_permission_qualifier.h"
+# include "access_qualifier.h"
+# include "array.h"
 # include "lifespan_qualifier.h"
 # include "status.h"
 
 # define CLASS_CONSTRUCTOR_IDENTITY_LENGTH_MAXIMUM  64
 
 typedef struct {
-  AccessPermissionQualifier perm;
+  AccessQualifier perm;
   LifespanQualifier lfspn;
   char identity[CLASS_CONSTRUCTOR_IDENTITY_LENGTH_MAXIMUM];
 } ClassConstructor;
 
+ARRAY(ClassConstructor);
+
 Status ClassConstructor_Create(ClassConstructor *inst,
-                               const AccessPermissionQualifier perm,
+                               const AccessQualifier perm,
                                const char *content, const char *signature, ...);
 Status ClassConstructor_CopyOf(ClassConstructor *inst,
                                const ClassConstructor other);
