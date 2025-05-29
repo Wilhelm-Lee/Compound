@@ -30,8 +30,6 @@
 # include "literalisation.h"
 # include "stack.h"
 # include "status.h"
-# include "pointer.h"
-# include "struct.h"
 
 /* Inline current class in discussion (stack top). */
 # define this  (call(Stack, Class, GetTop) with (GlobalClassStack))

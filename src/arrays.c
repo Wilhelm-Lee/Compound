@@ -20,7 +20,6 @@
 #include <Compound/arrays.h>
 
 IMPL_ARRAY(byte);
-IMPL_ARRAY(Pointer);
 IMPL_ARRAY(boolean);
 IMPL_ARRAY(float);
 IMPL_ARRAY(double);

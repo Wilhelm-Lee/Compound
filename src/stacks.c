@@ -20,7 +20,6 @@
 #include <Compound/stacks.h>
 
 IMPL_STACK(FILE,,);
-IMPL_STACK(Pointer,,);
 IMPL_STACK(boolean,,);
 IMPL_STACK(float,,);
 IMPL_STACK(double,,);

@@ -25,7 +25,6 @@
 # include "status.h"
 
 STACK(FILE);
-STACK(Pointer);
 STACK(boolean);
 STACK(float);
 STACK(double);

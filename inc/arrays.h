@@ -25,7 +25,6 @@
 # include "types.h"
 
 ARRAY(byte);
-ARRAY(Pointer);
 ARRAY(boolean);
 ARRAY(float);
 ARRAY(double);
