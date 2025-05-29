@@ -26,7 +26,7 @@ manipulations available.
 
 Enjoy.  :)
 
-## Features
+<!-- ## Features
 
 Compound offers many appoarches for building robust softwares with the great
 compatibility towards early-aged standards.
@@ -95,7 +95,7 @@ In general, there are some key features that worth your noticing:
    And when an incompleted object like that need to be defined and used,
    Compound have your back with several options.  Let's take a look.
 
-<!-- Rewrite this. -->   
+Rewrite this. -->   
 <!--    - **Defining**
    ```C
    ARRAY(YourType);
