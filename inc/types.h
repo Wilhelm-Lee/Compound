@@ -23,7 +23,6 @@
 # include <stdint.h>
 
 # include "boolean.h"
-# include "pointer.h"
 
 typedef unsigned char byte;
 
