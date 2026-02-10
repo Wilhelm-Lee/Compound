@@ -1,0 +1,10 @@
+#pattern\
+    for (${type} ${it} in ${array}) ${block}\
+    $=\
+    for (register llong _for_${it} = 0;\
+         _for_${it} < ${array}.length;\
+         _for_${it} ++)\
+    {\
+        ${type} ${it} = get(${type}, ${array}, _for_${it});\
+        ${block}\
+    }
