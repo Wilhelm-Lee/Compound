@@ -11,41 +11,31 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     strategy:
-      # Set fail-fast to false to ensure that feedback is delivered for all matrix combinations.
       fail-fast: false
-
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         build_type: [Debug, Release]
         c_compiler: [gcc, clang, cl]
         include:
-          # Windows Configuration
           - os: windows-latest
             c_compiler: cl
             cpp_compiler: cl
-          # Linux Configuration (GCC)
           - os: ubuntu-latest
             c_compiler: gcc
             cpp_compiler: g++
-          # Linux Configuration (Clang)
           - os: ubuntu-latest
             c_compiler: clang
             cpp_compiler: clang++
-          # macOS Configuration (Clang)
           - os: macos-latest
             c_compiler: clang
             cpp_compiler: clang++
-            
         exclude:
-          # Exclude invalid Windows compilers
           - os: windows-latest
             c_compiler: gcc
           - os: windows-latest
             c_compiler: clang
-          # Exclude invalid Linux compilers
           - os: ubuntu-latest
             c_compiler: cl
-          # Exclude invalid macOS compilers
           - os: macos-latest
             c_compiler: gcc
           - os: macos-latest
@@ -60,15 +50,8 @@ jobs:
       run: |
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
 
-    - name: Set up CMake (Linux Only)
-      # Fix: Only run apt-get updates on Linux. Windows/Mac have CMake pre-installed.
-      if: runner.os == 'Linux' 
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y wget
-        wget https://github.com/Kitware/CMake/releases/download/v4.1.0/cmake-4.1.0-linux-x86_64.sh
-        sudo sh cmake-4.1.0-linux-x86_64.sh --skip-license --prefix=/usr/local
-        cmake --version
+    # REMOVED: The manual CMake installation step. 
+    # All runners now have a compatible version (3.x) pre-installed.
 
     - name: Configure CMake
       run: >
