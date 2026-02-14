@@ -1,3 +1,4 @@
+/* for (String arg in args) { */
 #pattern\
     for (${type} ${it} in ${array}) ${block}\
     $=\
@@ -8,3 +9,21 @@
         ${type} ${it} = get(${type}, ${array}, _for_${it});\
         ${block}\
     }
+
+/* for (llong i < 100) { */
+#pattern\
+    for (${type} ${it} < ${max}) ${block}\
+    $=\
+    for (register ${type} ${it} = 0; ${it} < ${max}; ${it}++) ${block}
+
+/* for (llong i = 10, < 100) { */
+#pattern\
+    for (${type} ${it} = ${min}, < ${max}) ${block}\
+    $=\
+    for (register ${type} ${it} = ${min}; ${it} < ${max}; ${it}++) ${block}
+
+/* for (llong i = 10, < 100, += 2) { */
+#pattern\
+    for (${type} ${it} = ${min}, < ${max}, += ${delta}) ${block}\
+    $=\
+    for (register ${type} ${it} = ${min}; ${it} < ${max}; {$it} += ${delta}) ${block}
