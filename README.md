@@ -1,14 +1,16 @@
 # COMPOUND
 
-# Building
+It's back.  
+
+## Building
 
 ```shell
 cmake .
 make
 ```
 
-# Executable (test.c)
+## Executable (test.c)
 `Compound`
 
-# Library
+## Library
 `libcompound.so`
