@@ -176,24 +176,40 @@ String *String_Concat(String *const string1, const String *const string2)
   return concat;
 }
 
-// // Status String_Format(String *const inst, const String format, ...)
-// // {
-// //   avail(inst);
-// //   state(blank(format), NormalStatus);
+String *String_Format(const char *restrict const format, ...)
+{
+  if (!format) {
+    return NULL;
+  }
 
-// //   String buff = string("");
-// //   variadic (fallback(format), {
-// //     prefix ('%', {
-// //       const byte current_format[] = "%"CURRENT;
-// //       byte internal[1024] = EMPTY;
-// //       const size_t written = snprintf(internal, 1024, )
-// //     })
-// //   })
+  const llong formatlen = _String_CountCStrLength(format);
+  if (!formatlen) {
+    return string("");
+  }
 
-// //   fail(call(String,, Delete) with (&buff));
+  String *buffer = Create(
+    String,
+    STRING_FORMAT_BUFFER_INITIAL_LENGTH,
+    sizeof(byte)
+  );
 
-// //   RETURN(NormalStatus);
-// // }
+  va_list ap;
+  va_start(ap, format);
+  const size_t written = vsnprintf(
+    (char *)fallback(buffer),
+    STRING_FORMAT_BUFFER_INITIAL_LENGTH,
+    format,
+    ap
+  );
+  va_end(ap);
+
+  String *accurate = String_Create(written, sizeof(byte));
+  memcpy_s(fallback(accurate), written + 1, fallback(buffer), written + 1);
+
+  Delete(String, &buffer);
+
+  return accurate;
+}
 
 String *String_Substr(
   const String *const source,

@@ -99,12 +99,10 @@ inline void PrintTokens(const String *const inst)
 
 int main(void)
 {
-  String *content = string("   \n\t\r");
-  String *copycat = CopyOf(String, content);
+  String *content = format("This is a(n) %X|%s|%08b.", "apple");
 
-  printf("%b"NEWLINE, blank(content));
+  sout(content);
 
-  Delete(String, &copycat);
   Delete(String, &content);
 
   return 0;

@@ -32,6 +32,7 @@
 # include "const.h"
 
 # define STRING_LENGTH_MAXIMUM  INT32_MAX
+# define STRING_FORMAT_BUFFER_INITIAL_LENGTH  256LL
 
 typedef struct
 {
@@ -109,7 +110,10 @@ ARRAY(String);
 
 /* Returns an array of two parts from @string. */
 # define strcut(string_ptr_ptr, index)\
-  String_StrCut(string_ptr_ptr, index)
+  (String_StrCut(string_ptr_ptr, index))
+
+# define format(format_cstr, ...)\
+  (String_Format(format_cstr, __VA_ARGS__))
 
 # define iteratebyte(it, string_ptr, block)\
   do {\
@@ -212,7 +216,7 @@ llong String_Whence(
 );
 
 /* @return The new string formatted by @format with @.... */
-String *String_Format(const String *const format, ...);
+String *String_Format(const char *restrict const format, ...);
 
 boolean String_Empty(const String *const source);
 
