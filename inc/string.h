@@ -36,7 +36,7 @@
 typedef struct
 {
   Array(byte) *data;
-  size_t width; ///< Byte width.
+  llong width; ///< Byte width.
   Array(llong) *breaks; ///< Token descriptors.  See doc/STRING.md.
 } String;
 
