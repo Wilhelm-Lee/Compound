@@ -205,90 +205,70 @@ String *String_Substr(
     return NULL;
   }
 
-  const llong source_length = length(source);
-  if (offset + length > source_length) {
+  const llong sourcelen = length(source);
+  if (!sourcelen) {
     return NULL;
   }
 
-  String *substring = Create(String, length, source->width);
-  memcpy(fallback(substring), refbyte(source, offset), source->width * length);
+  llong final_length = length;
+
+  /* Not giving effective length means the maximum length after offset. */
+  if (length < 0) {
+    final_length = sourcelen - offset;
+  }
+
+  const llong source_length = length(source);
+  if (offset + final_length > source_length) {
+    return NULL;
+  }
+
+  String *substring = Create(String, final_length, source->width);
+  memcpy(fallback(substring), refbyte(source, offset), source->width * final_length);
 
   return substring;
 }
 
-// Status String_Blank(boolean *const store, const String *const source)
-// {
-//   if (!length(source)) {
-//     *store = true;
+boolean String_Empty(const String *const source)
+{
+  if (!source) {
+    return false;
+  }
 
-//     RETURN(NormalStatus);
-//   }
+  return !length(source);
+}
 
-//   String whitespace = EMPTY;
-//   fail(String_Update(&whitespace, (byte *)WHITESPACE));
+boolean String_Blank(const String *const source)
+{
+  if (!source) {
+    return false;
+  }
 
-//   String tokens_source = EMPTY;
-//   fail(call(String,, CopyOf) with (&tokens_source, source));
+  const llong sourcelen = length(source);
+  if (!sourcelen) {
+    return true;
+  }
 
-//   *store = !tokens(&tokens_source, &whitespace);
+  for (register llong i = 0; i < sourcelen; i++) {
+    if (!String_MatchesAny(getbyte(source, i), WHITESPACE)) {
+      return false;
+    }
+  }
 
-//   fail(Delete(String) with (&tokens_source));
-//   fail(Delete(String) with (&whitespace));
+  return true;
+}
 
-//   RETURN(NormalStatus);
-// }
+String *String_Trim(String **const inst)
+{
+  if (!inst || !*inst) {
+    return NULL;
+  }
 
-// Status String_RemoveAllWhitespace(String *inst)
-// {
-//   avail(inst);
-//   state(!length(inst), NormalStatus);
+  *inst = String_RemoveLeadingWhitespace(inst);
 
-//   String whitespace = EMPTY;
-//   fail(String_Update(&whitespace, (byte *)WHITESPACE));
+  *inst = String_RemoveTrailingWhitespace(inst);
 
-//   stringing (ws, &whitespace, {
-//     llong offset = 0;
-//     while ((offset = firstat(inst, ws, 0)) >= 0) {
-//       fail(call(Array, byte, Remove) with (&inst->data, offset));
-
-//       // @inst->breaks is now unsuitable; a token-re-counting is required.
-//     }
-//   })
-
-//   fail(Delete(String) with (&whitespace));
-
-//   RETURN(NormalStatus);
-// }
-
-// Status String_RemoveLeadingWhitespace(String *const inst)
-// {
-//   avail(inst);
-//   state(!length(inst), NormalStatus);
-
-//   String whitespace = EMPTY;
-//   fail(String_Update(&whitespace, (byte *)WHITESPACE));
-
-//   /* Find the first inked byte. */
-//   register llong offset = 0;
-//   while (offset < length(inst) &&
-//     matchesany(getbyte(inst, offset), &whitespace)) {
-//     offset++;
-//   }
-
-//   /* The first byte is already inked. */
-//   state(!offset, NormalStatus);
-
-//   String substr = substr(inst, offset, -1);
-
-//   fail(Delete(String) with (inst));
-//   *inst = substr;
-
-//   fail(Delete(String) with (&whitespace));
-
-//   RETURN(NormalStatus);
-// }
-
-// Status String_RemoveTrailingWhitespace(String *const inst);
+  return *inst;
+}
 
 inline llong String_CountTokens(const String *const inst)
 {
@@ -420,6 +400,58 @@ llong String_Whence(
                         fallback(target)) - fallback(source);
 }
 
+String *String_RemoveLeadingWhitespace(String **const inst)
+{
+  if (!inst || !*inst) {
+    return NULL;
+  }
+
+  llong first_non_whitespace_byte = -1;
+  iteratebyte (i, *inst, {
+    if (!String_MatchesAny(getbyte(*inst, i), WHITESPACE)) {
+      first_non_whitespace_byte = i;
+      break;
+    }
+  })
+
+  /* Not found.  The whole string was whitespace. */
+  if (first_non_whitespace_byte < 0) {
+    Delete(String, inst);
+    return string("");
+  }
+
+  String *substring = substr(*inst, first_non_whitespace_byte, -1);
+  Delete(String, inst);
+
+  return substring;
+}
+
+String *String_RemoveTrailingWhitespace(String **const inst)
+{
+  if (!inst || !*inst) {
+    return NULL;
+  }
+
+  llong last_non_whitespace_byte = -1;
+  iteratebyte (i, *inst, {
+    if (!String_MatchesAny(getbyte(*inst, i), WHITESPACE)) {
+      last_non_whitespace_byte = i;
+    }
+  })
+
+  /* Not found. The whole string was whitespace. */
+  if (last_non_whitespace_byte < 0) {
+    Delete(String, inst);
+    return string("");
+  }
+
+  /* Create substring from index 0 with length (last_index + 1) */
+  String *substring = substr(*inst, 0, last_non_whitespace_byte + 1);
+  Delete(String, inst);
+
+  return substring;
+}
+
 boolean String_MatchesAny(const byte target, const char *const group)
 {
   if (!target) {
@@ -442,45 +474,88 @@ boolean String_MatchesAny(const byte target, const char *const group)
   return false;
 }
 
-// Status String_FirstAt(llong *const store, const String *const source,
-//                       const byte target, const llong offset)
-// {
-//   state(offset < 0 || offset >= length(source), StringIndexOutOfBound);
+llong String_FirstAt(
+  const String *const source,
+  const byte target,
+  const llong offset
+)
+{
+  if (!source) {
+    return -1;
+  }
 
-//   for (register llong i = offset; i < length(source); i++) {
-//     if (target == getbyte(source, i)) {
-//       *store = i;
+  const llong sourcelen = length(source);
+  if (!sourcelen) {
+    return -1;
+  }
 
-//       RETURN(NormalStatus);
-//     }
-//   }
+  if (offset < 0 || offset >= sourcelen) {
+    return -1;
+  }
 
-//   RETURN(NoMoreElement);
-// }
+  for (register llong i = offset; i < sourcelen; i++) {
+    if (target == getbyte(source, i)) {
+      return i;
+    }
+  }
 
-// Status String_LastAt(llong *const store, String *const source,
-//                      const byte target, const llong offset)
-// {
-//   reverse(&source->data);
+  return -1;
+}
 
-//   RETURN(String_FirstAt(store, source, target, length(source) - offset));
-// }
+llong String_LastAt(
+  const String *const source,
+  const byte target,
+  const llong offset
+)
+{
+  if (!source) {
+    return -1;
+  }
 
-// Status String_StrCut(const String *const source, const llong index,
-//                      String *const former, String *const latter)
-// {
-//   state(index < 0 || index > length(source), StringIndexOutOfBound);
+  const llong sourcelen = length(source);
+  if (!sourcelen) {
+    return -1;
+  }
 
-//   if (former) {
-//     *former = substr(source, 0, index);
-//   }
+  if (offset < 0 || offset >= sourcelen) {
+    return -1;
+  }
 
-//   if (latter) {
-//     *latter = substr(source, index + 1, -1);
-//   }
+  for (register llong i = sourcelen - offset - 1; i >= 0; i--) {
+    if (target == getbyte(source, i)) {
+      return i;
+    }
+  }
 
-//   RETURN(NormalStatus);
-// }
+  return -1;
+}
+
+String *String_StrCut(
+  const String **const source,
+  const llong index
+)
+{
+  if (!source || !*source) {
+    return NULL;
+  }
+
+  const llong sourcelen = length(*source);
+  if (!sourcelen) {
+    return *source;
+  }
+
+  if (index <= 0 || index >= sourcelen) {
+    return NULL;
+  }
+
+  String *remain = substr(*source, 0, index);
+  String *cutoff = substr(*source, index, -1);
+
+  Delete(String, source);
+  *source = remain;
+
+  return cutoff;
+}
 
 inline llong String_Length(const String *const string)
 {

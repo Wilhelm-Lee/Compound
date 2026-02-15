@@ -37,6 +37,14 @@
  * [X] Breaks
  * [X] Gather
  * [X] Whence
+ *
+ * [X] Blank
+ * [X] Trim
+ * [X] RemoveLeadingWhitespace
+ * [X] RemoveTrailingWhitespace
+ * [X] String_FirstAt
+ * [X] String_LastAt
+ * [X] String_StrCut
  */
 
 inline size_t strout(const String *const string)
@@ -87,15 +95,35 @@ inline void PrintTokens(const String *const inst)
   }
 }
 
+# define sout  stroutln
+
 int main(void)
 {
-  String *const content = string("new content");
-  String *const copycat = string("content");
+  String *content = string("   \n\t\r");
 
-  printf("%lld"NEWLINE, whence(content, copycat, 0));
+  printf("%b"NEWLINE, blank(content));
 
-  Delete(String, &copycat);
   Delete(String, &content);
 
   return 0;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

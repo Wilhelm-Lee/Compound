@@ -64,8 +64,8 @@ ARRAY(String);
 # define concat(string_ptr1, string_ptr2)\
   (String_Concat((string_ptr1), (string_ptr2)))
 
-# define substr(string_ptr, off, len)\
-  (String_Substr((string_ptr), (off), (len)))
+# define substr(string_ptr, offset, length)\
+  (String_Substr((string_ptr), (offset), (length)))
 
 # define firstat(string_ptr, target_byte, offset)\
   (String_FirstAt(string_ptr, target_byte, offset))
@@ -96,25 +96,35 @@ ARRAY(String);
   (String_Whence(string_ptr, target_string_ptr, offset))
 
 # define blank(string_ptr)\
-  String_Blank(string_ptr)
+  (String_Blank(string_ptr))
 
 # define tokenise(string_ptr, delim_string_ptr, idx)\
   tokens(string_ptr, delim_string_ptr);\
   breaks(string_ptr, idx)
 
-/* Ensure the accessing on @stringA is compatible
-   with the respect for the length of @stringB. */
-# define parallelstr(idx, string_ptrA, string_ptrB, block)\
-  parallel (byte, idx, (string_ptrA).data, (string_ptrB).data, {\
-    if (idx + 1 > length(string_ptrA)) {\
-      break;\
-    }\
-    block\
-  })
+# define trim(string_ptr_ptr)\
+  (String_Trim(string_ptr_ptr))
 
 /* Returns an array of two parts from @string. */
-# define strcut(string_ptr, offset)\
-  String_StrCut()
+# define strcut(string_ptr_ptr, index)\
+  String_StrCut(string_ptr_ptr, index)
+
+# define iteratebyte(it, string_ptr, block)\
+  do {\
+    const llong CONCAT(it, len) = length(string_ptr);\
+    for (register llong it = 0; i < CONCAT(it, len); i++) {\
+      block\
+    }\
+  } while (0);
+
+# define foreachbyte(it, string_ptr, block)\
+  do {\
+    const llong CONCAT(it, len) = length(string_ptr);\
+    for (register llong i = 0; i < CONCAT(it, len); i++) {\
+      const byte it = getbyte(string_ptr, i);\
+      block\
+    }\
+  } while (0);
 
 String *String_Create(const llong length, const llong width);
 
@@ -202,25 +212,33 @@ llong String_Whence(
 /* @return The new string formatted by @format with @.... */
 String *String_Format(const String *const format, ...);
 
+boolean String_Empty(const String *const source);
+
 boolean String_Blank(const String *const source);
 
 /* @return An new string after trimming. */
-String *String_RemoveAllWhitespace(String *const inst);
+String *String_Trim(String **const inst);
 
 /* @return An new string after trimming. */
-String *String_RemoveLeadingWhitespace(String *const inst);
+String *String_RemoveLeadingWhitespace(String **const inst);
 
 /* @return An new string after trimming. */
-String *String_RemoveTrailingWhitespace(String *const inst);
+String *String_RemoveTrailingWhitespace(String **const inst);
 
 /* @return If @ch is contained in any element from @targets. */
 boolean String_MatchesAny(const byte target, const char *const group);
 
-void String_StrCut(
-  const String *const source,
-  const llong index,
-  String *const former,
-  String *const latter
+
+/** Cut an instance of String to make it shortened but also
+ *  preversed the cut-off part returned.
+ *
+ * @param source The source of an String instance to be cut.
+ * @param index The cutting position from @source.
+ * @return An instance of String fell off after cutting.
+ */
+String *String_StrCut(
+  const String **const source,
+  const llong index
 );
 
 /* @return The calculated length for the given instance of String @inst. */
