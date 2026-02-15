@@ -12,7 +12,7 @@ make
 ```
 
 ## Executable (test.c)
-`Compound`
+`CompoundTest`
 
 ## Library
 `libcompound.so`
