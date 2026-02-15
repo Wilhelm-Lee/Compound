@@ -100,9 +100,11 @@ inline void PrintTokens(const String *const inst)
 int main(void)
 {
   String *content = string("   \n\t\r");
+  String *copycat = CopyOf(String, content);
 
   printf("%b"NEWLINE, blank(content));
 
+  Delete(String, &copycat);
   Delete(String, &content);
 
   return 0;

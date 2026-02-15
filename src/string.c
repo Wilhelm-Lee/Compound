@@ -57,7 +57,7 @@ String *String_CopyOf(const String *const other)
   String *string = Allocate(1, sizeof(String));
 
   string->data = array(byte, length + 1);
-  memcpy(fallback(string), fallback(other), length * sizeof(byte));
+  memcpy_s(fallback(string), length + 1, fallback(other), length + 1);
   string->width = other->width;
   string->breaks = CopyOf(Array(llong), other->breaks);
 

@@ -10,6 +10,16 @@ set(SOURCES
         src/string.c
 )
 
+include(FetchContent)
+
+FetchContent_Declare(
+        safestringlib
+        GIT_REPOSITORY https://github.com/intel/safestringlib.git
+        GIT_TAG master  # or specify a specific commit hash/tag for stability
+)
+
+FetchContent_MakeAvailable(safestringlib)
+
 add_library(compound SHARED
         ${SOURCES}
 )
@@ -20,3 +30,6 @@ add_executable(CompoundTest
         ${SOURCES}
         test/test.c
 )
+
+target_link_libraries(compound PRIVATE safestring_shared)
+target_link_libraries(CompoundTest PRIVATE safestring_shared)
