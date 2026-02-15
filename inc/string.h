@@ -24,8 +24,7 @@
 
 # include <stdarg.h>
 # include <stdlib.h>
-
-# include <safe_lib.h>
+# include <stdio.h>
 
 # include "arrays.h"
 # include "common.h"

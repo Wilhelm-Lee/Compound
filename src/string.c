@@ -57,7 +57,7 @@ String *String_CopyOf(const String *const other)
   String *string = Allocate(1, sizeof(String));
 
   string->data = array(byte, length + 1);
-  memcpy_s(fallback(string), length + 1, fallback(other), length + 1);
+  memcpy(fallback(string), fallback(other), length + 1);
   string->width = other->width;
   string->breaks = CopyOf(Array(llong), other->breaks);
 
@@ -204,7 +204,7 @@ String *String_Format(const char *restrict const format, ...)
   va_end(ap);
 
   String *accurate = String_Create(written, sizeof(byte));
-  memcpy_s(fallback(accurate), written + 1, fallback(buffer), written + 1);
+  memcpy(fallback(accurate), fallback(buffer), written + 1);
 
   Delete(String, &buffer);
 

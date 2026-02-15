@@ -101,8 +101,10 @@ int main(void)
 {
   String *content = format("This is a(n) %X|%s|%08b.", "apple");
 
-  sout(content);
+  String *substring = substr(content, 7, -1);
+  sout(substring);
 
+  Delete(String, &substring);
   Delete(String, &content);
 
   return 0;
