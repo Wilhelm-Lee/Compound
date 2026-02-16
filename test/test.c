@@ -18,7 +18,6 @@
  */
 
 #include <stdio.h>
-#include <time.h>
 
 #include "../inc/string.h"
 
@@ -42,9 +41,13 @@
  * [X] Trim
  * [X] RemoveLeadingWhitespace
  * [X] RemoveTrailingWhitespace
- * [X] String_FirstAt
- * [X] String_LastAt
- * [X] String_StrCut
+ * [X] FirstAt
+ * [X] LastAt
+ * [X] StrCut
+ *
+ * [X] Insert
+ * [X] Flatten
+ * [X] Contains
  */
 
 inline size_t strout(const String *const string)
@@ -99,12 +102,14 @@ inline void PrintTokens(const String *const inst)
 
 int main(void)
 {
-  String *content = format("This is a(n) %X|%s|%08b.", "apple");
+  String *content = format("This-is-not-an-%s.", "apple");
+  String *insert = string("[!ASDF] ");
 
-  String *substring = substr(content, 7, -1);
-  sout(substring);
+  content = insert(&content, insert, 0);
 
-  Delete(String, &substring);
+  sout(content);
+
+  Delete(String, &insert);
   Delete(String, &content);
 
   return 0;

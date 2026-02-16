@@ -239,7 +239,9 @@ String *String_Substr(
   }
 
   String *substring = Create(String, final_length, source->width);
-  memmove(fallback(substring), refbyte(source, offset), source->width * final_length);
+  memmove(
+    fallback(substring), refbyte(source, offset), source->width * final_length
+  );
 
   return substring;
 }
@@ -585,6 +587,85 @@ inline llong String_Length(const String *const string)
   }
 
   return length;
+}
+
+String *String_Insert(
+  String **const inst,
+  const String *const source,
+  const llong index
+)
+{
+  if (!inst || !*inst) {
+    return NULL;
+  }
+
+  if (!source) {
+    return *inst;
+  }
+
+  const llong instlen = length(*inst);
+  if (index < 0 || index > instlen) {
+    return *inst;
+  }
+
+  const llong sourcelen = length(source);
+  if (!sourcelen) {
+    return *inst;
+  }
+
+  const llong final_width = ((*inst)->width > source->width
+                               ? (*inst)->width
+                               : source->width);
+
+  const llong length = instlen + sourcelen;
+
+  String *insert = String_Create(length, final_width);
+  memmove(fallback(insert), fallback(*inst), index);
+  memmove(&fallback(insert)[index], fallback(source), sourcelen);
+  memmove(
+    &fallback(insert)[index + sourcelen], &fallback(*inst)[index],
+    instlen - index
+  );
+  fallback(insert)[length] = 0;
+
+  Delete(String, inst);
+
+  return insert;
+}
+
+void *String_Flatten(const String *const inst, const llong width)
+{
+  if (!inst) {
+    return NULL;
+  }
+
+  const llong final_width = (inst->width > width ? inst->width : width);
+
+  const llong instlen = length(inst);
+  void *const buffer = Allocate(instlen + 1, final_width);
+  memmove(buffer, fallback(inst), instlen + 1);
+
+  return buffer;
+}
+
+boolean String_Contains(const String *const inst, const String *const target)
+{
+  if (!inst || !target) {
+    return false;
+  }
+
+  const llong instlen = length(inst);
+  const llong targetlen = length(target);
+  if (instlen < targetlen) {
+    return false;
+  }
+
+  /* An empty set belongs to every set, including itself. */
+  if (!targetlen) {
+    return true;
+  }
+
+  return String_Whence(inst, target, 0) > 0;
 }
 
 IMPL_ARRAY(String, !compare(A, B))
