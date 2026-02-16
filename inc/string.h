@@ -114,6 +114,17 @@ ARRAY(String);
 # define format(format_cstr, ...)\
   (String_Format(format_cstr, __VA_ARGS__))
 
+# define insert(string_ptr_ptr, string_source_ptr, index)\
+  (String_Insert(string_ptr_ptr, string_source_ptr, index))
+
+/* The size of given @type must be larger than or equals to
+ * @string_ptr->width to prevent irrational-cross-byte access. */
+# define flatten(type, string_ptr)\
+  ((type *)String_Flatten(string_ptr, sizeof(type)))
+
+# define contains(string_ptr, string_target_ptr)\
+  (String_Contains(string_ptr, string_target_ptr))
+
 # define iteratebyte(it, string_ptr, block)\
   do {\
     const llong CONCAT(it, len) = length(string_ptr);\
@@ -249,6 +260,16 @@ String *String_StrCut(
 /* @return The calculated length for the given instance of String @inst. */
 llong String_Length(const String *const string);
 
-String *String_Convert(const char *const format, const char *const value);
+/* Insert @source at @index in @inst. */
+String *String_Insert(
+  String **const inst,
+  const String *const source,
+  const llong index
+);
+
+/* Flatten to a contiguous chunk of memory about the byte data. */
+void *String_Flatten(const String *const inst, const llong width);
+
+boolean String_Contains(const String *const inst, const String *const target);
 
 #endif  /* COMPOUND_STRING_H */
