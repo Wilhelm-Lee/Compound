@@ -48,6 +48,12 @@
  * [X] Insert
  * [X] Flatten
  * [X] Contains
+ *
+ * [X] Remove
+ * [X] CountOccurrences
+ * [X] Occurrences
+ * [X] ReplaceFirst
+ * [X] ReplaceAll
  */
 
 inline size_t strout(const String *const string)
@@ -102,14 +108,16 @@ inline void PrintTokens(const String *const inst)
 
 int main(void)
 {
-  String *content = format("This-is-not-an-%s.", "apple");
-  String *insert = string("[!ASDF] ");
+  String *content = string("This+++is+++not+++an+++apple.");
+  String *target = string("+++");
+  String *replacement = string("_");
 
-  content = insert(&content, insert, 0);
+  content = replace_first(&content, target, replacement, 0);
 
   sout(content);
 
-  Delete(String, &insert);
+  Delete(String, &replacement);
+  Delete(String, &target);
   Delete(String, &content);
 
   return 0;

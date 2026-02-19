@@ -125,6 +125,39 @@ ARRAY(String);
 # define contains(string_ptr, string_target_ptr)\
   (String_Contains(string_ptr, string_target_ptr))
 
+# define remove(string_ptr_ptr, offset, length)\
+  (String_Remove(string_ptr_ptr, offset, length))
+
+# define count(string_ptr, string_target_ptr, offset)\
+  (String_CountOccurrences(string_ptr, string_target_ptr, offset))
+
+# define occurrences(string_ptr, string_target_ptr, offset)\
+  (String_Occurrences(string_ptr, string_target_ptr, offset))
+
+# define replace_first(\
+  string_ptr_ptr,\
+  string_target_ptr,\
+  string_replacement_ptr,\
+  offset\
+  )\
+  (String_ReplaceFirst(\
+    string_ptr_ptr,\
+    string_target_ptr,\
+    string_replacement_ptr,\
+    offset))
+
+# define replace(\
+  string_ptr_ptr,\
+  string_target_ptr,\
+  string_replacement_ptr,\
+  offset\
+  )\
+  (String_ReplaceAll(\
+    string_ptr_ptr,\
+    string_target_ptr,\
+    string_replacement_ptr,\
+    offset))
+
 # define iteratebyte(it, string_ptr, block)\
   do {\
     const llong CONCAT(it, len) = length(string_ptr);\
@@ -265,6 +298,43 @@ String *String_Insert(
   String **const inst,
   const String *const source,
   const llong index
+);
+
+/* Remove a substring ranged from @inst. */
+String *String_Remove(
+  String **const inst,
+  const llong offset,
+  const llong length
+);
+
+llong String_CountOccurrences(
+  const String *const content,
+  const String *const target,
+  const llong offset
+);
+
+Array(llong) *String_Occurrences(
+  const String *const content,
+  const String *const target,
+  const llong offset
+);
+
+/* Replace the first occurrence of @target with @replacement
+ * from @inst start from @offset. */
+String *String_ReplaceFirst(
+  String **const inst,
+  const String *target,
+  const String *replacement,
+  const llong offset
+);
+
+/* Replace all the occurrences of @target with @replacement
+ * from @inst start from @offset. */
+String *String_ReplaceAll(
+  String **const inst,
+  const String *target,
+  const String *replacement,
+  const llong offset
 );
 
 /* Flatten to a contiguous chunk of memory about the byte data. */

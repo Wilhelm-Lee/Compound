@@ -19,12 +19,13 @@
 
 #include "../inc/memory.h"
 
-void *Allocate(const size_t nmemb, const size_t size)
+inline void *Allocate(const size_t nmemb, const size_t size)
 {
   void *inst = NULL;
 
   if (nmemb == 1) {
     inst = malloc(size);
+    memset(inst, 0, size);
   } else {
     inst = calloc(nmemb, size);
   }
@@ -36,7 +37,7 @@ void *Allocate(const size_t nmemb, const size_t size)
   return inst;
 }
 
-void *Reallocate(void *inst, const size_t size)
+inline void *Reallocate(void *inst, const size_t size)
 {
   if (!inst) {
     return inst;
@@ -51,7 +52,7 @@ void *Reallocate(void *inst, const size_t size)
   return inst;
 }
 
-void Deallocate(void *const inst)
+inline void Deallocate(void *const inst)
 {
   if (inst) {
     free(inst);
