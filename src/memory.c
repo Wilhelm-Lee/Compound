@@ -21,14 +21,7 @@
 
 inline void *Allocate(const size_t nmemb, const size_t size)
 {
-  void *inst = NULL;
-
-  if (nmemb == 1) {
-    inst = malloc(size);
-    memset(inst, 0, size);
-  } else {
-    inst = calloc(nmemb, size);
-  }
+  void *const inst = calloc(nmemb, size);
 
   if (!inst) {
     return NULL;
