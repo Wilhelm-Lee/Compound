@@ -646,32 +646,22 @@ String *String_Remove(
   }
 
   const llong instlen = length(*inst);
-
-  /* Boundary check: offset must be within the string. */
   if (offset < 0 || offset >= instlen) {
     return *inst;
   }
 
-  llong remove_len = length;
+  llong final_length = length;
 
-  /* If length is negative, remove from offset to the end of the string. */
-  if (remove_len < 0) {
-    remove_len = instlen - offset;
+  /* All the way downtown. *//* Corp the length if too long. */
+  if (final_length < 0 || offset + final_length > instlen) {
+    final_length = instlen - offset;
   }
 
-  /* Cap the removal length to the end of the string. */
-  if (offset + remove_len > instlen) {
-    remove_len = instlen - offset;
-  }
-
-  /* Nothing to remove. */
-  if (remove_len == 0) {
+  if (!final_length) {
     return *inst;
   }
 
-  const llong new_len = instlen - remove_len;
-
-  String *result = String_Create(new_len, (*inst)->width);
+  String *result = String_Create(instlen - final_length, (*inst)->width);
 
   /* Copy the part before the offset. */
   if (offset > 0) {
@@ -679,15 +669,13 @@ String *String_Remove(
   }
 
   /* Copy the part after the removed section. */
-  if (offset + remove_len < instlen) {
+  if (offset + final_length < instlen) {
     memmove(
       &fallback(result)[offset],
-      &fallback(*inst)[offset + remove_len],
-      instlen - (offset + remove_len)
+      &fallback(*inst)[offset + final_length],
+      instlen - (offset + final_length)
     );
   }
-
-  fallback(result)[new_len] = 0;
 
   Delete(String, inst);
 
@@ -756,6 +744,18 @@ Array(llong) *String_Occurrences(
   return occurrences;
 }
 
+inline boolean _String_ReplaceGuard(
+  const String *const target,
+  const String *const replacement,
+  const llong offset,
+  const llong instlen,
+  const llong targetlen
+)
+{
+  return (instlen && target && replacement && targetlen
+    && targetlen <= instlen && offset + targetlen <= instlen);
+}
+
 String *String_ReplaceFirst(
   String **const inst,
   const String *target,
@@ -768,34 +768,27 @@ String *String_ReplaceFirst(
   }
 
   const llong instlen = length(*inst);
-  if (!instlen) {
-    return *inst;
-  }
-
-  if (!target || !replacement) {
-    return *inst;
-  }
-
   const llong targetlen = length(target);
-  if (!targetlen) {
-    return *inst;
-  }
-
-  if (targetlen > instlen || offset + targetlen > instlen) {
+  if (!_String_ReplaceGuard(target, replacement, offset, instlen, targetlen)) {
     return *inst;
   }
 
   const llong occurrence = String_Whence(*inst, target, offset);
-
-  /* Not found. */
   if (occurrence < 0) {
     return *inst;
   }
 
+  const llong final_width = ((*inst)->width >= replacement->width
+                               ? (*inst)->width
+                               : replacement->width);
+
   const llong replacementlen = length(replacement);
   String *replace = String_Create(
-    instlen + (replacementlen - targetlen), (*inst)->width
+    instlen + (replacementlen - targetlen), final_width
   );
+  if (!replace) {
+    return NULL;
+  }
 
   memmove(fallback(replace), fallback(*inst), occurrence);
   memmove(
@@ -826,20 +819,8 @@ String *String_ReplaceAll(
   }
 
   const llong instlen = length(*inst);
-  if (!instlen) {
-    return *inst;
-  }
-
-  if (!target || !replacement) {
-    return *inst;
-  }
-
   const llong targetlen = length(target);
-  if (!targetlen) {
-    return *inst;
-  }
-
-  if (targetlen > instlen || offset + targetlen > instlen) {
+  if (!_String_ReplaceGuard(target, replacement, offset, instlen, targetlen)) {
     return *inst;
   }
 
@@ -857,7 +838,6 @@ String *String_ReplaceAll(
   String *replace = String_Create(
     instlen + (occurrences->capacity * diff), final_width
   );
-
   if (!replace) {
     Delete(Array(llong), &occurrences);
     return NULL;
