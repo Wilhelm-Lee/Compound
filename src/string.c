@@ -744,18 +744,6 @@ Array(llong) *String_Occurrences(
   return occurrences;
 }
 
-inline boolean _String_ReplaceGuard(
-  const String *const target,
-  const String *const replacement,
-  const llong offset,
-  const llong instlen,
-  const llong targetlen
-)
-{
-  return (instlen && target && replacement && targetlen
-    && targetlen <= instlen && offset + targetlen <= instlen);
-}
-
 String *String_ReplaceFirst(
   String **const inst,
   const String *target,
@@ -769,7 +757,8 @@ String *String_ReplaceFirst(
 
   const llong instlen = length(*inst);
   const llong targetlen = length(target);
-  if (!_String_ReplaceGuard(target, replacement, offset, instlen, targetlen)) {
+  if (!instlen || !target || !replacement || !targetlen || targetlen > instlen
+      || (offset + targetlen) > instlen) {
     return *inst;
   }
 
@@ -820,7 +809,8 @@ String *String_ReplaceAll(
 
   const llong instlen = length(*inst);
   const llong targetlen = length(target);
-  if (!_String_ReplaceGuard(target, replacement, offset, instlen, targetlen)) {
+  if (!instlen || !target || !replacement || !targetlen || targetlen > instlen
+      || (offset + targetlen) > instlen) {
     return *inst;
   }
 
