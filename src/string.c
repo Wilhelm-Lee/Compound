@@ -93,7 +93,9 @@ inline llong _String_CountCStrLength(const char *restrict const cstr)
   }
 
   register llong count = 0;
-  while (cstr[count++]) {}
+  while (cstr[count]) {
+    count++;
+  }
 
   return count;
 }
@@ -391,7 +393,7 @@ Array(ptr) *String_Gather(const String *const inst)
   return tokens;
 }
 
-llong String_Whence(
+inline llong String_Whence(
   const String *const source,
   const String *const target,
   const llong offset
@@ -631,6 +633,251 @@ String *String_Insert(
   Delete(String, inst);
 
   return insert;
+}
+
+String *String_Remove(
+  String **const inst,
+  const llong offset,
+  const llong length
+)
+{
+  if (!inst || !*inst) {
+    return NULL;
+  }
+
+  const llong instlen = length(*inst);
+  if (offset < 0 || offset >= instlen) {
+    return *inst;
+  }
+
+  llong final_length = length;
+
+  /* All the way downtown. *//* Corp the length if too long. */
+  if (final_length < 0 || offset + final_length > instlen) {
+    final_length = instlen - offset;
+  }
+
+  if (!final_length) {
+    return *inst;
+  }
+
+  String *result = String_Create(instlen - final_length, (*inst)->width);
+
+  /* Copy the part before the offset. */
+  if (offset > 0) {
+    memmove(fallback(result), fallback(*inst), offset);
+  }
+
+  /* Copy the part after the removed section. */
+  if (offset + final_length < instlen) {
+    memmove(
+      &fallback(result)[offset],
+      &fallback(*inst)[offset + final_length],
+      instlen - (offset + final_length)
+    );
+  }
+
+  Delete(String, inst);
+
+  return result;
+}
+
+llong String_CountOccurrences(
+  const String *const content,
+  const String *const target,
+  const llong offset
+)
+{
+  if (!content || !target || offset < 0) {
+    return 0;
+  }
+
+  const llong contentlen = length(content);
+  const llong targetlen = length(target);
+  if (offset > contentlen || offset + targetlen > contentlen) {
+    return 0;
+  }
+
+  llong occurrence_accum = 0;
+  llong progress = offset;
+  llong whence = -1;
+  while ((whence = whence(content, target, progress)) >= 0) {
+    occurrence_accum++;
+    progress = whence + 1;
+  }
+
+  return occurrence_accum;
+}
+
+Array(llong) *String_Occurrences(
+  const String *const content,
+  const String *const target,
+  const llong offset
+)
+{
+  if (!content || !target || offset < 0) {
+    return NULL;
+  }
+
+  const llong contentlen = length(content);
+  const llong targetlen = length(target);
+  if (offset > contentlen || offset + targetlen > contentlen) {
+    return NULL;
+  }
+
+  Array(llong) *occurrences = array(llong, contentlen);
+  if (!occurrences) {
+    return NULL;
+  }
+
+  llong occurrence_accum = 0;
+  llong progress = offset;
+  llong whence = -1;
+  while ((whence = whence(content, target, progress)) >= 0) {
+    set(llong, occurrences, occurrence_accum, whence);
+    occurrence_accum++;
+    progress = whence + 1;
+  }
+
+  occurrences = resize(llong, &occurrences, occurrence_accum);
+
+  return occurrences;
+}
+
+String *String_ReplaceFirst(
+  String **const inst,
+  const String *target,
+  const String *replacement,
+  const llong offset
+)
+{
+  if (!inst || !*inst) {
+    return NULL;
+  }
+
+  const llong instlen = length(*inst);
+  const llong targetlen = length(target);
+  if (!instlen || !target || !replacement || !targetlen || targetlen > instlen
+      || (offset + targetlen) > instlen) {
+    return *inst;
+  }
+
+  const llong occurrence = String_Whence(*inst, target, offset);
+  if (occurrence < 0) {
+    return *inst;
+  }
+
+  const llong final_width = ((*inst)->width >= replacement->width
+                               ? (*inst)->width
+                               : replacement->width);
+
+  const llong replacementlen = length(replacement);
+  String *replace = String_Create(
+    instlen + (replacementlen - targetlen), final_width
+  );
+  if (!replace) {
+    return NULL;
+  }
+
+  memmove(fallback(replace), fallback(*inst), occurrence);
+  memmove(
+    &fallback(replace)[occurrence],
+    fallback(replacement),
+    replacementlen
+  );
+  memmove(
+    &fallback(replace)[occurrence + replacementlen],
+    &fallback(*inst)[occurrence + targetlen],
+    instlen - (occurrence + targetlen)
+  );
+
+  Delete(String, inst);
+
+  return replace;
+}
+
+String *String_ReplaceAll(
+  String **const inst,
+  const String *target,
+  const String *replacement,
+  const llong offset
+)
+{
+  if (!inst || !*inst) {
+    return NULL;
+  }
+
+  const llong instlen = length(*inst);
+  const llong targetlen = length(target);
+  if (!instlen || !target || !replacement || !targetlen || targetlen > instlen
+      || (offset + targetlen) > instlen) {
+    return *inst;
+  }
+
+  Array(llong) *occurrences = String_Occurrences(*inst, target, offset);
+  if (!occurrences) {
+    return *inst;
+  }
+
+  const llong replacementlen = length(replacement);
+  const llong diff = replacementlen - targetlen;
+  const llong final_width = ((*inst)->width >= replacement->width
+                               ? (*inst)->width
+                               : replacement->width);
+
+  String *replace = String_Create(
+    instlen + (occurrences->capacity * diff), final_width
+  );
+  if (!replace) {
+    Delete(Array(llong), &occurrences);
+    return NULL;
+  }
+
+  llong dst_idx = 0;
+  llong src_idx = 0;
+
+  foreach (llong, occur, occurrences, {
+    /* Calculate the distance between the last match and this match */
+    llong seg_length = occur - src_idx;
+
+    /* Copy original text before the occurrence */
+    if (seg_length > 0) {
+      memcpy(
+        &fallback(replace)[dst_idx],
+        &fallback(*inst)[src_idx],
+        seg_length
+      );
+      dst_idx += seg_length;
+    }
+
+    /* Copy the replacement text */
+    if (replacementlen > 0) {
+      memcpy(
+        &fallback(replace)[dst_idx],
+        fallback(replacement),
+        replacementlen
+      );
+      dst_idx += replacementlen;
+    }
+
+    /* Advance source index past the target we just replaced */
+    src_idx = occur + targetlen;
+  })
+
+  /* Copy the remaining tail of the original string */
+  llong tail_length = instlen - src_idx;
+  if (tail_length > 0) {
+    memcpy(
+      &fallback(replace)[dst_idx],
+      &fallback(*inst)[src_idx],
+      tail_length
+    );
+  }
+
+  Delete(Array(llong), &occurrences);
+  Delete(String, inst);
+
+  return replace;
 }
 
 void *String_Flatten(const String *const inst, const llong width)
