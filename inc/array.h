@@ -109,10 +109,17 @@
     CopyOf(type) with (A, *B));\
   })
 
-# define erase(type, array)\
-  refeach (type, _erase, array, {\
-    Delete(type), (_erase));\
+/* Delete elements in @array_ptr. */
+# define erase(type, array_ptr)\
+  refeach (type, _erase##array_ptr, array_ptr, {\
+    Delete(type), (_erase##array_ptr));\
   })
+
+/* Delete elements in @array_ptr by reference. */
+# define eraseref(type, array_ptr)\
+  iterate (i##array_ptr, array_ptr) {\
+    Delete(type, (type **)ref(ptr, array_ptr, i##array_ptr));\
+  }
 
 # define reverse(array_ptr)\
   ((array_ptr)->reversed = !(array_ptr)->reversed, (array_ptr))

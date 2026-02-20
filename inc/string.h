@@ -33,12 +33,7 @@
 # define STRING_LENGTH_MAXIMUM  INT32_MAX
 # define STRING_FORMAT_BUFFER_INITIAL_LENGTH  256LL
 
-typedef struct
-{
-  Array(byte) *data;
-  llong width; ///< Byte width.
-  Array(llong) *breaks; ///< Token descriptors.  See doc/STRING.md.
-} String;
+typedef struct String String;
 
 ARRAY(String);
 
@@ -58,7 +53,7 @@ ARRAY(String);
   set(byte, (string_ptr)->data, idx, elem)
 
 # define fallback(string_ptr)\
-  ((string_ptr)->data->data)
+  (String_Fallback(string_ptr))
 
 # define compare(string_ptr1, string_ptr2)\
   (String_Compare((string_ptr1), (string_ptr2)))
@@ -90,19 +85,23 @@ ARRAY(String);
 # define breaks(string_ptr, tokenth)\
   (String_Breaks(string_ptr, tokenth))
 
-/* WARNING: Could generate considerable amount of data in a sudden. */
+/* WARNING: Large amount of data might be allocated unnoticed. */
 # define gather(string_ptr)\
   (String_Gather(string_ptr))
 
-# define whence(string_ptr, target_string_ptr, offset)\
-  (String_Whence(string_ptr, target_string_ptr, offset))
+# define whence(string_ptr, string_target_ptr, offset)\
+  (String_Whence(string_ptr, string_target_ptr, offset))
 
 # define blank(string_ptr)\
   (String_Blank(string_ptr))
 
-# define tokenise(string_ptr, delim_string_ptr, idx)\
-  tokens(string_ptr, delim_string_ptr);\
-  breaks(string_ptr, idx)
+# define tokenise_idx(string_ptr, string_delim_ptr, idx)\
+  (String_Tokens(string_ptr, string_delim_ptr),\
+   String_Breaks(string_ptr, idx))
+
+# define tokenise(string_ptr, delim_cstr)\
+  (String_Tokens(string_ptr, delim_cstr),\
+   String_Gather(string_ptr))
 
 # define trim(string_ptr_ptr)\
   (String_Trim(string_ptr_ptr))
@@ -341,5 +340,7 @@ String *String_ReplaceAll(
 void *String_Flatten(const String *const inst, const llong width);
 
 boolean String_Contains(const String *const inst, const String *const target);
+
+byte *String_Fallback(const String *const inst);
 
 #endif  /* COMPOUND_STRING_H */
