@@ -108,16 +108,21 @@ inline void PrintTokens(const String *const inst)
 
 int main(void)
 {
-  String *content = string("This+++is+++not+++an+++apple.");
-  String *target = string("+++");
-  String *replacement = string("_");
+  String *content = string("#This is(not, an) apple");
 
-  content = replace_first(&content, target, replacement, 0);
+  Array(ptr) *tokens = tokenise(content, PUNCTUATION WHITESPACE);
+  if (!tokens) {
+    Delete(String, &content);
+    return 1;
+  }
 
-  sout(content);
+  foreach (ptr, token, tokens, {
+    sout(token);
+  })
+  puts(".");
 
-  Delete(String, &replacement);
-  Delete(String, &target);
+  eraseref(String, tokens);
+  Delete(Array(ptr), &tokens);
   Delete(String, &content);
 
   return 0;

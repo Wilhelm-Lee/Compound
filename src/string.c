@@ -19,6 +19,12 @@
 
 #include "../inc/string.h"
 
+struct String {
+  Array(byte) *data;
+  llong width;  // Byte width.
+  Array(llong) *breaks;  // Token descriptors.  See doc/STRING.md.
+};
+
 String *String_Create(const llong length, const llong width)
 {
   if (width <= 0) {
@@ -913,6 +919,15 @@ boolean String_Contains(const String *const inst, const String *const target)
   }
 
   return String_Whence(inst, target, 0) > 0;
+}
+
+inline byte *String_Fallback(const String *const inst)
+{
+  if (!inst || !inst->data) {
+    return NULL;
+  }
+
+  return inst->data->data;
 }
 
 IMPL_ARRAY(String, !compare(A, B))
