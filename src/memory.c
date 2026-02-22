@@ -19,13 +19,77 @@
 
 #include "../inc/memory.h"
 
-inline void *Allocate(const size_t nmemb, const size_t size)
-{
-  void *const inst = calloc(nmemb, size);
+#include "../inc/memory_stack.h"
 
+struct Memory {
+  void *addr;
+
+  /* Garbage Collector marking. */
+  boolean marked;
+};
+
+Memory *Memory_Create(const void *restrict const addr)
+{
+  if (!addr) {
+    return NULL;
+  }
+
+  Memory *const inst =  malloc(sizeof(Memory));
+  if (!inst) {
+    perror("Failed to allocate memory for Memory registeration.");
+    exit(EXIT_FAILURE);
+  }
+
+  inst->addr = addr;
+  inst->marked = false;
+
+  return inst;
+}
+
+Memory *Memory_CopyOf(const Memory *const other)
+{
+  if (!other) {
+    return NULL;
+  }
+
+  Memory *const inst = malloc(sizeof(Memory));
+  if (!inst) {
+    perror("Failed to allocate memory for Memory registeration.");
+    exit(EXIT_FAILURE);
+  }
+
+  inst->addr = other->addr;
+  inst->marked = false;  /* This is intentional. */
+
+  return inst;
+}
+
+void Memory_Delete(Memory **const inst)
+{
+  if (inst && *inst) {
+    free(*inst);
+    *inst = NULL;
+  }
+}
+
+inline void *Memory_GetAddr(Memory *inst)
+{
   if (!inst) {
     return NULL;
   }
+
+  return inst->addr;
+}
+
+inline void *Allocate(const size_t nmemb, const size_t size)
+{
+  void *const inst = calloc(nmemb, size);
+  if (!inst) {
+    return NULL;
+  }
+
+  /* Register the memory onto the heap stack. */
+  ig MemoryStack_Push(MEMORY_STACK, Create(Memory, inst));
 
   return inst;
 }
@@ -45,78 +109,9 @@ inline void *Reallocate(void *inst, const size_t size)
   return inst;
 }
 
-inline void Deallocate(void *const inst)
+inline void _Deallocate(void *const inst)
 {
   if (inst) {
     free(inst);
   }
 }
-
-
-// void *_Allocate(const size_t nmemb, const size_t size,
-//                 const char *restrict const file,
-//                 const char *restrict const func,
-//                 const int line)
-// {
-//   void *inst = NULL;
-
-//   if (nmemb == 1) {
-//     inst = malloc(size);
-//     memset(inst, 0, size);
-//   } else {
-//     inst = calloc(nmemb, size);
-//   }
-
-//   if (!inst) {
-//     return NULL;
-//   }
-
-//   /* Register the memory onto the heap stack. */
-//   Memory mem = (Memory) {
-//     .allocation = (Location) {
-//       .file = (char *)file,
-//       .func = (char *)func,
-//       .line = line
-//     },
-//     .reallocation = EMPTY,
-//     .freeing = EMPTY,
-//     .data = inst,
-//     .size = (nmemb * size),
-//     .has_reallocated = false,
-//     .has_freed = false
-//   };
-//   mpush(mem);
-
-//   return inst;
-// }
-
-// void *_Reallocate(Memory *const inst, const size_t size,
-//                   const char *restrict const file,
-//                   const char *restrict const func,
-//                   const int line)
-// {
-//   if (!inst) state (RuntimeError,
-//     "Attempting to reallocate unallocated memory address (inst = NULL)."
-//   ) {
-//     return inst;
-//   };
-
-//   inst = realloc(inst, size);
-
-//   if (!inst) state (InsufficientMemory,
-//     "Failed to re-allocate."
-//   ) {
-//     return inst;
-//   }
-
-//   return inst;
-// }
-
-// void Deallocate(void *const *inst)
-// {
-//   if (inst && *inst) {
-//     free(*inst);
-//   }
-
-//   inst = NULL;
-// }

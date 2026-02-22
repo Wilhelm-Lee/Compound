@@ -79,7 +79,7 @@ void String_Delete(String **const inst)
   Delete(Array(byte), &(*inst)->data);
   (*inst)->width = 0;
   Delete(Array(llong), &(*inst)->breaks);
-  Deallocate(*inst);
+  Deallocate(inst);
   *inst = NULL;
 }
 
