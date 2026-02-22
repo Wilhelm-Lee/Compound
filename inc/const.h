@@ -26,10 +26,10 @@
 
 # define EMPTY  {0}
 
-# define WHITESPACE  " \t\r\n"
+# define WHITESPACE  "\t\n\v\f\r "
 
-# define PUNCTUATION  "`-=~!@#$%^&*()_+[]\\;'',./{}|:\"\"<>?"
+# define PUNCTUATION  "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
 
-# define IDENTITY_LENGTH_MAXIMUM  64
+# define IDENTITY_LENGTH_MAXIMUM  64LL
 
 #endif  /* COMPOUND_CONST_H */

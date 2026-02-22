@@ -25,6 +25,7 @@
 # include <stdarg.h>
 # include <stdlib.h>
 # include <stdio.h>
+# include <string.h>
 
 # include "arrays.h"
 # include "common.h"

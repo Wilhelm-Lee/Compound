@@ -20,6 +20,7 @@
 #include <stdio.h>
 
 #include "../inc/string.h"
+#include "../inc/memory_stack.h"
 
 /* String Tests:
  * [X] Create
@@ -106,13 +107,12 @@ inline void PrintTokens(const String *const inst)
 
 # define sout  stroutln
 
-int main(void)
+int CompoundTest(void)
 {
   String *content = string("#This is(not, an) apple");
 
   Array(ptr) *tokens = tokenise(content, PUNCTUATION WHITESPACE);
   if (!tokens) {
-    Delete(String, &content);
     return 1;
   }
 
@@ -121,27 +121,24 @@ int main(void)
   })
   puts(".");
 
-  eraseref(String, tokens);
-  Delete(Array(ptr), &tokens);
-  Delete(String, &content);
+  Array(ptr) *string_ptrs = array(ptr, 1000);
+  refeach (ptr, string_ptr, string_ptrs, {
+    *string_ptr = String_Create(rand() % 50, sizeof(byte));
+  })
 
   return 0;
 }
 
+int main(void)
+{
+  InitialiseMemoryStack(&MEMORY_STACK);
 
+  const int retval = CompoundTest();
 
+  DeinitialiseMemoryStack(&MEMORY_STACK);
 
-
-
-
-
-
-
-
-
-
-
-
+  return retval;
+}
 
 
 

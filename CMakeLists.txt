@@ -8,6 +8,7 @@ set(SOURCES
         src/arrays.c
         src/memory.c
         src/string.c
+        src/memory_stack.c
 )
 
 add_library(compound SHARED

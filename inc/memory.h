@@ -22,97 +22,23 @@
 #ifndef COMPOUND_MEMORY_H
 # define COMPOUND_MEMORY_H
 
+# include <stdio.h>
 # include <stdlib.h>
 
 # include "language.h"
 # include "types.h"
-# include "location.h"
 
-typedef struct {
-  /* The location where the address got allocated. */
-  Location allocation;
-  /* The latest location where the address got reallocated. */
-  Location reallocation;
-  /* The location where the address got freed. */
-  Location freeing;
-  void *data;
-  size_t size;
-  boolean has_reallocated;
-  boolean has_freed;
-} Memory;
+typedef struct Memory Memory;
 
-# define _memory_get_freeing(addr)\
-  ((void *)(addr - sizeof(Location)))
-
-# define _memory_get_reallocation(addr)\
-  ((void *)_memory_get_freeing(addr) - sizeof(Location))
-
-# define _memory_get_allocation(addr)\
-  ((void *)_memory_get_reallocation(addr) - sizeof(Location))
-
-# define _memory_get_size(addr)\
-  ((void *)(addr + sizeof(void *)))
-
-# define _memory_get_has_reallocated(addr)\
-  ((void *)_memory_get_size(addr) + sizeof(size_t))
-
-# define _memory_get_has_freed(addr)\
-  ((void *)_memory_get_has_reallocated(addr) + sizeof(boolean))
-
-typedef struct {
-  Memory *data;
-  llong capacity;  //< The total capacity of the instance.
-  llong height;  //< The current indexer of the instance.
-} MemoryStack;
-
-void MemoryStack_Create(MemoryStack *const inst, const llong capacity);
-void MemoryStack_Delete(MemoryStack *const inst);
-void MemoryStack_Push(MemoryStack *const inst, const Memory push);
-void MemoryStack_Pop(MemoryStack *const inst);
-void MemoryStack_PopAll(MemoryStack *const inst);
-Memory *MemoryStack_Top(MemoryStack *const inst);
-Memory *MemoryStack_At(MemoryStack *const inst, const llong index);
-
-# define MEMORY_STACK_HEIGHT_MAXIMUM  256LL
-
-extern MemoryStack *MEMORY_STACK;
-/* Keeps track of every Memory instances in @MEMORY_STACK. */
-extern llong *MEMORY_STACK_INDEXERS;
-
-# define M  ((MemoryStack_Top(MEMORY_STACK)))
-
-# define mpush(memory)\
-  MemoryStack_Push(MEMORY_STACK, (memory))
-
-# define mpop\
-  MemoryStack_Pop(MEMORY_STACK)
-
-# define mpopall\
-  MemoryStack_Pop(MEMORY_STACK)
+Memory *Memory_Create(const void *restrict const addr);
+Memory *Memory_CopyOf(const Memory *const other);
+void Memory_Delete(Memory **const inst);
+void *Memory_GetAddr(Memory *inst);
 
 void *Allocate(const size_t nmemb, const size_t size);
-
 void *Reallocate(void *inst, const size_t size);
+void _Deallocate(void *const inst);
 
-void Deallocate(void *const inst);
-
-
-// void *_Allocate(const size_t nmemb, const size_t size,
-//                 const char *restrict const file,
-//                 const char *restrict const func,
-//                 const int line);
-
-// # define Allocate(nmemb, size)\
-//   _Allocate(nmemb, size, __FILE__, __func__, __LINE__)
-
-// void *_Reallocate(Memory *const inst, const size_t size,
-//                   const char *restrict const file,
-//                   const char *restrict const func,
-//                   const int line);
-
-// # define Reallocate(inst_ptr, size)\
-//   _Reallocate(inst_ptr, size, __FILE__, __func__, __LINE__)
-
-// void Deallocate(void *const *inst);
+# define Deallocate(...)
 
 #endif  /* COMPOUND_MEMORY_H */
