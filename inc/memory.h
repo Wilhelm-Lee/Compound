@@ -36,7 +36,6 @@ void Memory_Delete(Memory **const inst);
 void *Memory_GetAddr(Memory *inst);
 
 void *Allocate(const size_t nmemb, const size_t size);
-void *Reallocate(void *inst, const size_t size);
 void _Deallocate(void *const inst);
 
 # define Deallocate(...)

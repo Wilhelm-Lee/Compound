@@ -126,6 +126,47 @@ int CompoundTest(void)
     *string_ptr = String_Create(rand() % 50, sizeof(byte));
   })
 
+  int *value = Allocate(1, sizeof(int));
+  value = Allocate(1, sizeof(int));
+  value = Allocate(1, sizeof(int));
+  value = Allocate(1, sizeof(int));
+  value = Allocate(1, sizeof(int));
+  value = Allocate(1, sizeof(int));
+  value = Allocate(1, sizeof(int));
+  value = Allocate(1, sizeof(int));
+  value = Allocate(1, sizeof(int));
+  value = Allocate(1, sizeof(int));
+  value = Allocate(1, sizeof(int));
+  value = Allocate(1, sizeof(int));
+  value = Allocate(1, sizeof(int));
+  value = Allocate(1, sizeof(int));
+  value = Allocate(1, sizeof(int));
+  value = Allocate(1, sizeof(int));
+  value = Allocate(1, sizeof(int));
+  value = Allocate(1, sizeof(int));
+  value = Allocate(1, sizeof(int));
+  value = Allocate(1, sizeof(int));
+  value = Allocate(1, sizeof(int));
+  value = Allocate(1, sizeof(int));
+  value = Allocate(1, sizeof(int));
+  value = Allocate(1, sizeof(int));
+  value = Allocate(1, sizeof(int));
+  value = Allocate(1, sizeof(int));
+  value = Allocate(1, sizeof(int));
+  value = Allocate(1, sizeof(int));
+  value = Allocate(1, sizeof(int));
+  value = Allocate(1, sizeof(int));
+  value = Allocate(1, sizeof(int));
+  value = Allocate(1, sizeof(int));
+  value = Allocate(1, sizeof(int));
+  value = Allocate(1, sizeof(int));
+  value = Allocate(1, sizeof(int));
+  value = Allocate(1, sizeof(int));
+  value = Allocate(1, sizeof(int));
+  value = Allocate(1, sizeof(int));
+  value = Allocate(1, sizeof(int));
+  value = Allocate(1, sizeof(int));
+
   return 0;
 }
 

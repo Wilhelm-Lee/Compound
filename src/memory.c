@@ -94,21 +94,6 @@ inline void *Allocate(const size_t nmemb, const size_t size)
   return inst;
 }
 
-inline void *Reallocate(void *inst, const size_t size)
-{
-  if (!inst) {
-    return inst;
-  };
-
-  inst = realloc(inst, size);
-
-  if (!inst) {
-    return inst;
-  }
-
-  return inst;
-}
-
 inline void _Deallocate(void *const inst)
 {
   if (inst) {

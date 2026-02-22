@@ -2,6 +2,9 @@
 
 It's back.  
 
+Now with memory pool to recollect allocated resources,
+**automatically**.
+
 ## Building
 
 ```shell
