@@ -35,12 +35,4 @@ typedef unsigned int uint;
 typedef unsigned long ulong;
 typedef unsigned long long int ullong;
 
-/* Redirect all 64 bits types with 32 bits ones under 32 bits platforms. */
-# ifdef __COMPOUND_32__
-#  define int64_t  int32_t
-#  define int_fast64_t  int_fast32_t
-#  define uint64_t  uint32_t
-#  define uint_fast64_t  uint_fast32_t
-# endif
-
 #endif  /* COMPOUND_TYPES_H */
