@@ -5,7 +5,7 @@
   **automatically**.
 
 ## Sanity
-  [![Codacy Badge](https://app.codacy.com/project/badge/Grade/5fc56e4b47f1408b836390feade48250)](https://app.codacy.com/gh/Wilhelm-Lee/Compound/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
+  [![Codacy Badge](https://app.codacy.com/project/badge/Grade/f653f688f7034e1bb842a87849809ac1)](https://app.codacy.com/gh/Wilhelm-Lee/Compound/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 
 ## Building
   ```shell
