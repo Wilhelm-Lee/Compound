@@ -1,0 +1,16 @@
+.idea/
+CMakeFiles/
+cmake-build-debug/
+/CompoundTest
+func_reg
+to_fix
+build
+.idea/editor.xml
+.idea/inspectionProfiles/Project_Default.xml
+for_each
+generate_incompleted.sh
+out/
+run
+run.sh
+status.h
+

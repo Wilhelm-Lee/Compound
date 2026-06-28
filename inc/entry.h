@@ -1,0 +1,95 @@
+/*
+ * This file is part of Compound library.
+ * Copyright (C) 2024-2026  William Lee
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Library General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Library General Public License for more details.
+ *
+ * You should have received a copy of the GNU Library General Public
+ * License along with this library; if not, see
+ * <https://www.gnu.org/licenses/>.
+ */
+
+/** @file entry.h */
+
+#ifndef COMPOUND_ENTRY_H
+# define COMPOUND_ENTRY_H
+
+# include "init.h"
+
+# if defined (__COMPOUND_FEATURE_ARGUMENT__) &&\
+     defined (__COMPOUND_FEATURE_ENVIRONMENT__)
+#  define IMPL_MAIN                                                            \
+   int main(                                                                   \
+     const int argc,                                                           \
+     const char *const *const argv,                                            \
+     const char *const *const envp                                             \
+   ) {                                                                         \
+     Array(String) *args = NULL;                                               \
+     Array(String) *envs = NULL;                                               \
+     InitialiseMain(argc, argv, envp, &args, &envs);                           \
+                                                                               \
+     const int retval = _Main(args, envs);                                     \
+                                                                               \
+     DeinitialiseMain(&args, &envs);                                           \
+     return retval;                                                            \
+   }
+# elif defined (__COMPOUND_FEATURE_ARGUMENT__)
+#  define IMPL_MAIN                                                            \
+   int main(                                                                   \
+     const int argc,                                                           \
+     const char *const *const argv                                             \
+   ) {                                                                         \
+     Array(String) *args = NULL;                                               \
+     InitialiseMain(argc, argv, NULL, &args, NULL);                            \
+                                                                               \
+     const int retval = _Main(args, NULL);                                     \
+                                                                               \
+     DeinitialiseMain(&args, NULL);                                            \
+     return retval;                                                            \
+   }
+# else
+#  define IMPL_MAIN                                                            \
+   int main(void)                                                              \
+   {                                                                           \
+     InitialiseMain(0, NULL, NULL, NULL, NULL);                                \
+                                                                               \
+     const int retval = _Main(NULL, NULL);                                     \
+                                                                               \
+     DeinitialiseMain(NULL, NULL);                                             \
+     return retval;                                                            \
+   }
+# endif
+
+/* @Main is the mask of @_Main. */
+/* @_Main is the actual entrance of Compound. */
+/* @main is the entrance of C. */
+# if defined (__COMPOUND_FEATURE_ARGUMENT__) &&\
+     defined (__COMPOUND_FEATURE_ENVIRONMENT__)
+#  define Main(args, envs)\
+   _Main(args, envs);\
+   IMPL_MAIN\
+   int _Main(args, envs)
+# elif defined (__COMPOUND_FEATURE_ARGUMENT__)
+#  define Main(args)\
+   _Main(args, Array(String) *envs);\
+   IMPL_MAIN\
+   int _Main(args, __attribute__((unused)) Array(String) *envs)
+# else
+#  define Main(void)\
+   _Main(Array(String) *args, Array(String) *envs);\
+   IMPL_MAIN\
+   int _Main(\
+     Array(String) *__attribute__((unused)) args,\
+     Array(String) *__attribute__((unused)) envs\
+   )
+# endif
+
+#endif  /* COMPOUND_ENTRY_H */
