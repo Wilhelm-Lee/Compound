@@ -27,7 +27,6 @@ set(CMAKE_CACHEFILE_DIR ${CMAKE_BUILD_DIR})
 
 
 set(CMAKE_C_STANDARD 99)
-set(CMAKE_C_STANDARD_REQUIRED ON)
 set(
   SOURCES
   src/arrays.c
@@ -62,10 +61,9 @@ target_compile_options(
   -O0
   # -fno-omit-frame-pointer  # __builtin_frame_address(1) for feature Backtracing.
   -D__COMPOUND_FEATURE_ARGUMENT__
-  -D__COMPOUND_FEATURE_RECYCLER__
+  -D__COMPOUND_FEATURE_MEMORY__
   -D__COMPOUND_FEATURE_BOOLEAN__
 )
-
 #target_include_directories(hashmap PUBLIC ${hashmap_SOURCE_DIR})
 #target_link_libraries(CompoundTest PUBLIC hashmap)
 #target_link_libraries(compound PUBLIC hashmap)

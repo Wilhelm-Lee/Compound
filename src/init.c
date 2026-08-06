@@ -69,9 +69,7 @@ int InitialiseMain(
   }
 
   iterate (String, i, *args, {
-    // assign(String, ref(Array(String), *args, i), string(argv[i]));
-    // *refref(Array(String), *args, i) = string(argv[i]);
-    *refref(Array(String), *args, i) = string(argv[i]);
+    set(Array(String), *args, i, string(argv[i]));
   })
 # endif
 
@@ -90,7 +88,7 @@ int InitialiseMain(
   }
 
   loop (i, envp_len) {
-    *refref(Array(String), *envs, i) = string(envp[i]);
+    ref(Array(String), *envs, i) = string(envp[i]);
   }
 # endif
 
@@ -98,7 +96,7 @@ int InitialiseMain(
   InitialiseStatusStack(&STATUS_STACK);
 # endif
 
-# ifdef __COMPOUND_FEATURE_RECYCLER__
+# ifdef __COMPOUND_FEATURE_MEMORY__
   InitialiseMemoryStack(&MEMORY_STACK);
 # endif
 
@@ -128,7 +126,7 @@ int DeinitialiseMain(
   DeinitialiseStatusStack(&STATUS_STACK);
 # endif
 
-# ifdef __COMPOUND_FEATURE_RECYCLER__
+# ifdef __COMPOUND_FEATURE_MEMORY__
   DeinitialiseMemoryStack(&MEMORY_STACK);
 # endif
 

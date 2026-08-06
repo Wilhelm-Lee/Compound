@@ -45,7 +45,7 @@ struct Memory
 #endif
 };
 
-extern inline Memory *Memory_Create(void *const addr, const size_t size)
+inline Memory *Memory_Create(const void *const addr, const size_t size)
 {
   Memory *inst = calloc(1, sizeof(Memory));
   if (!inst) {
@@ -63,7 +63,7 @@ extern inline Memory *Memory_Create(void *const addr, const size_t size)
   return inst;
 }
 
-extern inline Memory *Memory_CopyOf(const Memory *const other)
+inline Memory *Memory_CopyOf(const Memory *const other)
 {
   if (!other) {
     return NULL;
@@ -84,22 +84,17 @@ extern inline Memory *Memory_CopyOf(const Memory *const other)
   return inst;
 }
 
-extern inline void Memory_Delete(Memory **const inst)
+inline void Memory_Delete(Memory *const inst)
 {
   if (!inst) {
     return;
   }
 
-  if (*inst) {
-    free((*inst)->addr);
-    (*inst)->addr = NULL;
-    (*inst)->size = 0;
-    free(*inst);
-    *inst = NULL;
-  }
+  free(inst->addr);
+  inst->size = 0;
 }
 
-extern inline void *Memory_GetAddress(const Memory *const inst)
+inline void *Memory_GetAddress(const Memory *const inst)
 {
   if (!inst) {
     return NULL;
@@ -108,7 +103,7 @@ extern inline void *Memory_GetAddress(const Memory *const inst)
   return inst->addr;
 }
 
-extern inline size_t Memory_GetSize(const Memory *const inst)
+inline size_t Memory_GetSize(const Memory *const inst)
 {
   if (!inst) {
     return 0;

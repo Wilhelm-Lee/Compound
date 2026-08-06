@@ -31,7 +31,7 @@ void InitialiseStatusStack(Stack(Status) **const instptr);
 void DeinitialiseStatusStack(Stack(Status) **const instptr);
 # endif
 
-# ifdef __COMPOUND_FEATURE_RECYCLER__
+# ifdef __COMPOUND_FEATURE_MEMORY__
 void InitialiseMemoryStack(MemoryStack **const inst);
 void DeinitialiseMemoryStack(MemoryStack **const inst);
 # endif

@@ -1,4 +1,4 @@
-/*
+ /*
  * This file is part of Compound library.
  * Copyright (C) 2024-2026  William Lee
  *
@@ -108,7 +108,7 @@ void String_Delete(String *const inst)
   Deallocate(inst);
 }
 
-extern inline boolean String_Equals(
+inline boolean String_Equals(
   const String *const string1,
   const String *const string2
 ) {
@@ -116,9 +116,9 @@ extern inline boolean String_Equals(
          && Equals(Array(llong), string1->breaks, string2->breaks, NULL);
 }
 
-extern inline String *String_Transfer(
+inline String *String_Transfer(
   String **const receiver,
-  String *const provider
+  const String *const provider
 ) {
   if (!receiver || !*receiver) {
     return NULL;
@@ -164,7 +164,7 @@ int String_Compare(const String *const string1, const String *const string2)
                          ? string1_len
                          : string2_len;
   for (register llong i = 0; i < minlen; i++) {
-    const int diff = *refbyte(string1, i) - *refbyte(string2, i);
+    const int diff = getbyte(string1, i) - getbyte(string2, i);
 
     /* Has different. */
     if (diff) {
@@ -195,16 +195,15 @@ String *String_Concat(String *const string1, const String *const string2)
                          ? string1_len
                          : string2_len);
 
-  String *const concat = String_Create(string1_len + string2_len, width);
+  String *const concat = Create(String, string1_len + string2_len, width);
 
   iterate (byte, i, concat->data, {
     if (i < string1_len) {
-      // *refbyte(concat, i) = *refbyte(string1, i);
-      *refbyte(string1, i) = *refbyte(concat, i);
+      setbyte(string1, i, refbyte(concat, i));
       continue;
     }
 
-    *refbyte(concat, i) = *refbyte(string2, i - string1_len);
+    setbyte(concat, i, refbyte(string2, i - string1_len));
   })
 
   return concat;
@@ -320,7 +319,7 @@ String *String_Trim(String **const inst)
   return *inst;
 }
 
-extern inline llong String_CountTokens(const String *const inst)
+inline llong String_CountTokens(const String *const inst)
 {
   return (call(Array(llong), GetCapacity, inst->breaks) % 2) +
     (call(Array(llong), GetCapacity, inst->breaks) / 2);
@@ -354,8 +353,12 @@ llong String_Tokens(String *const inst, const char *restrict const delim_cstr)
       refreshed = true;
       tokenth++;
       begin = i;
-      inst->breaks = llongArray_Insert(
-        inst->breaks, *last(Array(llong), inst->breaks), &begin
+      inst->breaks = call(
+        Array(llong),
+        Insert,
+        inst->breaks,
+        last(Array(llong), inst->breaks),
+        &begin
       );
     }
 
@@ -369,8 +372,12 @@ llong String_Tokens(String *const inst, const char *restrict const delim_cstr)
       refreshed = false;
       end = i - 1;
       llong calc = end - begin + 1;
-      inst->breaks = llongArray_Insert(
-        inst->breaks, *last(Array(llong), inst->breaks), &calc
+      inst->breaks = call(
+        Array(llong),
+        Insert,
+        inst->breaks,
+        last(Array(llong), inst->breaks),
+        &calc
       );
     }
   }
@@ -425,7 +432,7 @@ Array(ptr) *String_Gather(const String *const inst)
   return tokens;
 }
 
-extern inline llong String_Whence(
+inline llong String_Whence(
   const String *const source,
   const String *const target,
   const llong offset
@@ -448,8 +455,8 @@ extern inline llong String_Whence(
     return -1;
   }
 
-  return (byte *)strstr((char *)&refbyte(source, 0)[offset],
-                        (char *)refbyte(target, 0)) - refbyte(source, 0);
+  return strstr((char *)refbyte(source, offset),
+                (char *)refbyte(target, 0)) - (char *)refbyte(source, 0);
 }
 
 String *String_RemoveLeadingWhitespace(String **const inst)
@@ -562,11 +569,11 @@ llong String_LastAt(
     return -1;
   }
 
-  reverse(String, source);
+  reverse(Array(byte), Getter(String, Data, source));
 
   const llong index = String_FirstAt(source, target, offset);
 
-  reverse(String, source);
+  reverse(Array(byte), Getter(String, Data, source));
 
   return index;
 }
@@ -597,18 +604,18 @@ String *String_Strcut(
   return cutoff;
 }
 
-extern inline llong String_Length(const String *const string)
+inline llong String_Length(const String *const string)
 {
   if (!string) {
     return 0;
   }
 
   // register llong length = 0;
-  // while (refbyte(string, length)) {
+  // while (getbyte(string, length)) {
   //   length += 1;
   // }
 
-  byte *ref_index0 = refbyte(string, 0);
+  byte *const ref_index0 = refbyte(string, 0);
   if (!ref_index0) {
     return 0;
   }
@@ -648,12 +655,12 @@ String *String_Insert(
 
   String *insert = String_Create(length, final_width);
   memmove(refbyte(insert, 0), refbyte((*inst), 0), index);
-  memmove(&refbyte(insert, 0)[index], refbyte(source, 0), sourcelen);
+  memmove(refbyte(insert, index), refbyte(source, 0), sourcelen);
   memmove(
-    &refbyte(insert, 0)[index + sourcelen], &refbyte((*inst), 0)[index],
+    refbyte(insert, index + sourcelen), refbyte((*inst), index),
     instlen - index
   );
-  refbyte(insert, 0)[length] = 0;
+  *refbyte(insert, length) = 0;
 
   Delete(String, *inst);
 
@@ -695,8 +702,8 @@ String *String_Remove(
   /* Copy the part after the removed section. */
   if (offset + final_length < instlen) {
     memmove(
-      &refbyte(result, 0)[offset],
-      &refbyte((*inst), 0)[offset + final_length],
+      refbyte(result, offset),
+      refbyte((*inst), offset + final_length),
       instlen - (offset + final_length)
     );
   }
@@ -756,7 +763,7 @@ Array(llong) *String_Occurrences(
   llong progress = offset;
   llong whence = -1;
   while ((whence = whence(content, target, progress)) >= 0) {
-    *ref(Array(llong), occurrences, occurrence_accum) = whence;
+    set(Array(llong), occurrences, occurrence_accum, &whence);
     occurrence_accum++;
     progress = whence + 1;
   }
@@ -802,13 +809,13 @@ String *String_ReplaceFirst(
 
   memmove(refbyte(replace, 0), refbyte((*inst), 0), occurrence);
   memmove(
-    &refbyte(replace, 0)[occurrence],
+    refbyte(replace, occurrence),
     refbyte(replacement, 0),
     replacementlen
   );
   memmove(
-    &refbyte(replace, 0)[occurrence + replacementlen],
-    &refbyte((*inst), 0)[occurrence + targetlen],
+    refbyte(replace, occurrence + replacementlen),
+    refbyte((*inst), occurrence + targetlen),
     instlen - (occurrence + targetlen)
   );
 
@@ -858,13 +865,13 @@ String *String_ReplaceAll(
 
   foreach (llong, occur, occurrences, {
     /* Calculate the distance between the last match and this match */
-    llong seg_length = *occur - src_idx;
+    llong seg_length = occur - src_idx;
 
     /* Copy original text before the occurrence */
     if (seg_length > 0) {
       memcpy(
-        &refbyte(replace, 0)[dst_idx],
-        &refbyte((*inst), 0)[src_idx],
+        refbyte(replace, dst_idx),
+        refbyte((*inst), src_idx),
         seg_length
       );
       dst_idx += seg_length;
@@ -873,7 +880,7 @@ String *String_ReplaceAll(
     /* Copy the replacement text */
     if (replacementlen > 0) {
       memcpy(
-        &refbyte(replace, 0)[dst_idx],
+        refbyte(replace, dst_idx),
         refbyte(replacement, 0),
         replacementlen
       );
@@ -881,15 +888,15 @@ String *String_ReplaceAll(
     }
 
     /* Advance source index past the target we just replaced */
-    src_idx = *occur + targetlen;
+    src_idx = occur + targetlen;
   })
 
   /* Copy the remaining tail of the original string */
   llong tail_length = instlen - src_idx;
   if (tail_length > 0) {
     memcpy(
-      &refbyte(replace, 0)[dst_idx],
-      &refbyte((*inst), 0)[src_idx],
+      refbyte(replace, dst_idx),
+      refbyte((*inst), src_idx),
       tail_length
     );
   }
@@ -906,7 +913,7 @@ void *String_Flatten(const String *const inst, const llong width)
     return NULL;
   }
 
-  const byte *const index0 = refbyte(inst, 0);
+  byte *const index0 = refbyte(inst, 0);
 
   if (!index0) {
     /* Default width is the width of a byte.
@@ -952,7 +959,7 @@ boolean String_Contains(const String *const inst, const String *const target)
   return String_Whence(inst, target, 0) > 0;
 }
 
-extern inline String *String_Reverse(String *const inst)
+inline String *String_Reverse(String *const inst)
 {
   if (!inst) {
     return NULL;
@@ -963,7 +970,7 @@ extern inline String *String_Reverse(String *const inst)
   return inst;
 }
 
-extern inline Array(byte) *String_GetData(const String *const inst)
+inline Array(byte) *String_GetData(const String *const inst)
 {
   if (!inst) {
     return NULL;
@@ -971,7 +978,7 @@ extern inline Array(byte) *String_GetData(const String *const inst)
 
   return inst->data;
 }
-extern inline llong String_GetWidth(const String *const inst)
+inline llong String_GetWidth(const String *const inst)
 {
   if (!inst) {
     return 0;
@@ -979,7 +986,7 @@ extern inline llong String_GetWidth(const String *const inst)
 
   return inst->width;
 }
-extern inline Array(llong) *String_GetBreaks(const String *const inst)
+inline Array(llong) *String_GetBreaks(const String *const inst)
 {
   if (!inst) {
     return NULL;

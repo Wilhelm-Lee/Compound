@@ -50,6 +50,12 @@ ARRAY(String);
 # define refbyte(string_ptr, idx)\
   (ref(Array(byte), Getter(String, Data, (string_ptr)), idx))
 
+# define getbyte(string_ptr, idx)\
+  (get(Array(byte), Getter(String, Data, (string_ptr)), idx))
+
+# define setbyte(string_ptr, idx, byte_ptr)\
+  (set(Array(byte), Getter(String, Data, (string_ptr)), idx, byte_ptr))
+
 # define compare(string_ptr1, string_ptr2)\
   (String_Compare((string_ptr1), (string_ptr2)))
 
@@ -66,10 +72,10 @@ ARRAY(String);
   (String_LastAt(string_ptr, target_byte, offset))
 
 # define firstof(string_ptr)\
-  (*refbyte(string_ptr, 0))
+  getbyte(string_ptr, 0)
 
 # define lastof(string_ptr)\
-  (*refbyte(string_ptr, length(string_ptr) - 1))
+  getbyte(string_ptr, length(string_ptr) - 1)
 
 # define stringing(it, string_ptr, block)\
   foreach (byte, it, &Getter(String, Data, (string_ptr)), block)
@@ -164,7 +170,7 @@ ARRAY(String);
   do {\
     const llong CONCAT(it, len) = length(string_ptr);\
     for (register llong i = 0; i < CONCAT(it, len); i++) {\
-      const byte it = *refbyte(string_ptr, i);\
+      const byte it = getbyte(string_ptr, i);\
       block\
     }\
   } while (0);
@@ -190,7 +196,7 @@ boolean String_Equals(const String *const string1, const String *const string2);
 
    Returns @*receiver after all operations, which is equivalent as @provider.
  */
-String *String_Transfer(String **const receiver, String *const provider);
+String *String_Transfer(String **const receiver, const String *const provider);
 
 /**
  * @brief Construct the instance by sampling from @content.

@@ -35,9 +35,9 @@
 
 typedef struct Memory Memory;
 
-Memory *Memory_Create(void *const addr, const size_t size);
+Memory *Memory_Create(const void *const addr, const size_t size);
 Memory *Memory_CopyOf(const Memory *const other);
-void Memory_Delete(Memory **const inst);
+void Memory_Delete(Memory *const inst);
 
 void *Memory_GetAddress(const Memory *const inst);
 size_t Memory_GetSize(const Memory *const inst);
