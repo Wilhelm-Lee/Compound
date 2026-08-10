@@ -28,4 +28,4 @@
   it does not use VLA, or, Variable Length Array in any object definition.
 
 ## Twinkle Twinkle
-[![Stargazers over time](https://starchart.cc/Wilhelm-Lee/Compound.svg?variant=adaptive)](https://starchart.cc/Wilhelm-Lee/Compound)
+  [![Star History Chart](https://api.star-history.com/chart?repos=Wilhelm-Lee/Compound&type=date&legend=bottom-right&sealed_token=_OdGmeHwfoF7cRKEetUNOZ36JXzAGAlw3noNe02FpDMryvm140fWjjQs1IEoCqltDwgEdQmB9VT7wIyarbIzkr88l3x3L6Bh0JRfqQ8g3DnBgHoB8Ed6uM3mMl8BkNfJNgiqF7LlddxKmYx3C3WcrEK4CqR4KA92ciYyAqARthOajCAjOc6-8UrNHGzH)](https://www.star-history.com/?repos=Wilhelm-Lee%2FCompound&type=date&legend=bottom-right)
