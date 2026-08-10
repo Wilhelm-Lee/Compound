@@ -47,13 +47,12 @@ set(
 #)
 # Rename the executable to avoid conflict with the library 'compound' On
 # MacOS/Windows 'Compound' == 'compound', which breaks the build.
-add_executable(CompoundTest ${SOURCES} test/test.c)
 add_library(compound SHARED ${SOURCES})
-
+add_library(CommonCompilationFlags INTERFACE)
 
 target_compile_options(
-  CompoundTest
-  PRIVATE
+  CommonCompilationFlags
+  INTERFACE
   -std=c99
   -Wall
   -Wextra
@@ -65,6 +64,13 @@ target_compile_options(
   -D__COMPOUND_FEATURE_RECYCLER__
   -D__COMPOUND_FEATURE_BOOLEAN__
 )
+
+add_executable(CompoundTest ${SOURCES} test/test.c)
+add_executable(CompoundDemo ${SOURCES} test/demo.c)
+
+target_link_libraries(CompoundTest PRIVATE CommonCompilationFlags)
+target_link_libraries(CompoundDemo PRIVATE CommonCompilationFlags)
+
 #target_include_directories(hashmap PUBLIC ${hashmap_SOURCE_DIR})
 #target_link_libraries(CompoundTest PUBLIC hashmap)
 #target_link_libraries(compound PUBLIC hashmap)
