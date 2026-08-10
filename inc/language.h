@@ -29,57 +29,77 @@
 
 /* PROFILES. */
 # ifdef __COMPOUND_PROFILE_EVERYTHING__
-#  define __COMPOUND_FEATURE_ALL__
-#  define __COMPOUND_KEYWORD_ALL__
+#  define __COMPOUND_FEATURECLASS_COMMANDLINE__
+#  define __COMPOUND_FEATURECLASS_DEBUGGING__
+#  define __COMPOUND_FEATURECLASS_ERROR_HANDLING__
+#  define __COMPOUND_FEATURECLASS_RESOURCE_MANAGEMENT__
+#  define __COMPOUND_FEATURECLASS_TYPE__
 # endif
 
-# ifdef __COMPOUND_PROFILE_STANDALONE__
-#  define __COMPOUND_FEATURE_BOOLEAN__
+# ifdef __COMPOUND_PROFILE_DEBUGGING__
+#  define __COMPOUND_FEATURECLASS_COMMANDLINE__
+#  define __COMPOUND_FEATURECLASS_RESOURCE_MANAGEMENT__
+#  define __COMPOUND_FEATURECLASS_ERROR_HANDLING__
+# endif
+
+/* FEATURE CLASSES. */
+# ifdef __COMPOUND_FEATURECLASS_DEBUGGING__
+#  define __COMPOUND_FEATURE_BACKTRACING__
+# endif
+
+# ifdef __COMPOUND_FEATURECLASS_COMMANDLINE__
+#  define __COMPOUND_FEATURE_ARGUMENT__
+#  define __COMPOUND_FEATURE_ENVIRONMENT__
+# endif
+
+# ifdef __COMPOUND_FEATURECLASS_RESOURCE_MANAGEMENT__
+#  define __COMPOUND_FEATURE_RECYCLER__
 #  define __COMPOUND_FEATURE_HEAP__
-#  define __COMPOUND_FEATURE_STATUS__
 #  define __COMPOUND_KEYWORD_ALL__
 # endif
 
-# ifdef __COMPOUND_PROFILE_NATIVE__
-#  define __COMPOUND_FEATURE_STATUS__
-#  define __COMPOUND_KEYWORD_ALL__
-# endif
-
-# ifdef __COMPOUND_PROFILE_PERFORMANCE__
+# ifdef __COMPOUND_FEATURECLASS_TYPE__
 #  define __COMPOUND_FEATURE_BOOLEAN__
-#  define __COMPOUND_FEATURE_HEAP__
-#  define __COMPOUND_KEYWORD_ALL__
 # endif
 
-/* FEATURES & KEYWORDS. */
+# ifdef __COMPOUND_FEATURECLASS_ERROR_HANDLING__
+#  define __COMPOUND_FEATURE_STATUS__
+# endif
+
+/* FEATURES. */
 # ifdef __COMPOUND_FEATURE_ALL__
 #  define __COMPOUND_FEATURE_ARGUMENT__
 #  define __COMPOUND_FEATURE_BACKTRACING__
 #  define __COMPOUND_FEATURE_BOOLEAN__
 #  define __COMPOUND_FEATURE_ENVIRONMENT__
 #  define __COMPOUND_FEATURE_HEAP__
-#  define __COMPOUND_FEATURE_MEMORY__
+#  define __COMPOUND_FEATURE_RECYCLER__
 #  define __COMPOUND_FEATURE_STATUS__
 # endif
 
-# ifdef __COMPOUND_KEYWORD_ALL__
-#  define __COMPOUND_KEYWORD_AND_OR_NOT__
-#  define __COMPOUND_KEYWORD_CONST__
-#  define __COMPOUND_KEYWORD_INLINE__
-#  define __COMPOUND_KEYWORD_REGISTER__
-#  define __COMPOUND_KEYWORD_RESTRICT__
+# ifdef __COMPOUND_FEATURECLASS_ERROR_HANDLING__
+#  define __COMPOUND_FEATURE_STATUS__
 # endif
 
+/* Combine with @ENABLED_PROFILE to recreate the Compound compiling flags. */
+# define __COMPOUND_PROFILE__(PROFILE)\
+  __COMPOUND_PROFILE_##PROFILE##__
+
+/* Combine with @ENABLED_FEATURECLASS to recreate the Compound compiling flags.
+ */
+# define __COMPOUND_FEATURECLASS__(FEATURECLASS)\
+  __COMPOUND_FEATURECLASS_##FEATURECLASS##__
+
+/* Combine with @ENABLED_FEATURE to recreate the Compound compiling flags. */
 # define __COMPOUND_FEATURE__(FEATURE)\
   __COMPOUND_FEATURE_##FEATURE##__
-
-# define __COMPOUND_KEYWORD__(KEYWORD)\
-  __COMPOUND_KEYWORD_##KEYWORD##__
 
 /* Singular selection. */
 static const char *restrict const ENABLED_PROFILE =
 # if defined(__COMPOUND_PROFILE_EVERYTHING__)
   "EVERYTHING"
+# elif defined(__COMPOUND_PROFILE_DEBUGGING__)
+  "DEBUGGING"
 # elif defined(__COMPOUND_PROFILE_STANDALONE__)
   "STANDALONE"
 # elif defined(__COMPOUND_PROFILE_NATIVE__)
@@ -90,6 +110,32 @@ static const char *restrict const ENABLED_PROFILE =
   NULL
 # endif
 ;
+
+/* Multiple selections. */
+static const char *restrict const ENABLED_FEATURECLASSES[] = {
+# if defined(__COMPOUND_FEATURECLASS_ARGUMENT__)
+  "ARGUMENT",
+# endif
+# if defined(__COMPOUND_FEATURECLASS_BACKTRACING__)
+  "BACKTRACING",
+# endif
+# if defined(__COMPOUND_FEATURECLASS_BOOLEAN__)
+  "BOOLEAN",
+# endif
+# if defined(__COMPOUND_FEATURECLASS_ENVIRONMENT__)
+  "ENVIRONMENT",
+# endif
+# if defined(__COMPOUND_FEATURECLASS_HEAP__)
+  "HEAP",
+# endif
+# if defined(__COMPOUND_FEATURECLASS_RECYCLER__)
+  "RECYCLER",
+# endif
+# if defined(__COMPOUND_FEATURECLASS_STATUS__)
+  "STATUS",
+# endif
+  NULL
+};
 
 /* Multiple selections. */
 static const char *restrict const ENABLED_FEATURES[] = {
@@ -108,31 +154,11 @@ static const char *restrict const ENABLED_FEATURES[] = {
 # if defined(__COMPOUND_FEATURE_HEAP__)
   "HEAP",
 # endif
-# if defined(__COMPOUND_FEATURE_MEMORY__)
-  "MEMORY",
+# if defined(__COMPOUND_FEATURE_RECYCLER__)
+  "RECYCLER",
 # endif
 # if defined(__COMPOUND_FEATURE_STATUS__)
   "STATUS",
-# endif
-  NULL
-};
-
-/* Multiple selections. */
-static const char *restrict const ENABLED_KEYWORDS[] = {
-# if defined(__COMPOUND_KEYWORD_AND_OR_NOT__)
-  "AND_OR_NOT",
-# endif
-# if defined(__COMPOUND_KEYWORD_CONST__)
-  "CONST",
-# endif
-# if defined(__COMPOUND_KEYWORD_INLINE__)
-  "INLINE",
-# endif
-# if defined(__COMPOUND_KEYWORD_REGISTER__)
-  "REGISTER",
-# endif
-# if defined(__COMPOUND_KEYWORD_RESTRICT__)
-  "RESTRICT",
 # endif
   NULL
 };
@@ -141,33 +167,14 @@ static const char *restrict const ENABLED_KEYWORDS[] = {
 /* goto is an excellent solution for handling errors in C
    natively, by intruding control flows.
 
-   That is, when there is the availability to avoid using
-   goto with another handling of errors, goto is no longer
-   valid. */
-# define goto  @"GOTO IS NOT ALLOWED IN COMPOUND; CONSIDER STATUS INSTEAD."
+   That is, when there is a chance to use another handling
+   mechanism that doesn't intrude, goto is best avoided. */
+# undef goto
 
 /* Avoid implications of defining macro __COMPOUND_FEATURE_ARGUMENT__ in ifdef. */
 # if defined(__COMPOUND_FEATURE_ENVIRONMENT__) &&\
      !defined(__COMPOUND_FEATURE_ARGUMENT__)
 #  define __COMPOUND_FEATURE_ARGUMENT__
-# endif
-
-# ifndef __COMPOUND_KEYWORD_REGISTER__
-#  define register
-# endif
-
-# ifndef __COMPOUND_KEYWORD_CONST__
-#  define const
-# endif
-
-# ifndef __COMPOUND_KEYWORD_INLINE__
-#  define inline
-# endif
-
-# ifdef __COMPOUND_KEYWORD_AND_OR_NOT__
-#  define and  &&
-#  define or   ||
-#  define not  !
 # endif
 
 #endif  /* COMPOUND_LANGUAGE_H */

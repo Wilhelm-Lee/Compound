@@ -68,7 +68,7 @@ int InitialiseMain(
     return 1;
   }
 
-  iterate (String, i, *args, {
+  iterate (Array(String), i, *args, {
     set(Array(String), *args, i, string(argv[i]));
   })
 # endif
@@ -82,13 +82,13 @@ int InitialiseMain(
 
   *envs = array(String, envp_len);
   if (!envs) {
-    erase(Array(String), args);
+    erase(Array(String), *args);
     Deallocate(args);
     return 1;
   }
 
   loop (i, envp_len) {
-    ref(Array(String), *envs, i) = string(envp[i]);
+    *refref(Array(String), *envs, i) = string(envp[i]);
   }
 # endif
 

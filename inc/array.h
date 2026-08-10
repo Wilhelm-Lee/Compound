@@ -53,65 +53,84 @@
 # define set(type, array_ptr, index, object)                                   \
   (call(type, Set, (array_ptr), (index), (object)))
 
-# define assign(elem_type, elem_type_inst_ptr, elem_type_source_ptr)           \
-  (call(Array(elem_type), Assign, (elem_type_inst_ptr), (elem_type_source_ptr)))
-
 # define transfer(type, inst_array_ptr, src_array_ptr)                         \
   (call(type, Transfer, (inst_array_ptr), (src_array_ptr)))
 
-# define iterate(elem_type, it, array_ptr, block)                              \
-  _iterate_type(elem_type, elem_type, it, array_ptr, block)
-
-# define _iterate_type(nickname, elem_type, it, array_ptr, block)              \
+# define iterate(type, it, array_ptr, block)                                   \
   {                                                                            \
-    const llong _##it##capacity = nickname##Array_GetCapacity(array_ptr);      \
-    loop (it, _##it##capacity)                                                 \
+    type *const __iterate_array_ptr_##it = (type *const)(array_ptr);           \
+    const llong __iterate_capacity_##it = CONCAT(type, _GetCapacity)(          \
+      __iterate_array_ptr_##it                                                 \
+    );                                                                         \
+    loop (it, __iterate_capacity_##it)                                         \
       block                                                                    \
   }
 
 # define foreach(elem_type, it, array_ptr, block)                              \
   {                                                                            \
+    Array(elem_type) *const _foreach_array_ptr_##it =                          \
+      (Array(elem_type) *const)(array_ptr);                                    \
     elem_type it = (elem_type)EMPTY;                                           \
-    iterate (elem_type, _foreach_##elem_type##_idx, (array_ptr), {             \
-      it = get(Array(elem_type), (array_ptr), _foreach_##elem_type##_idx);     \
-      block                                                                    \
-    })                                                                         \
+    iterate (                                                                  \
+      Array(elem_type),                                                        \
+      _foreach_idx_##it,                                                       \
+      (_foreach_array_ptr_##it),                                               \
+      {                                                                        \
+        it = get(                                                              \
+          Array(elem_type),                                                    \
+          (_foreach_array_ptr_##it),                                           \
+          _foreach_idx_##it                                                    \
+        );                                                                     \
+        block                                                                  \
+      }                                                                        \
+    )                                                                          \
   }
 
 # define refeach(elem_type, it, array_ptr, block)                              \
   _refeach_type(elem_type, elem_type, it, array_ptr, block)
 
-# define _refeach_type(nickname, elem_type, it, array_ptr, block)              \
+# define _refeach_type(elem_type, nickname, it, array_ptr, block)              \
   {                                                                            \
+    Array(nickname) *const __refeach_array_ptr_##it =                          \
+      (Array(nickname) *const)(array_ptr);                                     \
     elem_type *it = NULL;                                                      \
-    _iterate_type (nickname, elem_type, _refeach_##nickname##_idx,(array_ptr),{\
-      it = (elem_type *)ref(                                                   \
-        Array(nickname),                                                       \
-        (array_ptr),                                                           \
-        _refeach_##nickname##_idx                                              \
-      );                                                                       \
-      block                                                                    \
-    })                                                                         \
+    iterate (                                                                  \
+      Array(nickname),                                                         \
+      _refeach_idx_##it,                                                       \
+      (__refeach_array_ptr_##it),                                              \
+      {                                                                        \
+        it = (elem_type *)(void *)ref(                                         \
+          Array(nickname),                                                     \
+          (__refeach_array_ptr_##it),                                          \
+          _refeach_idx_##it                                                    \
+        );                                                                     \
+        block                                                                  \
+      }                                                                        \
+    )                                                                          \
   }
 
 # define refrefeach(elem_type, it, array_ptr, block)                           \
   _refrefeach_type(elem_type, elem_type, it, array_ptr, block)
 
-# define _refrefeach_type(nickname, elem_type, it, array_ptr, block)           \
+# define _refrefeach_type(elem_type, nickname, it, array_ptr, block)           \
   {                                                                            \
+    Array(nickname) *const __refrefeach_array_ptr_##it =                       \
+      (Array(nickname) *const)(array_ptr);                                     \
     elem_type **it = NULL;                                                     \
-    _iterate_type(nickname,elem_type,_refrefeach_##nickname##_idx,(array_ptr),{\
-      it = (elem_type **)refref(                                               \
-        Array(nickname),                                                       \
-        (array_ptr),                                                           \
-        _refrefeach_##nickname##_idx                                           \
-      );                                                                       \
-      block                                                                    \
-    })                                                                         \
+    iterate (                                                                  \
+      Array(nickname),                                                         \
+      _refrefeach_idx_##it,                                                    \
+      (__refrefeach_array_ptr_##it),                                           \
+      {                                                                        \
+        it = (elem_type **)refref(                                             \
+          Array(nickname),                                                     \
+          (__refrefeach_array_ptr_##it),                                       \
+          _refrefeach_idx_##it                                                 \
+        );                                                                     \
+        block                                                                  \
+      }                                                                        \
+    )                                                                          \
   }
-
-# define compose(elem_type, ...)                                               \
-  (call(Array(elem_type), Compose, arglen(__VA_ARGS__), __VA_ARGS__))
 
 # define reverse(type, obj_ptr)                                                \
   (call(type, Reverse, (obj_ptr)))
@@ -145,11 +164,11 @@
   boolean reversed;
 
 # define DEFINE_ARRAY_BASICTYPE(elem_type)                                     \
-  DEFINE_ARRAY_BASICTYPE_TYPE(elem_type, elem_type)
+  DEFINE_ARRAY_BASICTYPE_NICKNAME(elem_type, elem_type)
 
-# define DEFINE_ARRAY_BASICTYPE_TYPE(nickname, elem_type)                      \
+# define DEFINE_ARRAY_BASICTYPE_NICKNAME(elem_type, nickname)                  \
   struct nickname##Array {                                                     \
-    nickname *data;                                                            \
+    elem_type *data;                                                           \
     _DEFINE_ARRAY_COMMON_MEMBERS                                               \
   };
 
@@ -160,9 +179,11 @@
   };
 
 # define TYPEDEF_ARRAY(elem_type)                                              \
-  TYPEDEF_ARRAY_TYPE(elem_type)
+  typedef struct elem_type##Array elem_type##Array;
 
-# define TYPEDEF_ARRAY_TYPE(nickname)                                          \
+/* In order to preserve the consistency of calling convension,
+ * the @elem_type is left unused intentionally. */
+# define TYPEDEF_ARRAY_NICKNAME(elem_type, nickname)                           \
   typedef struct nickname##Array nickname##Array;
 
 /* Default array declaration is set to Object
@@ -178,18 +199,18 @@
   ARRAY_COMMON(elem_type)
 
 # define ARRAY_BASICTYPE(elem_type)                                            \
-  ARRAY_BASICTYPE_TYPE(elem_type, elem_type)
+  ARRAY_BASICTYPE_NICKNAME(elem_type, elem_type)
 
-# define ARRAY_BASICTYPE_TYPE(nickname, elem_type)                             \
-  TYPEDEF_ARRAY_TYPE(nickname)                                                 \
-  FUNC_ARRAY_BASICTYPE_TYPE(nickname, elem_type)                               \
-  ARRAY_COMMON_TYPE(nickname, elem_type)
+# define ARRAY_BASICTYPE_NICKNAME(elem_type, nickname)                         \
+  TYPEDEF_ARRAY_NICKNAME(elem_type, nickname)                                  \
+  FUNC_ARRAY_BASICTYPE_NICKNAME(elem_type, nickname)                           \
+  ARRAY_COMMON_NICKNAME(elem_type, nickname)
 
 # define ARRAY_COMMON(elem_type)                                               \
-  ARRAY_COMMON_TYPE(elem_type, elem_type)
+  ARRAY_COMMON_NICKNAME(elem_type, elem_type)
 
-# define ARRAY_COMMON_TYPE(nickname, elem_type)                                \
-  FUNC_ARRAY_COMMON_TYPE(nickname, elem_type)
+# define ARRAY_COMMON_NICKNAME(elem_type, nickname)                            \
+  FUNC_ARRAY_COMMON_NICKNAME(elem_type, nickname)
 
 # define FUNC_ARRAY_OBJECT(elem_type)                                          \
   elem_type *elem_type##Array_Get(                                             \
@@ -205,18 +226,13 @@
     const Array(elem_type) *const other                                        \
   );                                                                           \
   void elem_type##Array_Delete(Array(elem_type) *const inst);                  \
-  /* Assign from @src to @*instptr; a part of Opaque Pointer Design. */        \
-  elem_type *elem_type##Array_Assign(                                          \
-    elem_type *const inst,                                                     \
-    const elem_type *const src                                                 \
-  );                                                                           \
   Array(elem_type) *elem_type##Array_Clone(                                    \
     const Array(elem_type) *const other                                        \
   );                                                                           \
   Array(elem_type) *elem_type##Array_Erase(Array(elem_type) *const inst);      \
   Array(elem_type) *elem_type##Array_Fill(                                     \
     Array(elem_type) *const inst,                                              \
-    const elem_type *value                                                     \
+    elem_type *value                                                           \
   );                                                                           \
   boolean elem_type##Array_Equals(                                             \
     const Array(elem_type) *const arr1,                                        \
@@ -229,9 +245,9 @@
   elem_type **elem_type##Array_GetData(const Array(elem_type) *const inst);
 
 # define FUNC_ARRAY_BASICTYPE(elem_type)                                       \
-  FUNC_ARRAY_BASICTYPE_TYPE(elem_type, elem_type)
+  FUNC_ARRAY_BASICTYPE_NICKNAME(elem_type, elem_type)
 
-# define FUNC_ARRAY_BASICTYPE_TYPE(nickname, elem_type)                        \
+# define FUNC_ARRAY_BASICTYPE_NICKNAME(elem_type, nickname)                    \
   nickname nickname##Array_Get(                                                \
     const Array(nickname) *const inst,                                         \
     const llong index                                                          \
@@ -243,7 +259,7 @@
   void nickname##Array_Delete(Array(nickname) *const inst);                    \
   Array(nickname) *nickname##Array_Fill(                                       \
     Array(nickname) *const inst,                                               \
-    const elem_type value                                                      \
+    elem_type value                                                            \
   );                                                                           \
   boolean nickname##Array_Equals(                                              \
     const Array(nickname) *const arr1,                                         \
@@ -256,9 +272,9 @@
   nickname *nickname##Array_GetData(const Array(nickname) *const inst);
 
 # define FUNC_ARRAY_COMMON(elem_type)                                          \
-  FUNC_ARRAY_COMMON_TYPE(elem_type, elem_type)
+  FUNC_ARRAY_COMMON_NICKNAME(elem_type, elem_type)
 
-# define FUNC_ARRAY_COMMON_TYPE(nickname, elem_type)                           \
+# define FUNC_ARRAY_COMMON_NICKNAME(elem_type, nickname)                       \
   nickname *nickname##Array_Ref(                                               \
     const Array(nickname) *const inst,                                         \
     const llong index                                                          \
@@ -302,7 +318,7 @@
 # define IMPL_ARRAY_OBJECT(elem_type)                                          \
 DEFINE_ARRAY_OBJECT(elem_type)                                                 \
 IMPL_ARRAY_COMMON(elem_type)                                                   \
-IMPL_ARRAY_COMPOSE(elem_type, elem_type)                                       \
+IMPL_ARRAY_OBJECT_COMPOSE(elem_type)                                           \
 inline elem_type *elem_type##Array_Ref(                                        \
   const Array(elem_type) *const inst,                                          \
   const llong index                                                            \
@@ -368,21 +384,6 @@ inline void elem_type##Array_Set(                                              \
   inst->data[offsetting(Array(elem_type), inst, final_index)] = value;         \
 }                                                                              \
                                                                                \
-elem_type *elem_type##Array_Assign(                                            \
-  elem_type *const inst,                                                       \
-  const elem_type *const src                                                   \
-) {                                                                            \
-  if (!inst) {                                                                 \
-    return NULL;                                                               \
-  }                                                                            \
-                                                                               \
-  if (src) {                                                                   \
-    memmove(inst, src, sizeof(elem_type));                                     \
-  }                                                                            \
-                                                                               \
-  return inst;                                                                 \
-}                                                                              \
-                                                                               \
 Array(elem_type) *elem_type##Array_Clone(const Array(elem_type) *const other)  \
 {                                                                              \
   if (!other) {                                                                \
@@ -396,10 +397,9 @@ Array(elem_type) *elem_type##Array_Clone(const Array(elem_type) *const other)  \
                                                                                \
 /* llong interrupted = -1; */                                                  \
   for (register llong i = 0; i < other->capacity; i++) {                       \
-    assign(                                                                    \
+    *refref(Array(elem_type), inst, i) = CopyOf(                               \
       elem_type,                                                               \
-      ref(Array(elem_type), inst, i),                                          \
-      CopyOf(elem_type, ref(Array(elem_type), other, i))                       \
+      ref(Array(elem_type), other, i)                                          \
     );                                                                         \
 /*  if (belong(RuntimeError)) {  */                                            \
 /*    interrupted = i;           */                                            \
@@ -492,18 +492,18 @@ Array(elem_type) *elem_type##Array_Erase(Array(elem_type) *const inst)         \
                                                                                \
 Array(elem_type) *elem_type##Array_Fill(                                       \
   Array(elem_type) *const inst,                                                \
-  const elem_type *value                                                       \
+  elem_type *value                                                             \
 ) {                                                                            \
   if (!inst) {                                                                 \
     return NULL;                                                               \
   }                                                                            \
                                                                                \
-  refeach (elem_type, it, inst, {                                              \
-    if (!value) {                                                              \
+  refrefeach (elem_type, it, inst, {                                           \
+    if (!it || !value) {                                                       \
       continue;                                                                \
     }                                                                          \
                                                                                \
-    assign(elem_type, it, value);                                              \
+    *it = value;                                                               \
   })                                                                           \
                                                                                \
   return inst;                                                                 \
@@ -556,11 +556,19 @@ inline elem_type **elem_type##Array_GetData(const Array(elem_type) *const inst)\
 }
 
 # define IMPL_ARRAY_BASICTYPE(elem_type)                                       \
-IMPL_ARRAY_BASICTYPE_TYPE(elem_type, elem_type)
+IMPL_ARRAY_BASICTYPE_NICKNAME(elem_type, elem_type)                            \
 
-# define IMPL_ARRAY_BASICTYPE_TYPE(nickname, elem_type)                        \
-DEFINE_ARRAY_BASICTYPE_TYPE(nickname, elem_type)                               \
-IMPL_ARRAY_COMMON_TYPE(nickname, elem_type)                                    \
+# define IMPL_ARRAY_BASICTYPE_NICKNAME(elem_type, nickname)                    \
+IMPL_ARRAY_BASICTYPE_NICKNAME_PROMPTEDTYPE(elem_type, nickname, nickname)
+
+# define IMPL_ARRAY_BASICTYPE_NICKNAME_PROMPTEDTYPE(                           \
+  elem_type,                                                                   \
+  nickname,                                                                    \
+  prompted_type                                                                \
+)                                                                              \
+DEFINE_ARRAY_BASICTYPE_NICKNAME(elem_type, nickname)                           \
+IMPL_ARRAY_BASICTYPE_COMPOSE_NICKNAME(elem_type, nickname, prompted_type)      \
+IMPL_ARRAY_COMMON_NICKNAME(elem_type, nickname)                                \
 inline nickname *nickname##Array_Ref(                                          \
   const Array(nickname) *const inst,                                           \
   const llong index                                                            \
@@ -671,7 +679,7 @@ void nickname##Array_Delete(Array(nickname) *const inst)                       \
                                                                                \
 Array(nickname) *nickname##Array_Fill(                                         \
   Array(nickname) *const inst,                                                 \
-  const elem_type value                                                        \
+  elem_type value                                                              \
 ) {                                                                            \
   if (!inst) {                                                                 \
     return NULL;                                                               \
@@ -732,12 +740,9 @@ inline nickname *nickname##Array_GetData(const Array(nickname) *const inst)    \
 }
 
 # define IMPL_ARRAY_COMMON(elem_type)                                          \
-  IMPL_ARRAY_COMMON_TYPE(elem_type, elem_type)
+  IMPL_ARRAY_COMMON_NICKNAME(elem_type, elem_type)
 
-# define IMPL_ARRAY_COMMON_TYPE(nickname, elem_type)                           \
-  IMPL_ARRAY_COMMON_COMPOSE_TYPE(elem_type, nickname, elem_type)
-
-# define IMPL_ARRAY_COMMON_COMPOSE_TYPE(promoted_type, nickname, elem_type)    \
+# define IMPL_ARRAY_COMMON_NICKNAME(elem_type, nickname)                       \
 inline boolean nickname##Array_IsInBound(                                      \
   const Array(nickname) *const inst,                                           \
   const llong index                                                            \
@@ -913,10 +918,19 @@ inline boolean nickname##Array_GetReversed(const Array(nickname) *const inst)  \
   return inst->reversed;                                                       \
 }
 
-# define IMPL_ARRAY_COMPOSE(promoted_type, elem_type)                          \
-IMPL_ARRAY_COMPOSE_TYPE(elem_type, promoted_type, elem_type)
+# define IMPL_ARRAY_COMPOSE(elem_type)                                         \
+IMPL_ARRAY_OBJECT_COMPOSE(elem_type)
 
-# define IMPL_ARRAY_COMPOSE_TYPE(promoted_type, nickname, elem_type)           \
+# define IMPL_ARRAY_BASICTYPE_COMPOSE(prompted_type, elem_type)                \
+IMPL_ARRAY_BASICTYPE_NICKNAME(elem_type, nickname)                             \
+IMPL_ARRAY_BASICTYPE_COMPOSE_NICKNAME(elem_type, nickname, prompted_type)
+
+# define IMPL_ARRAY_BASICTYPE_COMPOSE_NICKNAME(                                \
+  elem_type,                                                                   \
+  nickname,                                                                    \
+  prompted_type                                                                \
+)                                                                              \
+/* Compose should always directly copy the value given. */                     \
 Array(nickname) *nickname##Array_Compose(const llong arglen, ...)              \
 {                                                                              \
   if (!arglen) {                                                               \
@@ -930,20 +944,35 @@ Array(nickname) *nickname##Array_Compose(const llong arglen, ...)              \
                                                                                \
   va_list ap;                                                                  \
   va_start(ap, arglen);                                                        \
-  _refeach_type (nickname, elem_type, it, inst, {                              \
-    *it = va_arg(ap, promoted_type);                                           \
+  _refeach_type (elem_type, nickname, it, inst, {                              \
+    *it = va_arg(ap, prompted_type);                                           \
   })                                                                           \
   va_end(ap);                                                                  \
                                                                                \
   return inst;                                                                 \
 }
 
-# define IMPL_ARRAY_BASICTYPE_COMPOSE(promoted_type, elem_type)                \
-IMPL_ARRAY_BASICTYPE_TYPE(elem_type, elem_type)                                \
-IMPL_ARRAY_COMPOSE(promoted_type, elem_type)
-
-# define IMPL_ARRAY_BASICTYPE_COMPOSE_TYPE(promoted_type, nickname, elem_type) \
-IMPL_ARRAY_BASICTYPE_TYPE(nickname, elem_type)                                 \
-IMPL_ARRAY_COMPOSE_TYPE(promoted_type, nickname, elem_type)
+# define IMPL_ARRAY_OBJECT_COMPOSE(elem_type)                                  \
+/* Compose should always directly copy the reference given to the value. */    \
+Array(elem_type) *elem_type##Array_Compose(const llong arglen, ...)            \
+{                                                                              \
+  if (!arglen) {                                                               \
+    return Create(Array(elem_type), 0);                                        \
+  }                                                                            \
+                                                                               \
+  Array(elem_type) *const inst = Create(Array(elem_type), arglen);             \
+  if (!inst) {                                                                 \
+    return NULL;                                                               \
+  }                                                                            \
+                                                                               \
+  va_list ap;                                                                  \
+  va_start(ap, arglen);                                                        \
+  _refrefeach_type (elem_type, elem_type, itptr, inst, {                       \
+    *itptr = va_arg(ap, elem_type *);                                          \
+  })                                                                           \
+  va_end(ap);                                                                  \
+                                                                               \
+  return inst;                                                                 \
+}
 
 #endif  /* COMPOUND_ARRAY_H */

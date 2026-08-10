@@ -37,7 +37,7 @@ extern MemoryStack *MEMORY_STACK;
  * @return The registered indexer in @MEMORY_STACK if succeeded.
  *         -1 when failed.
  */
-llong MemoryStack_Push(MemoryStack *const inst, const Memory *const memory);
+llong MemoryStack_Push(MemoryStack *const inst, Memory *const memory);
 void MemoryStack_Pop(MemoryStack *const inst);
 Memory *MemoryStack_Top(MemoryStack *const inst);
 
@@ -45,8 +45,8 @@ Memory *MemoryStack_Top(MemoryStack *const inst);
  * or when @inst the stack is empty. */
 llong MemoryStack_GetHeight(MemoryStack *const inst);
 
-boolean MemoryStack_IsEmpty(const MemoryStack *const inst);
-boolean MemoryStack_IsFull(const MemoryStack *const inst);
+boolean MemoryStack_IsEmpty(MemoryStack *const inst);
+boolean MemoryStack_IsFull(MemoryStack *const inst);
 
 void *Allocate(const size_t nmemb, const size_t size);
 void Deallocate(void *const inst);

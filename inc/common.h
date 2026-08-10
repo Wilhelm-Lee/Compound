@@ -82,6 +82,9 @@
 # define _Setter(type, member, inst)\
   Setter(CONCAT(_, type), member, inst)
 
+# define Compose(type, ...)                                                    \
+  (call(type, Compose, arglen(__VA_ARGS__), __VA_ARGS__))
+
 /* Contributed by "[halalaluyafail3](https://gist.github.com/Halalaluyafail3)"
    on discord at 01:42, 17th July, 2025 CST. */
 # ifdef __COMPOUND_ON_WINDOWS__

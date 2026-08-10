@@ -118,7 +118,7 @@ inline boolean String_Equals(
 
 inline String *String_Transfer(
   String **const receiver,
-  const String *const provider
+  String *const provider
 ) {
   if (!receiver || !*receiver) {
     return NULL;
@@ -197,7 +197,7 @@ String *String_Concat(String *const string1, const String *const string2)
 
   String *const concat = Create(String, string1_len + string2_len, width);
 
-  iterate (byte, i, concat->data, {
+  iterate (Array(byte), i, concat->data, {
     if (i < string1_len) {
       setbyte(string1, i, refbyte(concat, i));
       continue;
@@ -425,7 +425,7 @@ Array(ptr) *String_Gather(const String *const inst)
   }
 
   Array(ptr) *tokens = array(ptr, count);
-  iterate (ptr, i, tokens, {
+  iterate (Array(ptr), i, tokens, {
     *ref(Array(ptr), tokens, i) = breaks(inst, i);
   })
 

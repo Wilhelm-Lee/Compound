@@ -57,7 +57,7 @@ void DeinitialiseMemoryStack(MemoryStack **const inst)
   *inst = NULL;
 }
 
-llong MemoryStack_Push(MemoryStack *const inst, const Memory *const memory)
+llong MemoryStack_Push(MemoryStack *const inst, Memory *const memory)
 {
   if (!inst || !Getter(Memory, Address, memory)) {
     return -1;
@@ -109,7 +109,7 @@ inline llong MemoryStack_GetHeight(MemoryStack *const inst)
   return inst->height;
 }
 
-inline boolean MemoryStack_IsEmpty(const MemoryStack *const inst)
+inline boolean MemoryStack_IsEmpty(MemoryStack *const inst)
 {
   if (!inst) {
     return true;
@@ -118,7 +118,7 @@ inline boolean MemoryStack_IsEmpty(const MemoryStack *const inst)
   return inst->height < 0;
 }
 
-inline boolean MemoryStack_IsFull(const MemoryStack *const inst)
+inline boolean MemoryStack_IsFull(MemoryStack *const inst)
 {
   if (!inst) {
     return false;

@@ -196,7 +196,7 @@ boolean String_Equals(const String *const string1, const String *const string2);
 
    Returns @*receiver after all operations, which is equivalent as @provider.
  */
-String *String_Transfer(String **const receiver, const String *const provider);
+String *String_Transfer(String **const receiver, String *const provider);
 
 /**
  * @brief Construct the instance by sampling from @content.
