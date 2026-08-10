@@ -82,8 +82,8 @@ void MemoryStack_Pop(MemoryStack *const inst)
     return;
   }
 
-  Memory *const *const top = MemoryStack_Top(inst);
-  if (!top || !*top) {
+  Memory *const top = MemoryStack_Top(inst);
+  if (!top) {
     return;
   }
 
@@ -91,16 +91,16 @@ void MemoryStack_Pop(MemoryStack *const inst)
   inst->height--;
 }
 
-extern inline Memory **MemoryStack_Top(MemoryStack *const inst)
+inline Memory *MemoryStack_Top(MemoryStack *const inst)
 {
   if (!inst || MemoryStack_IsEmpty(inst)) {
     return NULL;
   }
 
-  return &inst->data[inst->height];
+  return inst->data[inst->height];
 }
 
-extern inline llong MemoryStack_GetHeight(MemoryStack *const inst)
+inline llong MemoryStack_GetHeight(MemoryStack *const inst)
 {
   if (!inst || MemoryStack_IsEmpty(inst)) {
     return -1;
@@ -109,7 +109,7 @@ extern inline llong MemoryStack_GetHeight(MemoryStack *const inst)
   return inst->height;
 }
 
-extern inline boolean MemoryStack_IsEmpty(const MemoryStack *const inst)
+inline boolean MemoryStack_IsEmpty(MemoryStack *const inst)
 {
   if (!inst) {
     return true;
@@ -118,7 +118,7 @@ extern inline boolean MemoryStack_IsEmpty(const MemoryStack *const inst)
   return inst->height < 0;
 }
 
-extern inline boolean MemoryStack_IsFull(const MemoryStack *const inst)
+inline boolean MemoryStack_IsFull(MemoryStack *const inst)
 {
   if (!inst) {
     return false;

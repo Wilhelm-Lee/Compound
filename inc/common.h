@@ -24,7 +24,6 @@
 
 # include <limits.h>
 
-# include "platform.h"
 # include "types.h"
 
 # define EMPTY  {0}
@@ -55,9 +54,9 @@
 # define nameof(obj)\
   #obj
 
-/* Types incompleted objects with their operation for calling. */
-# define call(type, operation, ...)\
-  CONCAT(CONCAT(type, _), operation)(__VA_ARGS__)
+/* Types incompleted objects with their @Operation for calling. */
+# define call(type, Operation, ...)\
+  CONCAT(CONCAT(type, _), Operation)(__VA_ARGS__)
 
 # define Create(type, ...)\
   call(type, Create, __VA_ARGS__)
@@ -82,6 +81,9 @@
 
 # define _Setter(type, member, inst)\
   Setter(CONCAT(_, type), member, inst)
+
+# define Compose(type, ...)                                                    \
+  (call(type, Compose, arglen(__VA_ARGS__), __VA_ARGS__))
 
 /* Contributed by "[halalaluyafail3](https://gist.github.com/Halalaluyafail3)"
    on discord at 01:42, 17th July, 2025 CST. */

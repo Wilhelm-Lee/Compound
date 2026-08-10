@@ -26,13 +26,13 @@
 
 # include "boolean.h"
 
-typedef signed long long int llong;
-typedef unsigned char byte;
-typedef unsigned char uchar;
-typedef unsigned int uint;
-typedef unsigned long int ulong;
-typedef unsigned long long int ullong;
-typedef unsigned short int ushort;
 typedef void *ptr;
+typedef unsigned char byte;
+typedef signed long long int llong;
+typedef unsigned char uchar;
+typedef unsigned short ushort;
+typedef unsigned int uint;
+typedef unsigned long ulong;
+typedef unsigned long long int ullong;
 
 #endif  /* COMPOUND_TYPES_H */

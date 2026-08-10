@@ -24,63 +24,47 @@
 
 # include "array.h"
 
-/*
-  (so you should pass 'int' not 'byte' {aka 'unsigned char'} to 'va_arg')
-  'float' -> 'double'
-  'char' -> 'int'
-  'short' -> 'int'
-  'boolean' -> 'int'
-  'int8_t' -> 'int'
-  'int16_t' -> 'int'
-  'int_fast8_t' -> 'int'
-  'uchar' -> 'int'
-  'ushort' -> 'int'
-  'uint8_t' -> 'int'
-  'uint16_t' -> 'int'
-  'uint_fast8_t' -> 'int'
-*/
-
-ARRAY_BASICTYPE(ptr);
-ARRAY_BASICTYPE(byte);
-ARRAY_BASICTYPE(boolean);
-ARRAY_BASICTYPE(float);
-ARRAY_BASICTYPE(double);
-ARRAY_BASICTYPE(char);
-ARRAY_BASICTYPE(short);
-ARRAY_BASICTYPE(int);
-ARRAY_BASICTYPE(long);
-ARRAY_BASICTYPE(llong);
-ARRAY_BASICTYPE(int8_t);
-ARRAY_BASICTYPE(int16_t);
-ARRAY_BASICTYPE(int32_t);
-ARRAY_BASICTYPE(int64_t);
-ARRAY_BASICTYPE(int_fast8_t);
-ARRAY_BASICTYPE(int_fast16_t);
-ARRAY_BASICTYPE(int_fast32_t);
-ARRAY_BASICTYPE(int_fast64_t);
-ARRAY_BASICTYPE(intptr_t);
-ARRAY_BASICTYPE(intmax_t);
-ARRAY_BASICTYPE(uchar);
-ARRAY_BASICTYPE(ushort);
-ARRAY_BASICTYPE(uint);
-ARRAY_BASICTYPE(ulong);
-ARRAY_BASICTYPE(ullong);
-ARRAY_BASICTYPE(uint8_t);
-ARRAY_BASICTYPE(uint16_t);
-ARRAY_BASICTYPE(uint32_t);
-ARRAY_BASICTYPE(uint64_t);
-ARRAY_BASICTYPE(uint_fast8_t);
-ARRAY_BASICTYPE(uint_fast16_t);
-ARRAY_BASICTYPE(uint_fast32_t);
-ARRAY_BASICTYPE(uint_fast64_t);
-ARRAY_BASICTYPE(uintptr_t);
-ARRAY_BASICTYPE(uintmax_t);
-ARRAY_BASICTYPE(size_t);
+ARRAY_BASICTYPE(boolean)
+ARRAY_BASICTYPE(byte)
+ARRAY_BASICTYPE(char)
+ARRAY_BASICTYPE(double)
+ARRAY_BASICTYPE(float)
+ARRAY_BASICTYPE(int)
+ARRAY_BASICTYPE(int16_t)
+ARRAY_BASICTYPE(int32_t)
+ARRAY_BASICTYPE(int64_t)
+ARRAY_BASICTYPE(int8_t)
+ARRAY_BASICTYPE(int_fast16_t)
+ARRAY_BASICTYPE(int_fast32_t)
+ARRAY_BASICTYPE(int_fast64_t)
+ARRAY_BASICTYPE(int_fast8_t)
+ARRAY_BASICTYPE(intmax_t)
+ARRAY_BASICTYPE(intptr_t)
+ARRAY_BASICTYPE(llong)
+ARRAY_BASICTYPE(long)
+ARRAY_BASICTYPE(short)
+ARRAY_BASICTYPE(size_t)
+ARRAY_BASICTYPE(uchar)
+ARRAY_BASICTYPE(uint)
+ARRAY_BASICTYPE(uint16_t)
+ARRAY_BASICTYPE(uint32_t)
+ARRAY_BASICTYPE(uint64_t)
+ARRAY_BASICTYPE(uint8_t)
+ARRAY_BASICTYPE(uint_fast16_t)
+ARRAY_BASICTYPE(uint_fast32_t)
+ARRAY_BASICTYPE(uint_fast64_t)
+ARRAY_BASICTYPE(uint_fast8_t)
+ARRAY_BASICTYPE(uintmax_t)
+ARRAY_BASICTYPE(uintptr_t)
+ARRAY_BASICTYPE(ullong)
+ARRAY_BASICTYPE(ulong)
+ARRAY_BASICTYPE(ushort)
+ARRAY_BASICTYPE_NICKNAME(void *, ptr)
 
 /* For inline-ment of @compose:
    e.g.
      Array(ptr) *arrays = compose(Array, array(...), array(...), ...)
  */
-typedef ptrArray Array;
+typedef Array(ptr) Array;
 
 #endif  /* COMPOUND_ARRAYS_H */

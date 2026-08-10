@@ -68,10 +68,8 @@ int InitialiseMain(
     return 1;
   }
 
-  iterate (String, i, *args, {
-    // assign(String, ref(Array(String), *args, i), string(argv[i]));
-    // *refref(Array(String), *args, i) = string(argv[i]);
-    *refref(Array(String), *args, i) = string(argv[i]);
+  iterate (Array(String), i, *args, {
+    set(Array(String), *args, i, string(argv[i]));
   })
 # endif
 
@@ -84,7 +82,7 @@ int InitialiseMain(
 
   *envs = array(String, envp_len);
   if (!envs) {
-    erase(Array(String), args);
+    erase(Array(String), *args);
     Deallocate(args);
     return 1;
   }
@@ -98,7 +96,7 @@ int InitialiseMain(
   InitialiseStatusStack(&STATUS_STACK);
 # endif
 
-# ifdef __COMPOUND_FEATURE_RECYCLER__
+# ifdef __COMPOUND_FEATURE_MEMORY__
   InitialiseMemoryStack(&MEMORY_STACK);
 # endif
 
@@ -128,7 +126,7 @@ int DeinitialiseMain(
   DeinitialiseStatusStack(&STATUS_STACK);
 # endif
 
-# ifdef __COMPOUND_FEATURE_RECYCLER__
+# ifdef __COMPOUND_FEATURE_MEMORY__
   DeinitialiseMemoryStack(&MEMORY_STACK);
 # endif
 
