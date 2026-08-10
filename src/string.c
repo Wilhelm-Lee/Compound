@@ -19,6 +19,8 @@
 
 #include "../inc/string.h"
 
+extern size_t strnlen(const char *, size_t);
+
 struct String {
   Array(byte) *data;
   llong width;  // Byte width.
@@ -138,7 +140,7 @@ String *String_Update(String **const inst, const char *restrict const cstr)
     return NULL;
   }
 
-  const llong length = strlen(cstr);
+  const llong length = strnlen(cstr, STRING_LENGTH_MAXIMUM);
 
   String *const string = String_Create(length, sizeof(cstr[0]));
 
@@ -215,7 +217,7 @@ String *String_Format(const char *restrict const format, ...)
     return NULL;
   }
 
-  const llong formatlen = strlen(format);
+  const llong formatlen = strnlen(format, STRING_LENGTH_MAXIMUM);
   if (!formatlen) {
     return string("");
   }
@@ -336,7 +338,7 @@ llong String_Tokens(String *const inst, const char *restrict const delim_cstr)
     return 0;
   }
 
-  const llong delim_cstrlen = strlen(delim_cstr);
+  const llong delim_cstrlen = strnlen(delim_cstr, STRING_LENGTH_MAXIMUM);
   if (!delim_cstrlen) {
     return -1;
   }
@@ -517,7 +519,7 @@ boolean String_MatchesAny(const byte target, const char *const group)
     return false;
   }
 
-  const llong grouplen = strlen(group);
+  const llong grouplen = strnlen(group, STRING_LENGTH_MAXIMUM);
   if (!grouplen) {
     return false;
   }
@@ -621,7 +623,7 @@ inline llong String_Length(const String *const string)
   }
 
   /* Temporary optimisation applied before Char exist. */
-  return strlen((const char *)ref_index0);
+  return strnlen((const char *)ref_index0, STRING_LENGTH_MAXIMUM);
 }
 
 String *String_Insert(
