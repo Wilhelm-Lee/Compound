@@ -47,8 +47,9 @@ set(
 #)
 # Rename the executable to avoid conflict with the library 'compound' On
 # MacOS/Windows 'Compound' == 'compound', which breaks the build.
-add_library(compound SHARED ${SOURCES})
 add_library(CommonCompilationFlags INTERFACE)
+add_library(Objects OBJECT ${SOURCES})
+add_library(compound SHARED $<TARGET_OBJECTS:Objects>)
 
 target_compile_options(
   CommonCompilationFlags
@@ -59,17 +60,22 @@ target_compile_options(
   -Werror
   -g3
   -O0
+  -fPIC
   # -fno-omit-frame-pointer  # __builtin_frame_address(1) for feature Backtracing.
   # -D__COMPOUND_FEATURECLASS_COMMANDLINE__
   -D__COMPOUND_FEATURE_RECYCLER__
   -D__COMPOUND_FEATURE_BOOLEAN__
 )
 
-add_executable(CompoundTest ${SOURCES} test/test.c)
-add_executable(CompoundDemo ${SOURCES} test/demo.c)
+add_executable(CompoundTest test/test.c)
+add_executable(CompoundDemo test/demo.c)
 
-target_link_libraries(CompoundTest PRIVATE CommonCompilationFlags)
-target_link_libraries(CompoundDemo PRIVATE CommonCompilationFlags)
+# CORRECTED: Objects only needs the compilation flags, not the 'compound' library.
+target_link_libraries(Objects PRIVATE CommonCompilationFlags)
+
+# Executables link against both the final shared library AND the compilation flags.
+target_link_libraries(CompoundTest PRIVATE compound CommonCompilationFlags)
+target_link_libraries(CompoundDemo PRIVATE compound CommonCompilationFlags)
 
 #target_include_directories(hashmap PUBLIC ${hashmap_SOURCE_DIR})
 #target_link_libraries(CompoundTest PUBLIC hashmap)

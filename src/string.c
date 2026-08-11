@@ -69,7 +69,7 @@ String *String_CopyOf(const String *const other)
     return NULL;
   }
 
-  const llong length = length(other);
+  const llong length = Length(String, other);
 
   if (length > INT32_MAX) {
     return NULL;
@@ -160,8 +160,8 @@ int String_Compare(const String *const string1, const String *const string2)
     return false;
   }
 
-  const llong string1_len = length(string1);
-  const llong string2_len = length(string2);
+  const llong string1_len = Length(String, string1);
+  const llong string2_len = Length(String, string2);
   const llong minlen = string1_len < string2_len
                          ? string1_len
                          : string2_len;
@@ -191,8 +191,8 @@ String *String_Concat(String *const string1, const String *const string2)
     return CopyOf(String, string1);
   }
 
-  const llong string1_len = length(string1);
-  const llong string2_len = length(string2);
+  const llong string1_len = Length(String, string1);
+  const llong string2_len = Length(String, string2);
   const llong width = (string1_len > string2_len
                          ? string1_len
                          : string2_len);
@@ -255,7 +255,7 @@ String *String_Substr(
     return NULL;
   }
 
-  const llong sourcelen = length(source);
+  const llong sourcelen = Length(String, source);
   if (!sourcelen) {
     return NULL;
   }
@@ -267,7 +267,7 @@ String *String_Substr(
     final_length = sourcelen - offset;
   }
 
-  const llong source_length = length(source);
+  const llong source_length = Length(String, source);
   if (offset + final_length > source_length) {
     return NULL;
   }
@@ -286,7 +286,7 @@ boolean String_Empty(const String *const source)
     return false;
   }
 
-  return !length(source);
+  return !Length(String, source);
 }
 
 boolean String_Blank(const String *const source)
@@ -295,7 +295,7 @@ boolean String_Blank(const String *const source)
     return false;
   }
 
-  const llong sourcelen = length(source);
+  const llong sourcelen = Length(String, source);
   if (!sourcelen) {
     return true;
   }
@@ -333,7 +333,7 @@ llong String_Tokens(String *const inst, const char *restrict const delim_cstr)
     return -1;
   }
 
-  const llong instlen = length(inst);
+  const llong instlen = Length(String, inst);
   if (!instlen) {
     return 0;
   }
@@ -347,7 +347,7 @@ llong String_Tokens(String *const inst, const char *restrict const delim_cstr)
   llong begin = 0;
   llong end = 0;
   boolean refreshed = false;
-  for (register llong i = 0; i < length(inst); i++) {
+  for (register llong i = 0; i < Length(String, inst); i++) {
     const boolean delimed = String_MatchesAny(*refbyte(inst, i), delim_cstr);
 
     /* First byte of a token. */
@@ -393,7 +393,7 @@ String *String_Breaks(const String *const source, const llong tokenth)
     return NULL;
   }
 
-  const llong sourcelen = length(source);
+  const llong sourcelen = Length(String, source);
   if (!sourcelen) {
     return NULL;
   }
@@ -443,12 +443,12 @@ inline llong String_Whence(
     return -1;
   }
 
-  const llong sourcelen = length(source);
+  const llong sourcelen = Length(String, source);
   if (!sourcelen) {
     return -1;
   }
 
-  const llong targetlen = length(target);
+  const llong targetlen = Length(String, target);
   if (!targetlen) {
     return -1;
   }
@@ -544,7 +544,7 @@ llong String_FirstAt(
     return -1;
   }
 
-  const llong sourcelen = length(source);
+  const llong sourcelen = Length(String, source);
   if (!sourcelen) {
     return -1;
   }
@@ -588,7 +588,7 @@ String *String_Strcut(
     return NULL;
   }
 
-  const llong sourcelen = length(*source);
+  const llong sourcelen = Length(String, *source);
   if (!sourcelen) {
     return *source;
   }
@@ -639,12 +639,12 @@ String *String_Insert(
     return *inst;
   }
 
-  const llong instlen = length(*inst);
+  const llong instlen = Length(String, *inst);
   if (index < 0 || index > instlen) {
     return *inst;
   }
 
-  const llong sourcelen = length(source);
+  const llong sourcelen = Length(String, source);
   if (!sourcelen) {
     return *inst;
   }
@@ -678,7 +678,7 @@ String *String_Remove(
     return NULL;
   }
 
-  const llong instlen = length(*inst);
+  const llong instlen = Length(String, *inst);
   if (offset < 0 || offset >= instlen) {
     return *inst;
   }
@@ -724,8 +724,8 @@ llong String_CountOccurrences(
     return 0;
   }
 
-  const llong contentlen = length(content);
-  const llong targetlen = length(target);
+  const llong contentlen = Length(String, content);
+  const llong targetlen = Length(String, target);
   if (offset > contentlen || offset + targetlen > contentlen) {
     return 0;
   }
@@ -750,8 +750,8 @@ Array(llong) *String_Occurrences(
     return NULL;
   }
 
-  const llong contentlen = length(content);
-  const llong targetlen = length(target);
+  const llong contentlen = Length(String, content);
+  const llong targetlen = Length(String, target);
   if (offset > contentlen || offset + targetlen > contentlen) {
     return NULL;
   }
@@ -785,8 +785,8 @@ String *String_ReplaceFirst(
     return NULL;
   }
 
-  const llong instlen = length(*inst);
-  const llong targetlen = length(target);
+  const llong instlen = Length(String, *inst);
+  const llong targetlen = Length(String, target);
   if (!instlen || !target || !replacement || !targetlen || targetlen > instlen
       || (offset + targetlen) > instlen) {
     return *inst;
@@ -801,7 +801,7 @@ String *String_ReplaceFirst(
                                ? (*inst)->width
                                : replacement->width);
 
-  const llong replacementlen = length(replacement);
+  const llong replacementlen = Length(String, replacement);
   String *replace = String_Create(
     instlen + (replacementlen - targetlen), final_width
   );
@@ -836,8 +836,8 @@ String *String_ReplaceAll(
     return NULL;
   }
 
-  const llong instlen = length(*inst);
-  const llong targetlen = length(target);
+  const llong instlen = Length(String, *inst);
+  const llong targetlen = Length(String, target);
   if (!instlen || !target || !replacement || !targetlen || targetlen > instlen
       || (offset + targetlen) > instlen) {
     return *inst;
@@ -848,7 +848,7 @@ String *String_ReplaceAll(
     return *inst;
   }
 
-  const llong replacementlen = length(replacement);
+  const llong replacementlen = Length(String, replacement);
   const llong diff = replacementlen - targetlen;
   const llong final_width = ((*inst)->width >= replacement->width
                                ? (*inst)->width
@@ -934,7 +934,7 @@ void *String_Flatten(const String *const inst, const llong width)
 
   const llong final_width = (inst->width > width ? inst->width : width);
 
-  const llong instlen = length(inst);
+  const llong instlen = Length(String, inst);
   void *const buffer = Allocate(instlen + 1, final_width);
   memmove(buffer, index0, instlen + 1);
 
@@ -947,8 +947,8 @@ boolean String_Contains(const String *const inst, const String *const target)
     return false;
   }
 
-  const llong instlen = length(inst);
-  const llong targetlen = length(target);
+  const llong instlen = Length(String, inst);
+  const llong targetlen = Length(String, target);
   if (instlen < targetlen) {
     return false;
   }

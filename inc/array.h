@@ -307,6 +307,7 @@
   );                                                                           \
   Array(nickname) *nickname##Array_Reverse(Array(nickname) *const inst);       \
   Array(nickname) *nickname##Array_Compose(const llong arglen, ...);           \
+  llong nickname##Array_Length(Array(nickname) *const inst);                   \
   llong nickname##Array_GetCapacity(const Array(nickname) *const inst);        \
   boolean nickname##Array_GetReserved(const Array(nickname) *const inst);      \
   boolean nickname##Array_GetReversed(const Array(nickname) *const inst);
@@ -889,6 +890,32 @@ inline Array(nickname) *nickname##Array_Reverse(Array(nickname) *const inst)   \
   inst->reversed = !inst->reversed;                                            \
                                                                                \
   return inst;                                                                 \
+}                                                                              \
+                                                                               \
+inline llong nickname##Array_Length(Array(nickname) *const inst)               \
+{                                                                              \
+  if (!inst) {                                                                 \
+    return -1;                                                                 \
+  }                                                                            \
+                                                                               \
+  const llong capa = capacity(Array(nickname), inst);                          \
+  if (!capa) {                                                                 \
+    return 0;                                                                  \
+  }                                                                            \
+                                                                               \
+  fprintf(stderr, "capa %lld"NEWLINE, capa);                                   \
+  register llong length = capa;                                                \
+  /* This way, BasicType arrays will always                                    \
+   * return the capacity for its length. */                                    \
+  while (length >= 0) {                                                        \
+    if (ref(Array(nickname), inst, length)) {                                  \
+      break;                                                                   \
+    }                                                                          \
+                                                                               \
+    length--;                                                                  \
+  }                                                                            \
+                                                                               \
+  return length + 1;                                                           \
 }                                                                              \
                                                                                \
 inline llong nickname##Array_GetCapacity(const Array(nickname) *const inst)    \

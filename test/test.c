@@ -7,26 +7,30 @@ int Main(void)
 
   Array(String) *fruits = Compose(
     Array(String),
+    NULL,
+    NULL,
     string("apple"),
+    NULL,
+    NULL,
     string("banana"),
+    NULL,
     string("coconut"),
-    string("durian"),
-    string("easter-egg"),
-    string("f"),
-    string("gummy, fruit flavoured"),
-    string("helium"),
-    string("itsy bitsy apple"),
-    string("john walker"),
-    string("kake"),
-    string("labubu"),
-    string("mother's pride (R)")
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL
   );
   if (!fruits) {
     return 1;
   }
 
+  const llong length = Length(Array(String), fruits);
+  printf("%lld"NEWLINE, length);
+
   refeach (String, fruit, fruits, {
-    printf("%s, ", (char *)refbyte(fruit, 0));
+    printf("%s, %lld"NEWLINE, (char *)refbyte(fruit, 0), Length(String, fruit));
   })
   puts("");
 
