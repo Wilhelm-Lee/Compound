@@ -44,9 +44,6 @@ ARRAY(String);
 # define update(string_ptr_ptr, char_ptr)\
   (String_Update(string_ptr_ptr, char_ptr))
 
-# define length(string_ptr)\
-  (String_Length(string_ptr))
-
 # define refbyte(string_ptr, idx)\
   (ref(Array(byte), Getter(String, Data, (string_ptr)), idx))
 
@@ -160,7 +157,7 @@ ARRAY(String);
 
 # define iteratebyte(it, string_ptr, block)\
   do {\
-    const llong CONCAT(it, len) = length(string_ptr);\
+    const llong CONCAT(it, len) = Length(String, string_ptr);\
     for (register llong it = 0; i < CONCAT(it, len); i++) {\
       block\
     }\
