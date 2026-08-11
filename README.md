@@ -27,5 +27,3 @@
   Even though this project follows *general* C99 standard,
   it does not use VLA, or, Variable Length Array in any object definition.
 
-## Twinkle Twinkle
-[![Stargazers over time](https://starchart.cc/Wilhelm-Lee/Compound.svg?variant=adaptive)](https://starchart.cc/Wilhelm-Lee/Compound)
