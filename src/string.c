@@ -1,4 +1,4 @@
- /*
+/*
  * This file is part of Compound library.
  * Copyright (C) 2024-2026  William Lee
  *
@@ -104,9 +104,9 @@ void String_Delete(String *const inst)
     return;
   }
 
-  Delete(Array(byte), inst->data);
   inst->width = 0;
   Delete(Array(llong), inst->breaks);
+  Delete(Array(byte), inst->data);
   Deallocate(inst);
 }
 
@@ -257,7 +257,7 @@ String *String_Substr(
 
   const llong sourcelen = Length(String, source);
   if (!sourcelen) {
-    return NULL;
+    return string("");
   }
 
   llong final_length = length;
@@ -359,7 +359,7 @@ llong String_Tokens(String *const inst, const char *restrict const delim_cstr)
         Array(llong),
         Insert,
         inst->breaks,
-        last(Array(llong), inst->breaks),
+        capacity(Array(llong), inst->breaks),
         &begin
       );
     }
@@ -378,7 +378,7 @@ llong String_Tokens(String *const inst, const char *restrict const delim_cstr)
         Array(llong),
         Insert,
         inst->breaks,
-        last(Array(llong), inst->breaks),
+        capacity(Array(llong), inst->breaks),
         &calc
       );
     }
@@ -404,8 +404,8 @@ String *String_Breaks(const String *const source, const llong tokenth)
     return NULL;
   }
 
-  const llong offset = *ref(Array(llong), source->breaks, tokenth * 2);
-  llong length = *ref(Array(llong), source->breaks, tokenth * 2 + 1);
+  const llong offset = get(Array(llong), source->breaks, tokenth * 2);
+  llong length = get(Array(llong), source->breaks, tokenth * 2 + 1);
 
   /* Set @length as the remaining length of string if no value is provided. */
   if (!length) {
@@ -415,7 +415,7 @@ String *String_Breaks(const String *const source, const llong tokenth)
   return substr(source, offset, length);
 }
 
-Array(ptr) *String_Gather(const String *const inst)
+Array(String) *String_Gather(const String *const inst)
 {
   if (!inst) {
     return NULL;
@@ -426,9 +426,9 @@ Array(ptr) *String_Gather(const String *const inst)
     return NULL;
   }
 
-  Array(ptr) *tokens = array(ptr, count);
-  iterate (Array(ptr), i, tokens, {
-    *ref(Array(ptr), tokens, i) = breaks(inst, i);
+  Array(String) *tokens = array(String, count);
+  iterate (Array(String), i, tokens, {
+    set(Array(String), tokens, i, breaks(inst, i));
   })
 
   return tokens;
@@ -468,10 +468,9 @@ String *String_RemoveLeadingWhitespace(String **const inst)
   }
 
   llong first_non_whitespace_byte = -1;
-  iteratebyte (i, *inst, {
-    if (!String_MatchesAny(*refbyte(*inst, i), WHITESPACE)) {
-      first_non_whitespace_byte = i;
-      break;
+  foreach (byte, it, inst, {
+    if (!String_MatchesAny(it, WHITESPACE)) {
+      first_non_whitespace_byte = _foreach_idx_it;
     }
   })
 
@@ -494,9 +493,9 @@ String *String_RemoveTrailingWhitespace(String **const inst)
   }
 
   llong last_non_whitespace_byte = -1;
-  iteratebyte (i, *inst, {
-    if (!String_MatchesAny(*refbyte(*inst, i), WHITESPACE)) {
-      last_non_whitespace_byte = i;
+  foreach (byte, it, inst, {
+    if (!String_MatchesAny(it, WHITESPACE)) {
+      last_non_whitespace_byte = _foreach_idx_it;
     }
   })
 
@@ -554,7 +553,7 @@ llong String_FirstAt(
   }
 
   for (register llong i = offset; i < sourcelen; i++) {
-    if (target == *refbyte(source, i)) {
+    if (target == getbyte(source, i)) {
       return i;
     }
   }

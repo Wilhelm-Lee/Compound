@@ -22,22 +22,34 @@
 #ifndef COMPOUND_MEMORY_STACK_H
 # define COMPOUND_MEMORY_STACK_H
 
+# include <stdio.h>
+
 # include "common.h"
 # include "language.h"
-# include "memory.h"
+# include "location.h"
 # include "platform.h"
 
 # define __COMPOUND_MEMORY_STACK_HEIGHT_MAXIMUM__  32768LL
+
+typedef struct Memory Memory;
 
 typedef struct MemoryStack MemoryStack;
 
 extern MemoryStack *MEMORY_STACK;
 
+void *Allocate(const size_t nmemb, const size_t size);
+
+# ifdef __COMPOUND_FEATURE_RECYCLER__
+# define Deallocate(inst)
+# else
+void Deallocate(void *const inst);
+# endif
+
 /**
  * @return The registered indexer in @MEMORY_STACK if succeeded.
  *         -1 when failed.
  */
-llong MemoryStack_Push(MemoryStack *const inst, Memory *const memory);
+llong MemoryStack_Push(MemoryStack *const inst, Memory memory);
 void MemoryStack_Pop(MemoryStack *const inst);
 Memory *MemoryStack_Top(MemoryStack *const inst);
 
@@ -47,8 +59,5 @@ llong MemoryStack_GetHeight(MemoryStack *const inst);
 
 boolean MemoryStack_IsEmpty(MemoryStack *const inst);
 boolean MemoryStack_IsFull(MemoryStack *const inst);
-
-void *Allocate(const size_t nmemb, const size_t size);
-void Deallocate(void *const inst);
 
 #endif /* COMPOUND_MEMORY_STACK_H */

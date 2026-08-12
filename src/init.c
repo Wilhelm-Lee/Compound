@@ -61,6 +61,14 @@ int InitialiseMain(
     return 1;
   }
 
+# ifdef __COMPOUND_FEATURE_STATUS__
+  InitialiseStatusStack(&STATUS_STACK);
+# endif
+
+# ifdef __COMPOUND_FEATURE_RECYCLER__
+  InitialiseMemoryStack(&MEMORY_STACK);
+# endif
+
 # ifdef __COMPOUND_FEATURE_ARGUMENT__
   *args = array(String, argc);
   if (!args) {
@@ -92,14 +100,6 @@ int InitialiseMain(
   }
 # endif
 
-# ifdef __COMPOUND_FEATURE_STATUS__
-  InitialiseStatusStack(&STATUS_STACK);
-# endif
-
-# ifdef __COMPOUND_FEATURE_MEMORY__
-  InitialiseMemoryStack(&MEMORY_STACK);
-# endif
-
   return 0;
 }
 
@@ -126,7 +126,7 @@ int DeinitialiseMain(
   DeinitialiseStatusStack(&STATUS_STACK);
 # endif
 
-# ifdef __COMPOUND_FEATURE_MEMORY__
+# ifdef __COMPOUND_FEATURE_RECYCLER__
   DeinitialiseMemoryStack(&MEMORY_STACK);
 # endif
 
