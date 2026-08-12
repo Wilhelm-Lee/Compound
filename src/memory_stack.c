@@ -1,7 +1,33 @@
 #include "../inc/memory_stack.h"
 
+struct Memory
+{
+  void *addr;
+
+  /* Submitted size for allocation in bytes. */
+  size_t size;
+
+  /* If given with a custom Destructor,
+     an execution of it will take place before calling for @Deallocate.
+
+     Tip: resetting @addr to NULL within @Destructor to fully charge
+          the handling without releasing after it since @Deallocate
+          skips NULL. */
+  void (*Destructor)(void *);
+
+#ifdef __COMPOUND_ALLOW_BACKTRACING__
+  Location *allocation;
+  Location *deallocation;
+#endif
+
+#ifdef __COMPOUND_ALLOW_RECOLLECTOR__
+  boolean is_released_automatically;
+  boolean is_garbage_collection_marked;
+#endif
+};
+
 struct MemoryStack {
-  Memory **data;  // An array of references.
+  Memory *data;  // An array of references.
   llong capacity;  // The total capacity of the instance.
   llong height;  // The current indexer of the instance.
 };
@@ -23,7 +49,7 @@ void InitialiseMemoryStack(MemoryStack **const inst)
 
   (*inst)->data = calloc(
     __COMPOUND_MEMORY_STACK_HEIGHT_MAXIMUM__,
-    sizeof(Memory *)
+    sizeof(Memory)
   );
   if (!(*inst)->data) {
     free(*inst);
@@ -57,9 +83,9 @@ void DeinitialiseMemoryStack(MemoryStack **const inst)
   *inst = NULL;
 }
 
-llong MemoryStack_Push(MemoryStack *const inst, Memory *const memory)
+llong MemoryStack_Push(MemoryStack *const inst, Memory memory)
 {
-  if (!inst || !Getter(Memory, Address, memory)) {
+  if (!inst || !memory.addr) {
     return -1;
   }
 
@@ -87,7 +113,7 @@ void MemoryStack_Pop(MemoryStack *const inst)
     return;
   }
 
-  Delete(Memory, MemoryStack_Top(inst));
+  Deallocate(top->addr);
   inst->height--;
 }
 
@@ -97,7 +123,7 @@ inline Memory *MemoryStack_Top(MemoryStack *const inst)
     return NULL;
   }
 
-  return inst->data[inst->height];
+  return &inst->data[inst->height];
 }
 
 inline llong MemoryStack_GetHeight(MemoryStack *const inst)
@@ -125,4 +151,42 @@ inline boolean MemoryStack_IsFull(MemoryStack *const inst)
   }
 
   return inst->height == (inst->capacity - 1);
+}
+
+inline void *Allocate(const size_t nmemb, const size_t size)
+{
+  void *const allocation = calloc(nmemb, size);
+  if (!allocation && (nmemb && size)) {
+    // throw(InsufficientMemory, "The size for allocation was %lu.", size);
+    return NULL;
+  }
+
+  Memory inst = (Memory) {
+    .addr = allocation,
+    .size = size,
+#ifdef __COMPOUND_ALLOW_BACKTRACING__
+    .allocation = __HERE__,
+    .deallocation = (Location)EMPTY,
+#endif
+#ifdef __COMPOUND_ALLOW_RECOLLECTOR__
+    .is_released_automatically = false,
+    .is_garbage_collection_marked = false,
+    .Destructor = Deallocate
+#endif
+  };
+
+  MemoryStack_Push(MEMORY_STACK, inst);
+
+  return allocation;
+}
+
+inline void Deallocate(void *const inst)
+{
+  // uintptr_t allocated = false;
+  // hashmap_get(MEMORY_REGISTRY, inst, sizeof(void *), &allocated);
+
+  if (inst /* && allocated */ ) {
+    // hashmap_set(MEMORY_REGISTRY, inst, sizeof(void *), false);
+    free(inst);
+  }
 }

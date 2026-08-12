@@ -104,9 +104,9 @@ void String_Delete(String *const inst)
     return;
   }
 
-  Delete(Array(byte), inst->data);
   inst->width = 0;
   Delete(Array(llong), inst->breaks);
+  Delete(Array(byte), inst->data);
   Deallocate(inst);
 }
 

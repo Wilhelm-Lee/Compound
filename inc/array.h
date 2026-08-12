@@ -903,7 +903,6 @@ inline llong nickname##Array_Length(Array(nickname) *const inst)               \
     return 0;                                                                  \
   }                                                                            \
                                                                                \
-  fprintf(stderr, "capa %lld"NEWLINE, capa);                                   \
   register llong length = capa;                                                \
   /* This way, BasicType arrays will always                                    \
    * return the capacity for its length. */                                    \

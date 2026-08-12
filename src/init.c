@@ -96,7 +96,7 @@ int InitialiseMain(
   InitialiseStatusStack(&STATUS_STACK);
 # endif
 
-# ifdef __COMPOUND_FEATURE_MEMORY__
+# ifdef __COMPOUND_FEATURE_RECYCLER__
   InitialiseMemoryStack(&MEMORY_STACK);
 # endif
 
@@ -126,7 +126,7 @@ int DeinitialiseMain(
   DeinitialiseStatusStack(&STATUS_STACK);
 # endif
 
-# ifdef __COMPOUND_FEATURE_MEMORY__
+# ifdef __COMPOUND_FEATURE_RECYCLER__
   DeinitialiseMemoryStack(&MEMORY_STACK);
 # endif
 

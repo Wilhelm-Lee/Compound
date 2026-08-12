@@ -1,41 +1,20 @@
 #include "../inc/entry.h"
 
-int Main(void)
+int main(void)
 {
-  ignore args;
-  ignore envs;
+  // ignore args;
+  // ignore envs;
 
-  Array(String) *fruits = Compose(
-    Array(String),
-    NULL,
-    NULL,
-    string("apple"),
-    NULL,
-    NULL,
-    string("banana"),
-    NULL,
-    string("coconut"),
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    NULL
-  );
-  if (!fruits) {
+  InitialiseMemoryStack(&MEMORY_STACK);
+
+  String *content = string("This is not an apple.");
+  if (!content) {
     return 1;
   }
 
-  const llong length = Length(Array(String), fruits);
-  printf("%lld"NEWLINE, length);
+  // const llong count = count(content, )
 
-  refeach (String, fruit, fruits, {
-    printf("%s, %lld"NEWLINE, (char *)refbyte(fruit, 0), Length(String, fruit));
-  })
-  puts("");
-
-  erase(Array(String), fruits);
-  Delete(Array(String), fruits);
+  DeinitialiseMemoryStack(&MEMORY_STACK);
 
   return 0;
 }
