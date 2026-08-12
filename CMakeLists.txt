@@ -31,12 +31,10 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 set(
   SOURCES
   src/arrays.c
-  src/class.c
-  src/function.c
   src/init.c
+  src/memory.c
+  src/memory_common.c
   src/memory_stack.c
-  src/parameter.c
-  src/signature.c
   src/string.c
 )
 
