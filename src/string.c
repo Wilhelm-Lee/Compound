@@ -1,4 +1,4 @@
- /*
+/*
  * This file is part of Compound library.
  * Copyright (C) 2024-2026  William Lee
  *
@@ -257,7 +257,7 @@ String *String_Substr(
 
   const llong sourcelen = Length(String, source);
   if (!sourcelen) {
-    return NULL;
+    return string("");
   }
 
   llong final_length = length;
@@ -468,10 +468,9 @@ String *String_RemoveLeadingWhitespace(String **const inst)
   }
 
   llong first_non_whitespace_byte = -1;
-  iteratebyte (i, *inst, {
-    if (!String_MatchesAny(*refbyte(*inst, i), WHITESPACE)) {
-      first_non_whitespace_byte = i;
-      break;
+  foreach (byte, it, inst, {
+    if (!String_MatchesAny(it, WHITESPACE)) {
+      first_non_whitespace_byte = _foreach_idx_it;
     }
   })
 
@@ -494,9 +493,9 @@ String *String_RemoveTrailingWhitespace(String **const inst)
   }
 
   llong last_non_whitespace_byte = -1;
-  iteratebyte (i, *inst, {
-    if (!String_MatchesAny(*refbyte(*inst, i), WHITESPACE)) {
-      last_non_whitespace_byte = i;
+  foreach (byte, it, inst, {
+    if (!String_MatchesAny(it, WHITESPACE)) {
+      last_non_whitespace_byte = _foreach_idx_it;
     }
   })
 
