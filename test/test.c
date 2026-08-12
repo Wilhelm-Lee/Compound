@@ -1,4 +1,3 @@
-#include "../inc/class.h"
 #include "../inc/entry.h"
 
 int Main(Array(String) *args, Array(String) *envs)
