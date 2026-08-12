@@ -32,8 +32,6 @@ set(
   SOURCES
   src/arrays.c
   src/init.c
-  src/memory.c
-  src/memory_common.c
   src/memory_stack.c
   src/string.c
 )
