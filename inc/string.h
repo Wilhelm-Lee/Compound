@@ -74,9 +74,6 @@ ARRAY(String);
 # define lastof(string_ptr)\
   getbyte(string_ptr, length(string_ptr) - 1)
 
-# define stringing(it, string_ptr, block)\
-  foreach (byte, it, &Getter(String, Data, (string_ptr)), block)
-
 # define tokens(string_ptr, delim_cstr)\
   (String_Tokens(string_ptr, delim_cstr))
 
@@ -93,8 +90,8 @@ ARRAY(String);
 # define blank(string_ptr)\
   (String_Blank(string_ptr))
 
-# define tokenise_idx(string_ptr, string_delim_ptr, idx)\
-  (String_Tokens(string_ptr, string_delim_ptr),\
+# define tokenise_idx(string_ptr, delim_cstr, idx)\
+  (String_Tokens(string_ptr, delim_cstr),\
    String_Breaks(string_ptr, idx))
 
 # define tokenise(string_ptr, delim_cstr)\
@@ -245,7 +242,7 @@ String *String_Breaks(const String *const source, const llong tokenth);
 
 /* @return An array that holds the collection of
  * the references of all pieces by @breaks. */
-Array(ptr) *String_Gather(const String *const inst);
+Array(String) *String_Gather(const String *const inst);
 
 /* @return The indexer of the first occurrence of @target in @source
            by @offset. */

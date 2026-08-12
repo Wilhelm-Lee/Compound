@@ -359,7 +359,7 @@ llong String_Tokens(String *const inst, const char *restrict const delim_cstr)
         Array(llong),
         Insert,
         inst->breaks,
-        last(Array(llong), inst->breaks),
+        capacity(Array(llong), inst->breaks),
         &begin
       );
     }
@@ -378,7 +378,7 @@ llong String_Tokens(String *const inst, const char *restrict const delim_cstr)
         Array(llong),
         Insert,
         inst->breaks,
-        last(Array(llong), inst->breaks),
+        capacity(Array(llong), inst->breaks),
         &calc
       );
     }
@@ -404,8 +404,8 @@ String *String_Breaks(const String *const source, const llong tokenth)
     return NULL;
   }
 
-  const llong offset = *ref(Array(llong), source->breaks, tokenth * 2);
-  llong length = *ref(Array(llong), source->breaks, tokenth * 2 + 1);
+  const llong offset = get(Array(llong), source->breaks, tokenth * 2);
+  llong length = get(Array(llong), source->breaks, tokenth * 2 + 1);
 
   /* Set @length as the remaining length of string if no value is provided. */
   if (!length) {
@@ -415,7 +415,7 @@ String *String_Breaks(const String *const source, const llong tokenth)
   return substr(source, offset, length);
 }
 
-Array(ptr) *String_Gather(const String *const inst)
+Array(String) *String_Gather(const String *const inst)
 {
   if (!inst) {
     return NULL;
@@ -426,9 +426,9 @@ Array(ptr) *String_Gather(const String *const inst)
     return NULL;
   }
 
-  Array(ptr) *tokens = array(ptr, count);
-  iterate (Array(ptr), i, tokens, {
-    *ref(Array(ptr), tokens, i) = breaks(inst, i);
+  Array(String) *tokens = array(String, count);
+  iterate (Array(String), i, tokens, {
+    set(Array(String), tokens, i, breaks(inst, i));
   })
 
   return tokens;
@@ -553,7 +553,7 @@ llong String_FirstAt(
   }
 
   for (register llong i = offset; i < sourcelen; i++) {
-    if (target == *refbyte(source, i)) {
+    if (target == getbyte(source, i)) {
       return i;
     }
   }

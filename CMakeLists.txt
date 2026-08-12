@@ -64,20 +64,20 @@ target_compile_options(
   -O0
   -fPIC
   # -fno-omit-frame-pointer  # __builtin_frame_address(1) for feature Backtracing.
-  # -D__COMPOUND_FEATURECLASS_COMMANDLINE__
+  -D__COMPOUND_FEATURECLASS_COMMANDLINE__
   -D__COMPOUND_FEATURE_RECYCLER__
   -D__COMPOUND_FEATURE_BOOLEAN__
 )
 
 add_executable(CompoundTest test/test.c)
-add_executable(CompoundDemo test/demo.c)
+# add_executable(CompoundDemo test/demo.c)
 
 # CORRECTED: Objects only needs the compilation flags, not the 'compound' library.
 target_link_libraries(Objects PRIVATE CommonCompilationFlags)
 
 # Executables link against both the final shared library AND the compilation flags.
 target_link_libraries(CompoundTest PRIVATE compound CommonCompilationFlags)
-target_link_libraries(CompoundDemo PRIVATE compound CommonCompilationFlags)
+# target_link_libraries(CompoundDemo PRIVATE compound CommonCompilationFlags)
 
 #target_include_directories(hashmap PUBLIC ${hashmap_SOURCE_DIR})
 #target_link_libraries(CompoundTest PUBLIC hashmap)

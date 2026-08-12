@@ -61,6 +61,14 @@ int InitialiseMain(
     return 1;
   }
 
+# ifdef __COMPOUND_FEATURE_STATUS__
+  InitialiseStatusStack(&STATUS_STACK);
+# endif
+
+# ifdef __COMPOUND_FEATURE_RECYCLER__
+  InitialiseMemoryStack(&MEMORY_STACK);
+# endif
+
 # ifdef __COMPOUND_FEATURE_ARGUMENT__
   *args = array(String, argc);
   if (!args) {
@@ -90,14 +98,6 @@ int InitialiseMain(
   loop (i, envp_len) {
     *refref(Array(String), *envs, i) = string(envp[i]);
   }
-# endif
-
-# ifdef __COMPOUND_FEATURE_STATUS__
-  InitialiseStatusStack(&STATUS_STACK);
-# endif
-
-# ifdef __COMPOUND_FEATURE_RECYCLER__
-  InitialiseMemoryStack(&MEMORY_STACK);
 # endif
 
   return 0;

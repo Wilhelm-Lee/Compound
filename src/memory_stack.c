@@ -8,10 +8,10 @@ struct Memory
   size_t size;
 
   /* If given with a custom Destructor,
-     an execution of it will take place before calling for @Deallocate.
+     an execution of it will take place before calling for @_Deallocate.
 
      Tip: resetting @addr to NULL within @Destructor to fully charge
-          the handling without releasing after it since @Deallocate
+          the handling without releasing after it since @_Deallocate
           skips NULL. */
   void (*Destructor)(void *);
 
@@ -33,6 +33,45 @@ struct MemoryStack {
 };
 
 MemoryStack *MEMORY_STACK = NULL;
+
+inline void *Allocate(const size_t nmemb, const size_t size)
+{
+  void *const allocation = calloc(nmemb, size);
+  if (!allocation && (nmemb && size)) {
+    // throw(InsufficientMemory, "The size for allocation was %lu.", size);
+    return NULL;
+  }
+
+  Memory inst = (Memory) {
+    .addr = allocation,
+    .size = size,
+#ifdef __COMPOUND_ALLOW_BACKTRACING__
+    .allocation = __HERE__,
+    .deallocation = (Location)EMPTY,
+#endif
+#ifdef __COMPOUND_ALLOW_RECOLLECTOR__
+    .is_released_automatically = false,
+    .is_garbage_collection_marked = false,
+    .Destructor = _Deallocate
+#endif
+  };
+
+  MemoryStack_Push(MEMORY_STACK, inst);
+
+  return allocation;
+}
+
+extern void _Deallocate(void *const inst);
+inline void _Deallocate(void *const inst)
+{
+  // uintptr_t allocated = false;
+  // hashmap_get(MEMORY_REGISTRY, inst, sizeof(void *), &allocated);
+
+  if (inst /* && allocated */ ) {
+    // hashmap_set(MEMORY_REGISTRY, inst, sizeof(void *), false);
+    free(inst);
+  }
+}
 
 void InitialiseMemoryStack(MemoryStack **const inst)
 {
@@ -113,7 +152,7 @@ void MemoryStack_Pop(MemoryStack *const inst)
     return;
   }
 
-  Deallocate(top->addr);
+  _Deallocate(top->addr);
   inst->height--;
 }
 
@@ -151,42 +190,4 @@ inline boolean MemoryStack_IsFull(MemoryStack *const inst)
   }
 
   return inst->height == (inst->capacity - 1);
-}
-
-inline void *Allocate(const size_t nmemb, const size_t size)
-{
-  void *const allocation = calloc(nmemb, size);
-  if (!allocation && (nmemb && size)) {
-    // throw(InsufficientMemory, "The size for allocation was %lu.", size);
-    return NULL;
-  }
-
-  Memory inst = (Memory) {
-    .addr = allocation,
-    .size = size,
-#ifdef __COMPOUND_ALLOW_BACKTRACING__
-    .allocation = __HERE__,
-    .deallocation = (Location)EMPTY,
-#endif
-#ifdef __COMPOUND_ALLOW_RECOLLECTOR__
-    .is_released_automatically = false,
-    .is_garbage_collection_marked = false,
-    .Destructor = Deallocate
-#endif
-  };
-
-  MemoryStack_Push(MEMORY_STACK, inst);
-
-  return allocation;
-}
-
-inline void Deallocate(void *const inst)
-{
-  // uintptr_t allocated = false;
-  // hashmap_get(MEMORY_REGISTRY, inst, sizeof(void *), &allocated);
-
-  if (inst /* && allocated */ ) {
-    // hashmap_set(MEMORY_REGISTRY, inst, sizeof(void *), false);
-    free(inst);
-  }
 }

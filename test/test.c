@@ -1,20 +1,23 @@
+#include "../inc/class.h"
 #include "../inc/entry.h"
 
-int main(void)
+int Main(Array(String) *args, Array(String) *envs)
 {
-  // ignore args;
-  // ignore envs;
-
-  InitialiseMemoryStack(&MEMORY_STACK);
+  ignore args, ignore envs;
 
   String *content = string("This is not an apple.");
   if (!content) {
     return 1;
   }
 
-  // const llong count = count(content, )
+  Array(String) *tokens = tokenise(content, " ");
+  if (!tokens) {
+    return 1;
+  }
 
-  DeinitialiseMemoryStack(&MEMORY_STACK);
+  refeach (String, it, tokens, {
+    printf("'%s'"NEWLINE, (char *)refbyte(it, 0));
+  })
 
   return 0;
 }

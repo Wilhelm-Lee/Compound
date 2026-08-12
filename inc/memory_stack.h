@@ -37,6 +37,14 @@ typedef struct MemoryStack MemoryStack;
 
 extern MemoryStack *MEMORY_STACK;
 
+void *Allocate(const size_t nmemb, const size_t size);
+
+# ifdef __COMPOUND_FEATURE_RECYCLER__
+# define Deallocate(inst)
+# else
+void Deallocate(void *const inst);
+# endif
+
 /**
  * @return The registered indexer in @MEMORY_STACK if succeeded.
  *         -1 when failed.
@@ -51,8 +59,5 @@ llong MemoryStack_GetHeight(MemoryStack *const inst);
 
 boolean MemoryStack_IsEmpty(MemoryStack *const inst);
 boolean MemoryStack_IsFull(MemoryStack *const inst);
-
-void *Allocate(const size_t nmemb, const size_t size);
-void Deallocate(void *const inst);
 
 #endif /* COMPOUND_MEMORY_STACK_H */
