@@ -201,11 +201,11 @@ String *String_Concat(String *const string1, const String *const string2)
 
   iterate (Array(byte), i, concat->data, {
     if (i < string1_len) {
-      setbyte(string1, i, refbyte(concat, i));
+      setbyte(string1, i, getbyte(concat, i));
       continue;
     }
 
-    setbyte(concat, i, refbyte(string2, i - string1_len));
+    setbyte(concat, i, getbyte(string2, i - string1_len));
   })
 
   return concat;
@@ -360,7 +360,7 @@ llong String_Tokens(String *const inst, const char *restrict const delim_cstr)
         Insert,
         inst->breaks,
         capacity(Array(llong), inst->breaks),
-        &begin
+        begin
       );
     }
 
@@ -379,7 +379,7 @@ llong String_Tokens(String *const inst, const char *restrict const delim_cstr)
         Insert,
         inst->breaks,
         capacity(Array(llong), inst->breaks),
-        &calc
+        calc
       );
     }
   }
@@ -457,8 +457,15 @@ inline llong String_Whence(
     return -1;
   }
 
-  return strstr((char *)refbyte(source, offset),
-                (char *)refbyte(target, 0)) - (char *)refbyte(source, 0);
+  char *match = strstr(
+    (char *)refbyte(source, offset),
+    (char *)refbyte(target, 0)
+  );
+  if (!match) {
+    return -1;
+  }
+
+  return match - (char *)refbyte(source, 0);
 }
 
 String *String_RemoveLeadingWhitespace(String **const inst)
@@ -764,7 +771,7 @@ Array(llong) *String_Occurrences(
   llong progress = offset;
   llong whence = -1;
   while ((whence = whence(content, target, progress)) >= 0) {
-    set(Array(llong), occurrences, occurrence_accum, &whence);
+    set(Array(llong), occurrences, occurrence_accum, whence);
     occurrence_accum++;
     progress = whence + 1;
   }
@@ -957,7 +964,7 @@ boolean String_Contains(const String *const inst, const String *const target)
     return true;
   }
 
-  return String_Whence(inst, target, 0) > 0;
+  return String_Whence(inst, target, 0) >= 0;
 }
 
 inline String *String_Reverse(String *const inst)

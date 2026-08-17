@@ -217,6 +217,11 @@
     const Array(elem_type) *const inst,                                        \
     const llong index                                                          \
   );                                                                           \
+  void elem_type##Array_Set(                                                    \
+    const Array(elem_type) *const inst,                                         \
+    const llong index,                                                         \
+    elem_type *const value                                                             \
+  );                                                                           \
   elem_type **elem_type##Array_RefRef(                                         \
     const Array(elem_type) *const inst,                                        \
     const llong index                                                          \
@@ -233,6 +238,11 @@
   Array(elem_type) *elem_type##Array_Fill(                                     \
     Array(elem_type) *const inst,                                              \
     elem_type *value                                                           \
+  );                                                                           \
+  Array(elem_type) *elem_type##Array_Insert(                                     \
+    Array(elem_type) *const inst,                                               \
+    const llong index,                                                         \
+    elem_type *const value                                                      \
   );                                                                           \
   boolean elem_type##Array_Equals(                                             \
     const Array(elem_type) *const arr1,                                        \
@@ -252,6 +262,11 @@
     const Array(nickname) *const inst,                                         \
     const llong index                                                          \
   );                                                                           \
+  void nickname##Array_Set(                                                    \
+    const Array(nickname) *const inst,                                         \
+    const llong index,                                                         \
+    nickname value                                                             \
+  );                                                                           \
   Array(nickname) *nickname##Array_Create(const llong capacity);               \
   Array(nickname) *nickname##Array_CopyOf(                                     \
     const Array(nickname) *const other                                         \
@@ -260,6 +275,11 @@
   Array(nickname) *nickname##Array_Fill(                                       \
     Array(nickname) *const inst,                                               \
     elem_type value                                                            \
+  );                                                                           \
+  Array(nickname) *nickname##Array_Insert(                                     \
+    Array(nickname) *const inst,                                               \
+    const llong index,                                                         \
+    nickname value                                                             \
   );                                                                           \
   boolean nickname##Array_Equals(                                              \
     const Array(nickname) *const arr1,                                         \
@@ -279,11 +299,6 @@
     const Array(nickname) *const inst,                                         \
     const llong index                                                          \
   );                                                                           \
-  void nickname##Array_Set(                                                    \
-    const Array(nickname) *const inst,                                         \
-    const llong index,                                                         \
-    nickname *const value                                                      \
-  );                                                                           \
   boolean nickname##Array_IsInBound(                                           \
     const Array(nickname) *const inst,                                         \
     const llong index                                                          \
@@ -295,11 +310,6 @@
   Array(nickname) *nickname##Array_Resize(                                     \
     Array(nickname) *const inst,                                               \
     const llong capacity                                                       \
-  );                                                                           \
-  Array(nickname) *nickname##Array_Insert(                                     \
-    Array(nickname) *const inst,                                               \
-    const llong index,                                                         \
-    nickname *const value                                                      \
   );                                                                           \
   Array(nickname) *nickname##Array_Remove(                                     \
     Array(nickname) *const inst,                                               \
@@ -328,12 +338,7 @@ inline elem_type *elem_type##Array_Ref(                                        \
     return NULL;                                                               \
   }                                                                            \
                                                                                \
-  llong final_index = index;                                                   \
-  if (index < 0) {                                                             \
-    final_index = (inst->capacity - index - 1);                                \
-  }                                                                            \
-                                                                               \
-  return (inst->data[offsetting(Array(elem_type), inst, final_index)]);        \
+  return (inst->data[offsetting(Array(elem_type), inst, index)]);        \
 }                                                                              \
                                                                                \
 inline elem_type **elem_type##Array_RefRef(                                    \
@@ -344,12 +349,7 @@ inline elem_type **elem_type##Array_RefRef(                                    \
     return NULL;                                                               \
   }                                                                            \
                                                                                \
-  llong final_index = index;                                                   \
-  if (index < 0) {                                                             \
-    final_index = (inst->capacity - index - 1);                                \
-  }                                                                            \
-                                                                               \
-  return &(inst->data[offsetting(Array(elem_type), inst, final_index)]);       \
+  return &(inst->data[offsetting(Array(elem_type), inst, index)]);       \
 }                                                                              \
                                                                                \
 inline elem_type *elem_type##Array_Get(                                        \
@@ -360,12 +360,7 @@ inline elem_type *elem_type##Array_Get(                                        \
     return NULL;                                                               \
   }                                                                            \
                                                                                \
-  llong final_index = index;                                                   \
-  if (index < 0) {                                                             \
-    final_index = (inst->capacity - index - 1);                                \
-  }                                                                            \
-                                                                               \
-  return (inst->data[offsetting(Array(elem_type), inst, final_index)]);        \
+  return (inst->data[offsetting(Array(elem_type), inst, index)]);        \
 }                                                                              \
                                                                                \
 inline void elem_type##Array_Set(                                              \
@@ -377,12 +372,7 @@ inline void elem_type##Array_Set(                                              \
     return;                                                                    \
   }                                                                            \
                                                                                \
-  llong final_index = index;                                                   \
-  if (index < 0) {                                                             \
-    final_index = (inst->capacity - index - 1);                                \
-  }                                                                            \
-                                                                               \
-  inst->data[offsetting(Array(elem_type), inst, final_index)] = value;         \
+  inst->data[offsetting(Array(elem_type), inst, index)] = value;         \
 }                                                                              \
                                                                                \
 Array(elem_type) *elem_type##Array_Clone(const Array(elem_type) *const other)  \
@@ -419,6 +409,42 @@ Array(elem_type) *elem_type##Array_Clone(const Array(elem_type) *const other)  \
   return inst;                                                                 \
 }                                                                              \
                                                                                \
+Array(elem_type) *elem_type##Array_Insert(                                       \
+  Array(elem_type) *const inst,                                                 \
+  const llong index,                                                           \
+  elem_type *const value                                                        \
+) {                                                                            \
+  if (!inst) {                                                                 \
+    return NULL;                                                               \
+  }                                                                            \
+                                                                              \
+  if (index > inst->capacity) {                                   \
+    return NULL;                                                               \
+  }                                                                            \
+                                                                              \
+  if (!value) {                                                                \
+    return inst;                                                               \
+  }                                                                            \
+                                                                              \
+  Array(elem_type) *newarr = Create(Array(elem_type), inst->capacity + 1);       \
+  if (!newarr) {                                                               \
+    return inst;                                                               \
+  }                                                                            \
+  \
+  const llong pivot = offsetting(Array(elem_type), newarr, index);\
+  for (register llong i = 0; i < pivot; i++) {\
+    newarr->data[i] = inst->data[i];\
+  }\
+  newarr->data[pivot] = value;\
+  for (register llong i = pivot; i < inst->capacity; i++) {\
+    newarr->data[i + 1] = inst->data[i];\
+  }\
+  \
+  Delete(Array(elem_type), inst);                                               \
+                                                                              \
+  return newarr;                                                               \
+}                                                                              \
+                                                                              \
 Array(elem_type) *elem_type##Array_Create(const llong capacity)                \
 {                                                                              \
   if (capacity < 0) {                                                          \
@@ -578,12 +604,7 @@ inline nickname *nickname##Array_Ref(                                          \
     return NULL;                                                               \
   }                                                                            \
                                                                                \
-  llong final_index = index;                                                   \
-  if (index < 0) {                                                             \
-    final_index = (inst->capacity - index - 1);                                \
-  }                                                                            \
-                                                                               \
-  return &(inst->data[offsetting(Array(nickname), inst, final_index)]);        \
+  return &(inst->data[offsetting(Array(nickname), inst, index)]);        \
 }                                                                              \
                                                                                \
 inline nickname nickname##Array_Get(                                           \
@@ -601,24 +622,48 @@ inline nickname nickname##Array_Get(                                           \
 inline void nickname##Array_Set(                                               \
   const Array(nickname) *const inst,                                           \
   const llong index,                                                           \
-  nickname *const value                                                        \
+  nickname value                                                        \
 ) {                                                                            \
-  if (!inst || !isinbound(Array(nickname), inst, index)) {                     \
-    return;                                                                    \
-  }                                                                            \
-                                                                               \
-  llong final_index = index;                                                   \
-  if (index < 0) {                                                             \
-    final_index = (inst->capacity - index - 1);                                \
-  }                                                                            \
-                                                                               \
-  if (!value) {                                                                \
-    inst->data[offsetting(Array(nickname), inst, final_index)]=(nickname)EMPTY;\
-  } else {                                                                     \
-    inst->data[offsetting(Array(nickname), inst, final_index)] = *value;       \
-  }                                                                            \
+  elem_type *ref = ref(Array(nickname), inst, index);\
+  if (!ref) {\
+    return;\
+  }\
+  \
+  *ref = value;\
 }                                                                              \
                                                                                \
+Array(nickname) *nickname##Array_Insert(                                       \
+  Array(nickname) *const inst,                                                 \
+  const llong index,                                                           \
+  nickname value                                                               \
+) {                                                                            \
+  if (!inst) {                                                                 \
+    return NULL;                                                               \
+  }                                                                            \
+                                                                              \
+  if (index > inst->capacity) {                                   \
+    return NULL;                                                               \
+  }                                                                            \
+                                                                              \
+  Array(nickname) *newarr = Create(Array(nickname), inst->capacity + 1);       \
+  if (!newarr) {                                                               \
+    return inst;                                                               \
+  }                                                                            \
+                                                                              \
+  const llong pivot = offsetting(Array(nickname), newarr, index);\
+  for (register llong i = 0; i < pivot; i++) {\
+    newarr->data[i] = inst->data[i];\
+  }\
+  newarr->data[pivot] = value;\
+  for (register llong i = pivot; i < inst->capacity; i++) {\
+    newarr->data[i + 1] = inst->data[i];\
+  }\
+  \
+  Delete(Array(nickname), inst);                                               \
+                                                                              \
+  return newarr;                                                               \
+}                                                                              \
+                                                                              \
 Array(nickname) *nickname##Array_Create(const llong capacity)                  \
 {                                                                              \
   if (capacity < 0) {                                                          \
@@ -762,9 +807,14 @@ inline llong nickname##Array_Offsetting(                                       \
   if (!inst) {                                                                 \
     return index;                                                              \
   }                                                                            \
+  \
+  llong final_index = index;\
+  if (index < 0) {\
+    final_index = index + inst->capacity;\
+  }\
                                                                                \
   /* Formula:  f(R,I,C) = I + R * (C - 1 - 2I) */                              \
-  return ((index) + inst->reversed * (inst->capacity - 1 - 2 * (index)));      \
+  return ((final_index) + inst->reversed * (inst->capacity - 1-2*final_index));\
 }                                                                              \
                                                                                \
 Array(nickname) *nickname##Array_Resize(                                       \
@@ -797,49 +847,6 @@ Array(nickname) *nickname##Array_Resize(                                       \
   Delete(Array(nickname), inst);                                               \
                                                                                \
   return array;                                                                \
-}                                                                              \
-                                                                               \
-/* Insert before @index. */                                                    \
-Array(nickname) *nickname##Array_Insert(                                       \
-  Array(nickname) *const inst,                                                 \
-  const llong index,                                                           \
-  nickname *const value                                                        \
-) {                                                                            \
-  if (!inst) {                                                                 \
-    return NULL;                                                               \
-  }                                                                            \
-                                                                               \
-  if (index < 0 || index > inst->capacity) {                                   \
-    return NULL;                                                               \
-  }                                                                            \
-                                                                               \
-  if (!value) {                                                                \
-    return inst;                                                               \
-  }                                                                            \
-                                                                               \
-  Array(nickname) *newarr = Create(Array(nickname), inst->capacity + 1);       \
-  if (!newarr) {                                                               \
-    return inst;                                                               \
-  }                                                                            \
-                                                                               \
-  if (index > 0) {                                                             \
-    memcpy(newarr->data, inst->data, index * sizeof(elem_type));               \
-  }                                                                            \
-                                                                               \
-  set(Array(nickname), newarr, index, value);                                  \
-                                                                               \
-  llong remaining = inst->capacity - index;                                    \
-  if (remaining > 0) {                                                         \
-    memcpy(                                                                    \
-      &newarr->data[index + 1],                                                \
-      &inst->data[index],                                                      \
-      remaining * sizeof(elem_type)                                            \
-    );                                                                         \
-  }                                                                            \
-                                                                               \
-  Delete(Array(nickname), inst);                                               \
-                                                                               \
-  return newarr;                                                               \
 }                                                                              \
                                                                                \
 /* Remove before @index. */                                                    \
