@@ -46,8 +46,8 @@ set(
 # Rename the executable to avoid conflict with the library 'compound' On
 # MacOS/Windows 'Compound' == 'compound', which breaks the build.
 add_library(CommonCompilationFlags INTERFACE)
-add_library(Objects OBJECT ${SOURCES})
-add_library(compound SHARED $<TARGET_OBJECTS:Objects>)
+add_library(Fundation OBJECT ${SOURCES})
+add_library(compound SHARED $<TARGET_OBJECTS:Fundation>)
 
 target_compile_options(
   CommonCompilationFlags
@@ -68,8 +68,8 @@ target_compile_options(
 add_executable(CompoundTest test/test.c)
 # add_executable(CompoundDemo test/demo.c)
 
-# CORRECTED: Objects only needs the compilation flags, not the 'compound' library.
-target_link_libraries(Objects PRIVATE CommonCompilationFlags)
+# CORRECTED: Fundation only needs the compilation flags, not the 'compound' library.
+target_link_libraries(Fundation PRIVATE CommonCompilationFlags)
 
 # Executables link against both the final shared library AND the compilation flags.
 target_link_libraries(CompoundTest PRIVATE compound CommonCompilationFlags)
