@@ -37,6 +37,13 @@
 typedef struct String String;
 
 ARRAY(String);
+Array(String) *StringArray_ComposeFromCstr(const llong arglen, ...);
+String *StringArray_Literalise(
+  Array(String) *const inst,
+  String *const prefix,
+  String *const separator,
+  String *const suffix
+);
 
 # define string(char_ptr)\
   (String_Update(NULL, char_ptr))
@@ -162,7 +169,7 @@ ARRAY(String);
 
 # define foreachbyte(it, string_ptr, block)\
   do {\
-    const llong CONCAT(it, len) = length(string_ptr);\
+    const llong CONCAT(it, len) = Length(String, string_ptr);\
     for (register llong i = 0; i < CONCAT(it, len); i++) {\
       const byte it = getbyte(string_ptr, i);\
       block\
@@ -175,7 +182,7 @@ String *String_CopyOf(const String *const other);
 
 void String_Delete(String *const inst);
 
-boolean String_Equals(const String *const string1, const String *const string2);
+boolean String_Equals(String *const string1, String *const string2);
 
 /* Transfer from @provider to @receiver about for object's memory.
    @receiver has to be NULL and un-allocated; otherwise no operations are

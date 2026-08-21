@@ -217,10 +217,10 @@
     const Array(elem_type) *const inst,                                        \
     const llong index                                                          \
   );                                                                           \
-  void elem_type##Array_Set(                                                    \
-    const Array(elem_type) *const inst,                                         \
+  void elem_type##Array_Set(                                                   \
+    const Array(elem_type) *const inst,                                        \
     const llong index,                                                         \
-    elem_type *const value                                                             \
+    elem_type *const value                                                     \
   );                                                                           \
   elem_type **elem_type##Array_RefRef(                                         \
     const Array(elem_type) *const inst,                                        \
@@ -239,17 +239,17 @@
     Array(elem_type) *const inst,                                              \
     elem_type *value                                                           \
   );                                                                           \
-  Array(elem_type) *elem_type##Array_Insert(                                     \
-    Array(elem_type) *const inst,                                               \
+  Array(elem_type) *elem_type##Array_Insert(                                   \
+    Array(elem_type) *const inst,                                              \
     const llong index,                                                         \
-    elem_type *const value                                                      \
+    elem_type *const value                                                     \
   );                                                                           \
   boolean elem_type##Array_Equals(                                             \
-    const Array(elem_type) *const arr1,                                        \
-    const Array(elem_type) *const arr2,                                        \
+    Array(elem_type) *const arr1,                                              \
+    Array(elem_type) *const arr2,                                              \
     boolean (*const IsEqual)(                                                  \
-      const elem_type *const obj1,                                             \
-      const elem_type *const obj2                                              \
+      elem_type *const obj1,                                                   \
+      elem_type *const obj2                                                    \
     )                                                                          \
   );                                                                           \
   elem_type **elem_type##Array_GetData(const Array(elem_type) *const inst);
@@ -282,11 +282,11 @@
     nickname value                                                             \
   );                                                                           \
   boolean nickname##Array_Equals(                                              \
-    const Array(nickname) *const arr1,                                         \
-    const Array(nickname) *const arr2,                                         \
+    Array(nickname) *const arr1,                                               \
+    Array(nickname) *const arr2,                                               \
     boolean (*const IsEqual)(                                                  \
-      const elem_type *const obj1,                                             \
-      const elem_type *const obj2                                              \
+      elem_type *const obj1,                                                   \
+      elem_type *const obj2                                                    \
     )                                                                          \
   );                                                                           \
   nickname *nickname##Array_GetData(const Array(nickname) *const inst);
@@ -338,7 +338,7 @@ inline elem_type *elem_type##Array_Ref(                                        \
     return NULL;                                                               \
   }                                                                            \
                                                                                \
-  return (inst->data[offsetting(Array(elem_type), inst, index)]);        \
+  return (inst->data[offsetting(Array(elem_type), inst, index)]);              \
 }                                                                              \
                                                                                \
 inline elem_type **elem_type##Array_RefRef(                                    \
@@ -349,7 +349,7 @@ inline elem_type **elem_type##Array_RefRef(                                    \
     return NULL;                                                               \
   }                                                                            \
                                                                                \
-  return &(inst->data[offsetting(Array(elem_type), inst, index)]);       \
+  return &(inst->data[offsetting(Array(elem_type), inst, index)]);             \
 }                                                                              \
                                                                                \
 inline elem_type *elem_type##Array_Get(                                        \
@@ -360,7 +360,7 @@ inline elem_type *elem_type##Array_Get(                                        \
     return NULL;                                                               \
   }                                                                            \
                                                                                \
-  return (inst->data[offsetting(Array(elem_type), inst, index)]);        \
+  return (inst->data[offsetting(Array(elem_type), inst, index)]);              \
 }                                                                              \
                                                                                \
 inline void elem_type##Array_Set(                                              \
@@ -372,7 +372,7 @@ inline void elem_type##Array_Set(                                              \
     return;                                                                    \
   }                                                                            \
                                                                                \
-  inst->data[offsetting(Array(elem_type), inst, index)] = value;         \
+  inst->data[offsetting(Array(elem_type), inst, index)] = value;               \
 }                                                                              \
                                                                                \
 Array(elem_type) *elem_type##Array_Clone(const Array(elem_type) *const other)  \
@@ -409,42 +409,42 @@ Array(elem_type) *elem_type##Array_Clone(const Array(elem_type) *const other)  \
   return inst;                                                                 \
 }                                                                              \
                                                                                \
-Array(elem_type) *elem_type##Array_Insert(                                       \
-  Array(elem_type) *const inst,                                                 \
+Array(elem_type) *elem_type##Array_Insert(                                     \
+  Array(elem_type) *const inst,                                                \
   const llong index,                                                           \
-  elem_type *const value                                                        \
+  elem_type *const value                                                       \
 ) {                                                                            \
   if (!inst) {                                                                 \
     return NULL;                                                               \
   }                                                                            \
-                                                                              \
-  if (index > inst->capacity) {                                   \
+                                                                               \
+  if (index > inst->capacity) {                                                \
     return NULL;                                                               \
   }                                                                            \
-                                                                              \
+                                                                               \
   if (!value) {                                                                \
     return inst;                                                               \
   }                                                                            \
-                                                                              \
-  Array(elem_type) *newarr = Create(Array(elem_type), inst->capacity + 1);       \
+                                                                               \
+  Array(elem_type) *newarr = Create(Array(elem_type), inst->capacity + 1);     \
   if (!newarr) {                                                               \
     return inst;                                                               \
   }                                                                            \
-  \
-  const llong pivot = offsetting(Array(elem_type), newarr, index);\
-  for (register llong i = 0; i < pivot; i++) {\
-    newarr->data[i] = inst->data[i];\
-  }\
-  newarr->data[pivot] = value;\
-  for (register llong i = pivot; i < inst->capacity; i++) {\
-    newarr->data[i + 1] = inst->data[i];\
-  }\
-  \
-  Delete(Array(elem_type), inst);                                               \
-                                                                              \
+                                                                               \
+  const llong pivot = offsetting(Array(elem_type), newarr, index);             \
+  for (register llong i = 0; i < pivot; i++) {                                 \
+    newarr->data[i] = inst->data[i];                                           \
+  }                                                                            \
+  newarr->data[pivot] = value;                                                 \
+  for (register llong i = pivot; i < inst->capacity; i++) {                    \
+    newarr->data[i + 1] = inst->data[i];                                       \
+  }                                                                            \
+                                                                               \
+  Delete(Array(elem_type), inst);                                              \
+                                                                               \
   return newarr;                                                               \
 }                                                                              \
-                                                                              \
+                                                                               \
 Array(elem_type) *elem_type##Array_Create(const llong capacity)                \
 {                                                                              \
   if (capacity < 0) {                                                          \
@@ -537,11 +537,11 @@ Array(elem_type) *elem_type##Array_Fill(                                       \
 }                                                                              \
                                                                                \
 inline boolean elem_type##Array_Equals(                                        \
-  const Array(elem_type) *const arr1,                                          \
-  const Array(elem_type) *const arr2,                                          \
+  Array(elem_type) *const arr1,                                                \
+  Array(elem_type) *const arr2,                                                \
   boolean (*const IsEqual)(                                                    \
-    const elem_type *const obj1,                                               \
-    const elem_type *const obj2                                                \
+    elem_type *const obj1,                                                     \
+    elem_type *const obj2                                                      \
   )                                                                            \
 ) {                                                                            \
   if (                                                                         \
@@ -604,7 +604,7 @@ inline nickname *nickname##Array_Ref(                                          \
     return NULL;                                                               \
   }                                                                            \
                                                                                \
-  return &(inst->data[offsetting(Array(nickname), inst, index)]);        \
+  return &(inst->data[offsetting(Array(nickname), inst, index)]);              \
 }                                                                              \
                                                                                \
 inline nickname nickname##Array_Get(                                           \
@@ -622,14 +622,14 @@ inline nickname nickname##Array_Get(                                           \
 inline void nickname##Array_Set(                                               \
   const Array(nickname) *const inst,                                           \
   const llong index,                                                           \
-  nickname value                                                        \
+  nickname value                                                               \
 ) {                                                                            \
-  elem_type *ref = ref(Array(nickname), inst, index);\
-  if (!ref) {\
-    return;\
-  }\
-  \
-  *ref = value;\
+  elem_type *ref = ref(Array(nickname), inst, index);                          \
+  if (!ref) {                                                                  \
+    return;                                                                    \
+  }                                                                            \
+                                                                               \
+  *ref = value;                                                                \
 }                                                                              \
                                                                                \
 Array(nickname) *nickname##Array_Insert(                                       \
@@ -640,30 +640,30 @@ Array(nickname) *nickname##Array_Insert(                                       \
   if (!inst) {                                                                 \
     return NULL;                                                               \
   }                                                                            \
-                                                                              \
-  if (index > inst->capacity) {                                   \
+                                                                               \
+  if (index > inst->capacity) {                                                \
     return NULL;                                                               \
   }                                                                            \
-                                                                              \
+                                                                               \
   Array(nickname) *newarr = Create(Array(nickname), inst->capacity + 1);       \
   if (!newarr) {                                                               \
     return inst;                                                               \
   }                                                                            \
-                                                                              \
-  const llong pivot = offsetting(Array(nickname), newarr, index);\
-  for (register llong i = 0; i < pivot; i++) {\
-    newarr->data[i] = inst->data[i];\
-  }\
-  newarr->data[pivot] = value;\
-  for (register llong i = pivot; i < inst->capacity; i++) {\
-    newarr->data[i + 1] = inst->data[i];\
-  }\
-  \
+                                                                               \
+  const llong pivot = offsetting(Array(nickname), newarr, index);              \
+  for (register llong i = 0; i < pivot; i++) {                                 \
+    newarr->data[i] = inst->data[i];                                           \
+  }                                                                            \
+  newarr->data[pivot] = value;                                                 \
+  for (register llong i = pivot; i < inst->capacity; i++) {                    \
+    newarr->data[i + 1] = inst->data[i];                                       \
+  }                                                                            \
+                                                                               \
   Delete(Array(nickname), inst);                                               \
-                                                                              \
+                                                                               \
   return newarr;                                                               \
 }                                                                              \
-                                                                              \
+                                                                               \
 Array(nickname) *nickname##Array_Create(const llong capacity)                  \
 {                                                                              \
   if (capacity < 0) {                                                          \
@@ -743,11 +743,11 @@ Array(nickname) *nickname##Array_Fill(                                         \
 }                                                                              \
                                                                                \
 inline boolean nickname##Array_Equals(                                         \
-  const Array(nickname) *const arr1,                                           \
-  const Array(nickname) *const arr2,                                           \
+  Array(nickname) *const arr1,                                                 \
+  Array(nickname) *const arr2,                                                 \
   boolean (*const IsEqual)(                                                    \
-    const elem_type *const obj1,                                               \
-    const elem_type *const obj2                                                \
+    elem_type *const obj1,                                                     \
+    elem_type *const obj2                                                      \
   )                                                                            \
 ) {                                                                            \
   ignore IsEqual;                                                              \
@@ -807,11 +807,11 @@ inline llong nickname##Array_Offsetting(                                       \
   if (!inst) {                                                                 \
     return index;                                                              \
   }                                                                            \
-  \
-  llong final_index = index;\
-  if (index < 0) {\
-    final_index = index + inst->capacity;\
-  }\
+                                                                               \
+  llong final_index = index;                                                   \
+  if (index < 0) {                                                             \
+    final_index = index + inst->capacity;                                      \
+  }                                                                            \
                                                                                \
   /* Formula:  f(R,I,C) = I + R * (C - 1 - 2I) */                              \
   return ((final_index) + inst->reversed * (inst->capacity - 1-2*final_index));\

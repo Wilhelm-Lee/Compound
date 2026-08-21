@@ -17,12 +17,20 @@
  * <https://www.gnu.org/licenses/>.
  */
 
-/** @file literalisation.h */
+/** @file constructor.h */
 
-#ifndef COMPOUND_LITERALISATION_H
-# define COMPOUND_LITERALISATION_H
+#ifndef COMPOUND_CONSTRUCTOR_H
+# define COMPOUND_CONSTRUCTOR_H
 
-# define lit(type, ...)\
-  (CONCAT(type, _Literalise)(__VA_ARGS__))
+# include "method.h"
 
-#endif  /* COMPOUND_LITERALISATION_H */
+typedef struct Constructor Constructor;
+
+ARRAY(Constructor);
+
+Constructor *Constructor_Create(Constructor *const super, Method *const method);
+Constructor *Constructor_CopyOf(Constructor *const other);
+void Constructor_Delete(Constructor *const inst);
+boolean Constructor_Equals(Constructor *const obj1, Constructor *const obj2);
+
+#endif  /* COMPOUND_CONSTRUCTOR_H */

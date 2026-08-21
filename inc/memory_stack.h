@@ -38,11 +38,13 @@ typedef struct MemoryStack MemoryStack;
 extern MemoryStack *MEMORY_STACK;
 
 void *Allocate(const size_t nmemb, const size_t size);
+void _Deallocate(void *const inst);
 
 # ifdef __COMPOUND_FEATURE_RECYCLER__
 # define Deallocate(inst)
 # else
-void Deallocate(void *const inst);
+# define Deallocate(inst)\
+  _Deallocate(inst)
 # endif
 
 /**

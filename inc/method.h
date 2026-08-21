@@ -17,12 +17,21 @@
  * <https://www.gnu.org/licenses/>.
  */
 
-/** @file literalisation.h */
+/** @file method.h */
 
-#ifndef COMPOUND_LITERALISATION_H
-# define COMPOUND_LITERALISATION_H
+#ifndef COMPOUND_METHOD_H
+# define COMPOUND_METHOD_H
 
-# define lit(type, ...)\
-  (CONCAT(type, _Literalise)(__VA_ARGS__))
+# include "access.h"
+# include "function.h"
 
-#endif  /* COMPOUND_LITERALISATION_H */
+typedef struct Method Method;
+
+ARRAY(Method);
+
+Method *Method_Create(const Access access, Function *const function);
+Method *Method_CopyOf(Method *const other);
+void Method_Delete(Method *const inst);
+boolean Method_Equals(Method *const obj1, Method *const obj2);
+
+#endif  /* COMPOUND_METHOD_H */

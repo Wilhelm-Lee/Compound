@@ -30,9 +30,19 @@ set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(
   SOURCES
+  src/access.c
   src/arrays.c
+  src/body.c
+  src/constructor.c
+  src/destructor.c
+  src/field.c
+  src/function.c
   src/init.c
   src/memory_stack.c
+  src/method.c
+  src/parameter.c
+  src/preprocessor.c
+  src/signature.c
   src/string.c
 )
 
@@ -60,7 +70,7 @@ target_compile_options(
   -O0
   -fPIC
   # -fno-omit-frame-pointer  # __builtin_frame_address(1) for feature Backtracing.
-  -D__COMPOUND_FEATURECLASS_COMMANDLINE__
+  #-D__COMPOUND_FEATURECLASS_COMMANDLINE__
   -D__COMPOUND_FEATURE_RECYCLER__
   -D__COMPOUND_FEATURE_BOOLEAN__
 )
