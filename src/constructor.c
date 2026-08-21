@@ -39,10 +39,6 @@ Constructor *Constructor_Create(Constructor *const super, Method *const method)
 
   inst->super = super;
   inst->method = method;
-  if (!inst->method) {
-    Deallocate(inst);
-    return null;
-  }
 
   return inst;
 }
