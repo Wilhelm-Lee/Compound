@@ -17,12 +17,20 @@
  * <https://www.gnu.org/licenses/>.
  */
 
-/** @file literalisation.h */
+/** @file access.c */
 
-#ifndef COMPOUND_LITERALISATION_H
-# define COMPOUND_LITERALISATION_H
+#include "../inc/access.h"
 
-# define lit(type, ...)\
-  (CONCAT(type, _Literalise)(__VA_ARGS__))
+inline boolean Access_IsAccessible(const Access accessee, const Access accesser)
+{
+  if (accessee == ACCESS_PRIVATE) {
+    return false;
+  }
 
-#endif  /* COMPOUND_LITERALISATION_H */
+  if (accessee == ACCESS_PUBLIC) {
+    return true;
+  }
+
+  /* Protected. */
+  return accessee == accesser;
+}

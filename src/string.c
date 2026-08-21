@@ -111,8 +111,8 @@ void String_Delete(String *const inst)
 }
 
 inline boolean String_Equals(
-  const String *const string1,
-  const String *const string2
+  String *const string1,
+  String *const string2
 ) {
   return (!compare(string1, string2))
          && Equals(Array(llong), string1->breaks, string2->breaks, NULL);
@@ -193,15 +193,17 @@ String *String_Concat(String *const string1, const String *const string2)
 
   const llong string1_len = Length(String, string1);
   const llong string2_len = Length(String, string2);
-  const llong width = (string1_len > string2_len
-                         ? string1_len
-                         : string2_len);
+  const llong width = (
+    string1->width > string2->width ?
+      string1->width :
+      string2->width
+  );
 
   String *const concat = Create(String, string1_len + string2_len, width);
 
   iterate (Array(byte), i, concat->data, {
     if (i < string1_len) {
-      setbyte(string1, i, getbyte(concat, i));
+      setbyte(concat, i, getbyte(string1, i));
       continue;
     }
 
@@ -1004,3 +1006,89 @@ inline Array(llong) *String_GetBreaks(const String *const inst)
 }
 
 IMPL_ARRAY_OBJECT(String)
+Array(String) *StringArray_ComposeFromCstr(const llong arglen, ...)
+{
+  if (!arglen) {
+    return Create(Array(String), 0);
+  }
+
+  Array(String) *const inst = Create(Array(String), arglen);
+  if (!inst) {
+    return NULL;
+  }
+
+  va_list ap;
+  va_start(ap, arglen);
+  _refrefeach_type (String, String, itptr, inst, {
+    char *arg = va_arg(ap, char *);
+    *itptr = string(arg ? arg : "(null)");
+  })
+  va_end(ap);
+
+  return inst;
+}
+
+String *StringArray_Literalise(
+  Array(String) *const inst,
+  String *const prefix,
+  String *const separator,
+  String *const suffix
+) {
+  if (!inst) {
+    return null;
+  }
+
+  const llong arraylen = Length(Array(String), inst);
+  const llong prefixlen = Length(String, prefix);
+  const llong separatorlen = Length(String, separator);
+  const llong suffixlen = Length(String, suffix);
+
+  /* Calculate total length. */
+  register llong length = 0;
+  refeach (String, string, inst, {
+    length += Length(String, string);
+  })
+  length += prefixlen + (separatorlen * (arraylen - 1)) + suffixlen;
+
+  if (!length) {
+    return string("");
+  }
+
+  String *const ret = Create(String, length, sizeof(char));
+  if (!ret) {
+    return null;
+  }
+
+  register llong offset = 0;
+  /* Write prefix. */
+  foreachbyte (byte, prefix, {
+    setbyte(ret, offset, byte);
+    offset++;
+  })
+
+  refeach (String, string, inst, {
+    foreachbyte (byte, string, {
+      setbyte(ret, offset, byte);
+      offset++;
+    })
+
+    /* Skip inserting a separator for the last element. */
+    if (_refeach_idx_string == arraylen - 1) {
+      continue;
+    }
+
+    /* Write separator. */
+    foreachbyte (byte, separator, {
+      setbyte(ret, offset, byte);
+      offset++;
+    })
+  })
+
+  /* Write suffix. */
+  foreachbyte (byte, suffix, {
+    setbyte(ret, offset, byte);
+    offset++;
+  })
+
+  return ret;
+}

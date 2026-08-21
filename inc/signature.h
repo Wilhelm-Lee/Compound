@@ -17,12 +17,28 @@
  * <https://www.gnu.org/licenses/>.
  */
 
-/** @file literalisation.h */
+/** @file signature.h */
 
-#ifndef COMPOUND_LITERALISATION_H
-# define COMPOUND_LITERALISATION_H
+#ifndef COMPOUND_SIGNATURE_H
+# define COMPOUND_SIGNATURE_H
 
-# define lit(type, ...)\
-  (CONCAT(type, _Literalise)(__VA_ARGS__))
+# include "parameter.h"
 
-#endif  /* COMPOUND_LITERALISATION_H */
+typedef struct Signature Signature;
+
+Signature *Signature_Create(
+  String *const returning,
+  String *const identifier,
+  Array(Parameter) *const parameters
+);
+Signature *Signature_CopyOf(const Signature *const other);
+void Signature_Delete(Signature *const inst);
+boolean Signature_Equals(
+  Signature *const obj1,
+  Signature *const obj2
+);
+
+String *Signature_Literalise(const Signature *const inst);
+void Signature_Realise(FILE *const fp, const Signature *const inst);
+
+#endif  /* COMPOUND_SIGNATURE_H */

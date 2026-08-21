@@ -1,21 +1,46 @@
+#include "../inc/body.h"
+#include "../inc/constructor.h"
+#include "../inc/destructor.h"
 #include "../inc/entry.h"
+#include "../inc/field.h"
+#include "../inc/preprocessor.h"
 
-int Main(Array(String) *const args, Array(String) *const envs)
+# define INIT_VALUE  1
+# define LOOP_COUNT  16
+
+int Main(void)
 {
   ignore args, ignore envs;
 
-  Array(String) *parsed_functions = array(String, 0);
-  refeach (String, env, envs, {
-    if (contains(env, string("."))) {
-      parsed_functions = call(Array(String), Insert, parsed_functions, -1, env);
+  Preprocessor *const pp_stdio = preprocessor(include, <stdio.h>);
+  Preprocessor *const pp_Compound_common = preprocessor(
+    include, "/external/Documents/Projects/Compound/inc/common.h"
+  );
+  Preprocessor *const pp_Compound_types = preprocessor(
+    include, "/external/Documents/Projects/Compound/inc/types.h"
+  );
+  Field *const fi_counter = field(ACCESS_PUBLIC, llong, counter, INIT_VALUE);
+  Function *const fn_main = function(int, main, body({
+    // this is the body.
+    for (register llong i = 0; i < LOOP_COUNT; i++) {
+      counter <<= 1;
     }
-  })
 
-  refeach (String, func, parsed_functions, {
-    printf("%s"NEWLINE, (char *)refbyte(func, 0));
-  })
+    printf("%lld"NEWLINE, counter);
 
-  ig parsed_functions;
-  
+    return 0;
+  }), param());
+
+  FILE *const fp = fopen("/tmp/counter.c", "w+");
+
+  Realise(Preprocessor, fp, pp_stdio);
+  Realise(Preprocessor, fp, pp_Compound_common);
+  Realise(Preprocessor, fp, pp_Compound_types);
+  Realise(Field, fp, fi_counter);
+  Realise(Function, fp, fn_main);
+  fprintf(fp, NEWLINE);
+
+  fclose(fp);
+
   return 0;
 }

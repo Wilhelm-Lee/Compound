@@ -1,0 +1,143 @@
+/*
+ * This file is part of Compound library.
+ * Copyright (C) 2024-2026  William Lee
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Library General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Library General Public License for more details.
+ *
+ * You should have received a copy of the GNU Library General Public
+ * License along with this library; if not, see
+ * <https://www.gnu.org/licenses/>.
+ */
+
+/** @file function.c */
+
+#include "../inc/function.h"
+
+/* Either it is to provide a in-memory function;
+ * or it is to adopt a string for realisation later.
+ */
+struct Body {
+  void *(*Execution)(void);
+  String *text;
+};
+
+struct Function {
+  Signature *signature;
+  Body *body;
+};
+
+Function *Function_Create(
+  Signature *const signature,
+  Body *const body
+) {
+  if (!signature || !body) {
+    return NULL;
+  }
+
+  Function *const inst = Allocate(1, sizeof(Function));
+  if (!inst) {
+    return NULL;
+  }
+
+  inst->signature = CopyOf(Signature, signature);
+  if (!inst->signature) {
+    Deallocate(inst);
+    return NULL;
+  }
+
+  inst->body = body;
+
+  return inst;
+}
+
+Function *Function_CopyOf(const Function *const other)
+{
+  if (!other) {
+    return NULL;
+  }
+
+  return Create(Function, other->signature, other->body);
+}
+
+void Function_Delete(Function *const inst)
+{
+  if (!inst) {
+    return;
+  }
+
+  Delete(String, inst->body->text);
+  Deallocate(inst->signature);
+  Deallocate(inst);
+}
+
+boolean Function_Equals(Function *const obj1, Function *const obj2)
+{
+  if (!obj1 || !obj2) {
+    return false;
+  }
+
+  if (obj1 == obj2) {
+    return true;
+  }
+
+  return Equals(
+    Signature,
+    obj1->signature,
+    obj2->signature
+  ) && (
+    obj1->body->Execution == obj2->body->Execution ||
+    Equals(
+      String,
+      obj1->body->text,
+      obj2->body->text
+    )
+  );
+}
+
+String *Function_Literalise(const Function *const inst)
+{
+  if (!inst) {
+    return null;
+  }
+
+  char *const flatten_signature = flatten(char, lit(Signature,inst->signature));
+
+  if (inst->body->Execution) {
+    String *result = format("%s", flatten_signature);
+    Deallocate(flatten_signature);
+    return result;
+  }
+
+  char *const flatten_body_text = flatten(char, inst->body->text);
+  String *result = format("%s %s", flatten_signature, flatten_body_text);
+
+  Deallocate(flatten_body_text);
+  Deallocate(flatten_signature);
+
+  return result;
+}
+
+void Function_Realise(FILE *const fp, const Function *const inst)
+{
+  if (!inst || !fp) {
+    return;
+  }
+
+  String *const lit = lit(Function, inst);
+  char *const flatten = flatten(char, lit);
+
+  fprintf(fp, "%s", flatten);
+
+  Deallocate(flatten);
+  Delete(String, lit);
+}
+
+IMPL_ARRAY(Function);

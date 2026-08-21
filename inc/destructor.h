@@ -17,12 +17,20 @@
  * <https://www.gnu.org/licenses/>.
  */
 
-/** @file literalisation.h */
+/** @file destructor.h */
 
-#ifndef COMPOUND_LITERALISATION_H
-# define COMPOUND_LITERALISATION_H
+#ifndef COMPOUND_DESTRUCTOR_H
+# define COMPOUND_DESTRUCTOR_H
 
-# define lit(type, ...)\
-  (CONCAT(type, _Literalise)(__VA_ARGS__))
+# include "method.h"
 
-#endif  /* COMPOUND_LITERALISATION_H */
+typedef struct Destructor Destructor;
+
+ARRAY(Destructor);
+
+Destructor *Destructor_Create(Destructor *const super, Method *const method);
+Destructor *Destructor_CopyOf(Destructor *const other);
+void Destructor_Delete(Destructor *const inst);
+boolean Destructor_Equals(Destructor *const obj1, Destructor *const obj2);
+
+#endif  /* COMPOUND_DESTRUCTOR_H */
