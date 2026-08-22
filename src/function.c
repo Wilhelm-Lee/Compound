@@ -125,7 +125,7 @@ String *Function_Literalise(const Function *const inst)
   return result;
 }
 
-void Function_Realise(FILE *const fp, const Function *const inst)
+void Function_Recreate(FILE *const fp, const Function *const inst)
 {
   if (!inst || !fp) {
     return;

@@ -52,6 +52,6 @@ void Field_Delete(Field *const inst);
 boolean Field_Equals(Field *const obj1, Field *const obj2);
 
 String *Field_Literalise(const Field *const inst);
-void Field_Realise(FILE *const fp, const Field *const inst);
+void Field_Recreate(FILE *const fp, const Field *const inst);
 
 #endif  /* COMPOUND_FIELD_H */

@@ -33,11 +33,11 @@ int Main(void)
 
   FILE *const fp = fopen("/tmp/counter.c", "w+");
 
-  Realise(Preprocessor, fp, pp_stdio);
-  Realise(Preprocessor, fp, pp_Compound_common);
-  Realise(Preprocessor, fp, pp_Compound_types);
-  Realise(Field, fp, fi_counter);
-  Realise(Function, fp, fn_main);
+  Recreate(Preprocessor, fp, pp_stdio);
+  Recreate(Preprocessor, fp, pp_Compound_common);
+  Recreate(Preprocessor, fp, pp_Compound_types);
+  Recreate(Field, fp, fi_counter);
+  Recreate(Function, fp, fn_main);
   fprintf(fp, NEWLINE);
 
   fclose(fp);

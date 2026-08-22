@@ -132,7 +132,7 @@ String *Signature_Literalise(const Signature *const inst)
   return format;
 }
 
-void Signature_Realise(FILE *const fp, const Signature *const inst)
+void Signature_Recreate(FILE *const fp, const Signature *const inst)
 {
   if (!inst || !fp) {
     return;

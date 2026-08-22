@@ -39,6 +39,6 @@ boolean Signature_Equals(
 );
 
 String *Signature_Literalise(const Signature *const inst);
-void Signature_Realise(FILE *const fp, const Signature *const inst);
+void Signature_Recreate(FILE *const fp, const Signature *const inst);
 
 #endif  /* COMPOUND_SIGNATURE_H */

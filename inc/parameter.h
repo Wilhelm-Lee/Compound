@@ -45,6 +45,6 @@ boolean Parameter_Equals(Parameter *const obj1, Parameter *const obj2);
 
 String *Parameter_Literalise(const Parameter *const inst);
 
-void Parameter_Realise(FILE *const fp, const Parameter *const inst);
+void Parameter_Recreate(FILE *const fp, const Parameter *const inst);
 
 #endif  /* COMPOUND_PARAMETER_H */

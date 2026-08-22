@@ -106,7 +106,7 @@ String *Preprocessor_Literalise(Preprocessor *const inst)
   return result;
 }
 
-void Preprocessor_Realise(FILE *const fp, Preprocessor *const inst)
+void Preprocessor_Recreate(FILE *const fp, Preprocessor *const inst)
 {
   if (!inst || !fp) {
     return;

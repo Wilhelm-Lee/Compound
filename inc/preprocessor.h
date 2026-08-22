@@ -50,6 +50,6 @@ Preprocessor *Preprocessor_CopyOf(Preprocessor *const other);
 void Preprocessor_Delete(Preprocessor *const inst);
 boolean Preprocessor_Equals(Preprocessor *const obj1, Preprocessor *const obj2);
 String *Preprocessor_Literalise(Preprocessor *const inst);
-void Preprocessor_Realise(FILE *const fp, Preprocessor *const inst);
+void Preprocessor_Recreate(FILE *const fp, Preprocessor *const inst);
 
 #endif  /* COMPOUND_PREPROCESSOR_H */

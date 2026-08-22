@@ -108,7 +108,7 @@ String *Field_Literalise(const Field *const inst)
   return format;
 }
 
-void Field_Realise(FILE *const fp, const Field *const inst)
+void Field_Recreate(FILE *const fp, const Field *const inst)
 {
   if (!inst || !fp) {
     return;
