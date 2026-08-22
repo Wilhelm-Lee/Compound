@@ -53,6 +53,6 @@ void Function_Delete(Function *const inst);
 boolean Function_Equals(Function *const obj1, Function *const obj2);
 
 String *Function_Literalise(const Function *const inst);
-void Function_Realise(FILE *const fp, const Function *const inst);
+void Function_Recreate(FILE *const fp, const Function *const inst);
 
 #endif  /* COMPOUND_FUNCTION_H */

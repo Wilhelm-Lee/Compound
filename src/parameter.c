@@ -99,7 +99,7 @@ String *Parameter_Literalise(const Parameter *const inst)
   return ret;
 }
 
-void Parameter_Realise(FILE *const fp, const Parameter *const inst)
+void Parameter_Recreate(FILE *const fp, const Parameter *const inst)
 {
   if (!inst || !fp) {
     return;
