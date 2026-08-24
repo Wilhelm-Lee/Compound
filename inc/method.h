@@ -29,8 +29,8 @@ typedef struct Method Method;
 
 ARRAY(Method)
 
-# define method(access, function)\
-  Create(Method, access, function)
+# define method(access_literal, returning_literal, identifier_literal, block, ...)\
+  Create(Method, ACCESS_##access_literal, function(returning_literal, identifier_literal, body(block), __VA_ARGS__))
 
 Method *Method_Create(const Access access, Function *const function);
 Method *Method_CopyOf(Method *const other);

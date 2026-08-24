@@ -7,7 +7,6 @@
 #include "../inc/preprocessor.h"
 
 // to test:
-// String *String_Append(String *const inst, const Array(String) *const contents);
 
 /* This header includes everything generated.
  * Before the generation, it is suppose to be empty, making no difference.
@@ -18,56 +17,44 @@ int Main(void)
 {
   ignore args, ignore envs;
 
-  Class *const c_Cat = Create(Class, ACCESS_PRIVATE, string("Cat"));
-  if (!c_Cat) {
-    return 1;
-  }
+  Class *const c_Command = class(public, Command, {
+    field(private, String *, identifier, null);
+    field(private, Array(Command) *, subcommands, null);
 
-  Class *const c_CopyCat = CopyOf(Class, c_Cat);
-  if (!c_CopyCat) {
-    Delete(Class, c_Cat);
-    return 1;
-  }
+    constructor(public, {
+      if (!identifier) {
+        return null;
+      }
 
-  Delete(Class, c_CopyCat);
-  Delete(Class, c_Cat);
+      this->identifier = identifier;
+      this->subcommands = subcommands;
 
+      return this;
+    }, param(String *const, identifier),
+       param(Array(Command) *const, subcommands)
+    );
 
+    destructor(private, {
+      if (!this) {
+        return;
+      }
 
-  // Signature *const signature = Create(Signature, string(""), string(""), Compose(Array(Parameter), Parameter))
+      Delete(String, this->identifier);
+      Delete(Array(Command), this->subcommands);
+    });
 
+    method(public, String *, GetIdentifier, {
+      return this->identifer;
+    }, param(void));
 
-  // Preprocessor *const pp_stdlib = preprocessor(
-  //   include, <stdlib.h>
-  // );
-  // Preprocessor *const pp_time = preprocessor(
-  //   include, <time.h>
-  // );
-  // Preprocessor *const pp_Compound_entry = preprocessor(
-  //   include, "../inc/entry.h"
-  // );
+    method(public, Array(Command) *, GetSubcommands, {
+      return this->subcommands;
+    }, param(void));
+  });
 
-  // Function *const fn_Main = function(int, Main, body({
-  //   ignore args, ignore envs;
+  // Command *cmd = new(Command, ...);
 
-  //   srand(time(NULL));
-
-  //   Array(int) *const iarr = array(int, 10);
-  //   refeach (int, it, iarr, {
-  //     *it = rand() % INT32_MAX;
-  //   })
-
-  //   puts(flatten(char, lit(Array(int), iarr, string("["), string(","), string("]"))));
-
-  //   return 0;
-  // }), param(void));
-
-  // Recreate(Preprocessor, stdout, pp_stdlib);
-  // Recreate(Preprocessor, stdout, pp_time);
-  // Recreate(Preprocessor, stdout, pp_Compound_entry);
-  // Recreate(Function, stdout, fn_Main);
-
-  // int retval = invoke(fn_Main);
+  Delete(Class, c_Command);
 
   return 0;
 }

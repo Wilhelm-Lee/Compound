@@ -32,6 +32,11 @@ typedef struct Class Class;
 
 ARRAY(Class)
 
+# define class(access_literal, name_literal, ...)\
+  (Create(Class, ACCESS_##access_literal, string(nameof(name_literal)))); typedef Class name_literal; ARRAY(name_literal) __VA_ARGS__
+
+# define new(name_literal, ...)
+
 Class *Class_Create(const Access access, String *const name);
 Class *Class_CopyOf(Class *const other);
 void Class_Delete(Class *const inst);
