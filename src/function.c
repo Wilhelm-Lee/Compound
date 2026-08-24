@@ -21,14 +21,6 @@
 
 #include "../inc/function.h"
 
-/* Either it is to provide a in-memory function;
- * or it is to adopt a string for realisation later.
- */
-struct Body {
-  void *(*Execution)(void);
-  String *text;
-};
-
 struct Function {
   Signature *signature;
   Body *body;
@@ -47,12 +39,7 @@ Function *Function_Create(
     return NULL;
   }
 
-  inst->signature = CopyOf(Signature, signature);
-  if (!inst->signature) {
-    Deallocate(inst);
-    return NULL;
-  }
-
+  inst->signature = signature;
   inst->body = body;
 
   return inst;
@@ -73,8 +60,8 @@ void Function_Delete(Function *const inst)
     return;
   }
 
-  Delete(String, inst->body->text);
-  Deallocate(inst->signature);
+  Delete(Body, inst->body);
+  Delete(Signature, inst->signature);
   Deallocate(inst);
 }
 
@@ -88,18 +75,8 @@ boolean Function_Equals(Function *const obj1, Function *const obj2)
     return true;
   }
 
-  return Equals(
-    Signature,
-    obj1->signature,
-    obj2->signature
-  ) && (
-    obj1->body->Execution == obj2->body->Execution ||
-    Equals(
-      String,
-      obj1->body->text,
-      obj2->body->text
-    )
-  );
+  return Equals(Signature, obj1->signature, obj2->signature) &&
+         Equals(Body, obj1->body, obj2->body);
 }
 
 String *Function_Literalise(const Function *const inst)
@@ -109,17 +86,11 @@ String *Function_Literalise(const Function *const inst)
   }
 
   char *const flatten_signature = flatten(char, lit(Signature,inst->signature));
+  char *const flatten_body = flatten(char, lit(Body, inst->body));
 
-  if (inst->body->Execution) {
-    String *result = format("%s", flatten_signature);
-    Deallocate(flatten_signature);
-    return result;
-  }
+  String *result = format("%s %s", flatten_signature, flatten_body);
 
-  char *const flatten_body_text = flatten(char, inst->body->text);
-  String *result = format("%s %s", flatten_signature, flatten_body_text);
-
-  Deallocate(flatten_body_text);
+  Deallocate(flatten_body);
   Deallocate(flatten_signature);
 
   return result;
@@ -140,4 +111,4 @@ void Function_Recreate(FILE *const fp, const Function *const inst)
   Delete(String, lit);
 }
 
-IMPL_ARRAY(Function);
+IMPL_ARRAY(Function)

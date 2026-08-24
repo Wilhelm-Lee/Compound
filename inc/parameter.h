@@ -27,13 +27,21 @@
 
 typedef struct Parameter Parameter;
 
-ARRAY(Parameter);
+ARRAY(Parameter)
 
 # define param(...)                                                            \
   (parameter(__VA_ARGS__))
 
-# define parameter(type, ...)                                                  \
-  (Create(Parameter, string(nameof(type)), string(nameof(__VA_ARGS__))))
+#define parameter(...)                                                         \
+  CONCAT(parameter_, arglen(__VA_ARGS__))(__VA_ARGS__)
+
+/* Exactly 1 argument */
+#define parameter_1(type) \
+  (Create(Parameter, string(nameof(type)), string("")))
+
+/* Exactly 2 arguments */
+#define parameter_2(type, name) \
+  (Create(Parameter, string(nameof(type)), string(nameof(name))))
 
 Parameter *Parameter_Create(
   String *const type,
@@ -42,9 +50,7 @@ Parameter *Parameter_Create(
 Parameter *Parameter_CopyOf(const Parameter *const other);
 void Parameter_Delete(Parameter *const inst);
 boolean Parameter_Equals(Parameter *const obj1, Parameter *const obj2);
-
 String *Parameter_Literalise(const Parameter *const inst);
-
 void Parameter_Recreate(FILE *const fp, const Parameter *const inst);
 
 #endif  /* COMPOUND_PARAMETER_H */

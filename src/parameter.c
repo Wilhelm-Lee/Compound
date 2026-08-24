@@ -60,8 +60,8 @@ void Parameter_Delete(Parameter *const inst)
     return;
   }
 
-  Deallocate(inst->type);
-  Deallocate(inst->identifier);
+  Delete(String, inst->type);
+  Delete(String, inst->identifier);
   Deallocate(inst);
 }
 
@@ -91,10 +91,10 @@ String *Parameter_Literalise(const Parameter *const inst)
   if (inst->identifier && !blank(inst->identifier)) {
     flatten_identifier = flatten(char, inst->identifier);
     ret = format("%s %s", flatten_type, flatten_identifier);
+    Deallocate(flatten_identifier);
   }
 
   Deallocate(flatten_type);
-  Deallocate(flatten_identifier);
 
   return ret;
 }
@@ -114,4 +114,4 @@ void Parameter_Recreate(FILE *const fp, const Parameter *const inst)
   Delete(String, lit);
 }
 
-IMPL_ARRAY(Parameter);
+IMPL_ARRAY(Parameter)

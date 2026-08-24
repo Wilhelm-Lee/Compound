@@ -69,6 +69,8 @@ int InitialiseMain(
   InitialiseMemoryStack(&MEMORY_STACK);
 # endif
 
+  // InitialiseHeap();
+
 # ifdef __COMPOUND_FEATURE_ARGUMENT__
   *args = array(String, argc);
   if (!args) {
@@ -129,6 +131,8 @@ int DeinitialiseMain(
 # ifdef __COMPOUND_FEATURE_RECYCLER__
   DeinitialiseMemoryStack(&MEMORY_STACK);
 # endif
+
+  // DeinitialiseHeap();
 
   return 0;
 }

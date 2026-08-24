@@ -27,7 +27,7 @@
 
 typedef struct Field Field;
 
-ARRAY(Field);
+ARRAY(Field)
 
 # define field(access, type, identifier, ...)                                  \
   Create(                                                                     \

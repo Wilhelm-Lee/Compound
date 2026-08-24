@@ -72,6 +72,7 @@ void Signature_Delete(Signature *const inst)
   Delete(String, inst->identifier);
   erase(Array(Parameter), inst->parameters);
   Delete(Array(Parameter), inst->parameters);
+  Deallocate(inst);
 }
 
 boolean Signature_Equals(

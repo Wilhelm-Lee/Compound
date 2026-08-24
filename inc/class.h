@@ -17,26 +17,24 @@
  * <https://www.gnu.org/licenses/>.
  */
 
-/** @file destructor.h */
+/** @file class.h */
 
-#ifndef COMPOUND_DESTRUCTOR_H
-# define COMPOUND_DESTRUCTOR_H
+#ifndef COMPOUND_CLASS_H
+# define COMPOUND_CLASS_H
 
+# include "constructor.h"
+# include "destructor.h"
+# include "field.h"
 # include "method.h"
+# include "memory_stack.h"
 
-typedef struct Destructor Destructor;
+typedef struct Class Class;
 
-ARRAY(Destructor)
+ARRAY(Class)
 
-# define _destructor(super, access, block, ...)        \
-  Create(Destructor, super, method(access, function(void, Destructor, body(block), __VA_ARGS__)))
+Class *Class_Create(const Access access, String *const name);
+Class *Class_CopyOf(Class *const other);
+void Class_Delete(Class *const inst);
+boolean Class_Equals(const Class *const obj1, const Class *const obj2);
 
-# define destructor(access, block)                                             \
-  _destructor(null, ACCESS_##access, block, param(Class *const, this))
-
-Destructor *Destructor_Create(Destructor *const super, Method *const method);
-Destructor *Destructor_CopyOf(Destructor *const other);
-void Destructor_Delete(Destructor *const inst);
-boolean Destructor_Equals(Destructor *const obj1, Destructor *const obj2);
-
-#endif  /* COMPOUND_DESTRUCTOR_H */
+#endif  /* COMPOUND_CLASS_H */

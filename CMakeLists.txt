@@ -17,6 +17,13 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 set(CMAKE_CACHEFILE_DIR ${CMAKE_BUILD_DIR})
 
+set(USER_DIRECTORY "${PROJECT_SOURCE_DIR}/user")
+set(USER_HEADER "${USER_DIRECTORY}/header.h")
+
+# Setup environments for source code generation.
+file(MAKE_DIRECTORY "${PROJECT_SOURCE_DIR}/user")
+file(TOUCH "${USER_HEADER}")
+
 #include(FetchContent)
 #FetchContent_Declare(
 #  Compound.Hashmap
@@ -30,9 +37,11 @@ set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(
   SOURCES
+  # src/heap.c
   src/access.c
   src/arrays.c
   src/body.c
+  src/class.c
   src/constructor.c
   src/destructor.c
   src/field.c
@@ -62,10 +71,11 @@ add_library(compound SHARED $<TARGET_OBJECTS:Fundation>)
 target_compile_options(
   CommonCompilationFlags
   INTERFACE
-  -std=c99
+  -std=iso9899:1999
   -Wall
   -Wextra
   -Werror
+  -Wpedantic
   -g3
   -O0
   -fPIC

@@ -76,4 +76,4 @@ boolean Destructor_Equals(Destructor *const obj1, Destructor *const obj2)
          Equals(Method, obj1->method, obj2->method);
 }
 
-IMPL_ARRAY(Destructor);
+IMPL_ARRAY(Destructor)

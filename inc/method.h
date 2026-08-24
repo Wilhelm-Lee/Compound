@@ -27,7 +27,10 @@
 
 typedef struct Method Method;
 
-ARRAY(Method);
+ARRAY(Method)
+
+# define method(access, function)\
+  Create(Method, access, function)
 
 Method *Method_Create(const Access access, Function *const function);
 Method *Method_CopyOf(Method *const other);

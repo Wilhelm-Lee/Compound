@@ -1,5 +1,10 @@
 #include "../inc/memory_stack.h"
 
+extern llong HEAP_CAPACITY;
+extern void *HEAP;
+
+llong MEMORY_STACK_HEIGHT = 65536LL;
+
 struct Memory
 {
   void *addr;
@@ -80,6 +85,8 @@ void InitialiseMemoryStack(MemoryStack **const inst)
     exit(EXIT_FAILURE);
   }
 
+  // MEMORY_STACK_HEIGHT = (HEAP_CAPACITY / sizeof(void *));
+
   *inst = calloc(1, sizeof(MemoryStack));
   if (!*inst) {
     perror("Failed to initialise memory stack (*inst).");
@@ -87,7 +94,7 @@ void InitialiseMemoryStack(MemoryStack **const inst)
   }
 
   (*inst)->data = calloc(
-    __COMPOUND_MEMORY_STACK_HEIGHT_MAXIMUM__,
+    MEMORY_STACK_HEIGHT,
     sizeof(Memory)
   );
   if (!(*inst)->data) {
@@ -95,13 +102,13 @@ void InitialiseMemoryStack(MemoryStack **const inst)
     perror("Failed to initialise memory stack ((*inst)->data).");
     fprintf(
       stderr,
-      "Current __COMPOUND_MEMORY_STACK_HEIGHT_MAXIMUM__ is %lld"NEWLINE,
-      __COMPOUND_MEMORY_STACK_HEIGHT_MAXIMUM__
+      "Current MEMORY_STACK_HEIGHT is %lld"NEWLINE,
+      MEMORY_STACK_HEIGHT
     );
     exit(EXIT_FAILURE);
   }
 
-  (*inst)->capacity = __COMPOUND_MEMORY_STACK_HEIGHT_MAXIMUM__;
+  (*inst)->capacity = MEMORY_STACK_HEIGHT;
   (*inst)->height = -1;
 }
 
@@ -131,7 +138,12 @@ llong MemoryStack_Push(MemoryStack *const inst, Memory memory)
   /* Trigger GC -- Out of available memory. */
   if (MemoryStack_IsFull(inst)) {
     fprintf(stderr, "Memory stack is full (cur: %lld out of cap: %lld)"NEWLINE,
-      inst->height, inst->capacity);
+      inst->height + 1, inst->capacity);
+
+    /* Clean up before leave. */
+    _Deallocate(memory.addr);
+    DeinitialiseMemoryStack(&MEMORY_STACK);
+
     exit(EXIT_FAILURE);
   }
 

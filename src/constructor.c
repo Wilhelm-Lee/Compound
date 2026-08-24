@@ -76,4 +76,4 @@ boolean Constructor_Equals(Constructor *const obj1, Constructor *const obj2)
          Equals(Method, obj1->method, obj2->method);
 }
 
-IMPL_ARRAY(Constructor);
+IMPL_ARRAY(Constructor)

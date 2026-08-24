@@ -29,8 +29,6 @@
 # include "location.h"
 # include "platform.h"
 
-# define __COMPOUND_MEMORY_STACK_HEIGHT_MAXIMUM__  32768LL
-
 typedef struct Memory Memory;
 
 typedef struct MemoryStack MemoryStack;
@@ -41,9 +39,9 @@ void *Allocate(const size_t nmemb, const size_t size);
 void _Deallocate(void *const inst);
 
 # ifdef __COMPOUND_FEATURE_RECYCLER__
-# define Deallocate(inst)
+#  define Deallocate(inst)
 # else
-# define Deallocate(inst)\
+#  define Deallocate(inst)                                                     \
   _Deallocate(inst)
 # endif
 
