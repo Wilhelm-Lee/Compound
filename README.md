@@ -137,9 +137,9 @@
     * test.c
   * **out**
     * **bin**
-      * **CompoundTest/~.exe**
+      * **CompoundTest/\~.exe**
     * **lib**
-      * **libcompound.so/~.dylib/~.dll**
+      * **libcompound.so/\~.dylib/\~.dll**
   * **CMakeFiles**
     * **compound.dir**
     * **CompoundTest.dir**
