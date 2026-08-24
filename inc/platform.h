@@ -36,7 +36,7 @@
 # define LF  "\n"
 # define CRLF  CR LF
 
-# ifdef __APPLE__
+# if defined(__APPLE__) && defined(__MACH__)
 #  define __COMPOUND_ON_APPLE__
 # elif defined(_WIN32) || defined(_WIN64)
 #  define __COMPOUND_ON_WINDOWS__
@@ -47,7 +47,7 @@
 
 /* For unifications: */
 #  define __COMPOUND_ON_UNIX_OR_LINUX__\
-       __COMPOUND_ON_UNIX__ || __COMPOUND_ON_LINUX__
+       (__COMPOUND_ON_UNIX__ || __COMPOUND_ON_LINUX__)
 # endif
 
 # ifdef __COMPOUND_ON_APPLE__
@@ -57,5 +57,7 @@
 # else
 #  define NEWLINE  LF
 # endif
+
+# define NL  NEWLINE
 
 #endif  /* COMPOUND_PLATFORM_H */

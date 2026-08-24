@@ -76,4 +76,4 @@ boolean Method_Equals(Method *const obj1, Method *const obj2)
          Equals(Function, obj1->function, obj2->function);
 }
 
-IMPL_ARRAY(Method);
+IMPL_ARRAY(Method)

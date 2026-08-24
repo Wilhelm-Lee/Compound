@@ -25,12 +25,12 @@
  * or it is to adopt a string for realisation later.
  */
 struct Body {
-  void *(*Execution)(void);
+  void *(*Execution)(void *);
   String *text;
 };
 
 Body *Body_Create(
-  void *(*Execution)(void),
+  void *(*Execution)(void *),
   String *const text
 ) {
   if (!Execution && !text) {
@@ -95,15 +95,6 @@ String *Body_Literalise(const Body *const inst)
   return inst->text;
 }
 
-void *Body_GetExecution(const Body *const inst)
-{
-  if (!inst) {
-    return null;
-  }
-
-  return inst->Execution;
-}
-
 String *Body_GetText(const Body *const inst)
 {
   if (!inst) {
@@ -113,4 +104,4 @@ String *Body_GetText(const Body *const inst)
   return inst->text;
 }
 
-IMPL_ARRAY(Body);
+IMPL_ARRAY(Body)

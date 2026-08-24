@@ -29,7 +29,7 @@
  * the privilege of a class to access others or be accessed by them. */
 typedef enum {
   /* Unrestricted: Can access and be accessed by any class. */
-  ACCESS_PUBLIC = UINT32_MAX,
+  ACCESS_PUBLIC = INT32_MAX,  ACCESS_public = INT32_MAX,
 
   /* Restricted: Can only access and be accessed by classes with the
    * exact same access level.
@@ -39,10 +39,10 @@ typedef enum {
    * acts as a unique protected tier. This provides a broad range of
    * custom, user-defined access levels.
    */
-  ACCESS_PROTECTED = 1,
+  ACCESS_PROTECTED = 1,        ACCESS_protected = 1,
 
   /* Isolated: Cannot access other classes and cannot be accessed by them. */
-  ACCESS_PRIVATE = 0
+  ACCESS_PRIVATE = 0,          ACCESS_private = 0
 } Access;
 
 /* @accesser accesses @accessee. */

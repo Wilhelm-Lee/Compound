@@ -123,4 +123,4 @@ void Field_Recreate(FILE *const fp, const Field *const inst)
   Delete(String, lit);
 }
 
-IMPL_ARRAY(Field);
+IMPL_ARRAY(Field)

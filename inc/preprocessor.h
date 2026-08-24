@@ -27,9 +27,9 @@
 
 typedef struct Preprocessor Preprocessor;
 
-ARRAY(Preprocessor);
+ARRAY(Preprocessor)
 
-# define macro(...)                                                            \
+# define macro(...)                                         \
   preprocessor(__VA_ARGS__)
 
 # define preprocessor(identifier, ...)                                         \

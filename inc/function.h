@@ -27,7 +27,7 @@
 
 typedef struct Function Function;
 
-ARRAY(Function);
+ARRAY(Function)
 
 # define function(returning, identifier, body, ...)                            \
   Create(                                                                      \
@@ -36,18 +36,21 @@ ARRAY(Function);
       Signature,                                                               \
       string(nameof(returning)),                                               \
       string(nameof(identifier)),                                              \
-      Compose(                                                                 \
-        Array(Parameter),                                                      \
-        __VA_ARGS__                                                            \
-      )                                                                        \
+      Compose(Array(Parameter), __VA_ARGS__)                                   \
     ),                                                                         \
     body                                                                       \
   )
 
-Function *Function_Create(
-  Signature *const signature,
-  Body *const body
-);
+/* Before the generation, this macro is suppose to be making no difference to
+ * the current version of the source code. */
+# define invoke(identifier, ...)
+
+/* This is the actual macro used after the generation.
+ * It is appended to the "user/header.h". */
+# define _invoke(identifier, ...)                                               \
+  CONCAT(identifier, (__VA_ARGS__))
+
+Function *Function_Create(Signature *const signature, Body *const body);
 Function *Function_CopyOf(const Function *const other);
 void Function_Delete(Function *const inst);
 boolean Function_Equals(Function *const obj1, Function *const obj2);

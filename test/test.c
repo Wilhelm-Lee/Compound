@@ -1,46 +1,73 @@
 #include "../inc/body.h"
+#include "../inc/class.h"
 #include "../inc/constructor.h"
 #include "../inc/destructor.h"
 #include "../inc/entry.h"
 #include "../inc/field.h"
 #include "../inc/preprocessor.h"
 
-# define INIT_VALUE  1
-# define LOOP_COUNT  16
+// to test:
+// String *String_Append(String *const inst, const Array(String) *const contents);
+
+/* This header includes everything generated.
+ * Before the generation, it is suppose to be empty, making no difference.
+ */
+#include "../user/header.h"
 
 int Main(void)
 {
   ignore args, ignore envs;
 
-  Preprocessor *const pp_stdio = preprocessor(include, <stdio.h>);
-  Preprocessor *const pp_Compound_common = preprocessor(
-    include, "/external/Documents/Projects/Compound/inc/common.h"
-  );
-  Preprocessor *const pp_Compound_types = preprocessor(
-    include, "/external/Documents/Projects/Compound/inc/types.h"
-  );
-  Field *const fi_counter = field(ACCESS_PUBLIC, llong, counter, INIT_VALUE);
-  Function *const fn_main = function(int, main, body({
-    // this is the body.
-    for (register llong i = 0; i < LOOP_COUNT; i++) {
-      counter <<= 1;
-    }
+  Class *const c_Cat = Create(Class, ACCESS_PRIVATE, string("Cat"));
+  if (!c_Cat) {
+    return 1;
+  }
 
-    printf("%lld"NEWLINE, counter);
+  Class *const c_CopyCat = CopyOf(Class, c_Cat);
+  if (!c_CopyCat) {
+    Delete(Class, c_Cat);
+    return 1;
+  }
 
-    return 0;
-  }), param());
+  Delete(Class, c_CopyCat);
+  Delete(Class, c_Cat);
 
-  FILE *const fp = fopen("/tmp/counter.c", "w+");
 
-  Recreate(Preprocessor, fp, pp_stdio);
-  Recreate(Preprocessor, fp, pp_Compound_common);
-  Recreate(Preprocessor, fp, pp_Compound_types);
-  Recreate(Field, fp, fi_counter);
-  Recreate(Function, fp, fn_main);
-  fprintf(fp, NEWLINE);
 
-  fclose(fp);
+  // Signature *const signature = Create(Signature, string(""), string(""), Compose(Array(Parameter), Parameter))
+
+
+  // Preprocessor *const pp_stdlib = preprocessor(
+  //   include, <stdlib.h>
+  // );
+  // Preprocessor *const pp_time = preprocessor(
+  //   include, <time.h>
+  // );
+  // Preprocessor *const pp_Compound_entry = preprocessor(
+  //   include, "../inc/entry.h"
+  // );
+
+  // Function *const fn_Main = function(int, Main, body({
+  //   ignore args, ignore envs;
+
+  //   srand(time(NULL));
+
+  //   Array(int) *const iarr = array(int, 10);
+  //   refeach (int, it, iarr, {
+  //     *it = rand() % INT32_MAX;
+  //   })
+
+  //   puts(flatten(char, lit(Array(int), iarr, string("["), string(","), string("]"))));
+
+  //   return 0;
+  // }), param(void));
+
+  // Recreate(Preprocessor, stdout, pp_stdlib);
+  // Recreate(Preprocessor, stdout, pp_time);
+  // Recreate(Preprocessor, stdout, pp_Compound_entry);
+  // Recreate(Function, stdout, fn_Main);
+
+  // int retval = invoke(fn_Main);
 
   return 0;
 }

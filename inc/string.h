@@ -36,7 +36,7 @@
 
 typedef struct String String;
 
-ARRAY(String);
+ARRAY(String)
 Array(String) *StringArray_ComposeFromCstr(const llong arglen, ...);
 String *StringArray_Literalise(
   Array(String) *const inst,
@@ -134,6 +134,9 @@ String *StringArray_Literalise(
 
 # define occurrences(string_ptr, string_target_ptr, offset)\
   (String_Occurrences(string_ptr, string_target_ptr, offset))
+
+# define append(string_ptr, ...)\
+  (String_Append(string_ptr, Compose(Array(String), __VA_ARGS__)))
 
 # define replace_first(\
     string_ptr_ptr,\
@@ -359,6 +362,13 @@ void *String_Flatten(const String *const inst, const llong width);
 boolean String_Contains(const String *const inst, const String *const target);
 
 String *String_Reverse(String *const inst);
+
+/* Appends all instances onto one.
+ * @param    inst      The instance of the String which is for getting appended.
+ * @param    contents  The instances of String to append.
+ * @returns  The re-allocated String inst.
+ */
+String *String_Append(String *const inst, const Array(String) *const contents);
 
 Array(byte) *String_GetData(const String *const inst);
 

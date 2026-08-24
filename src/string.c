@@ -980,6 +980,54 @@ inline String *String_Reverse(String *const inst)
   return inst;
 }
 
+String *String_Append(String *const inst, const Array(String) *const contents)
+{
+  if (!inst && !contents) {
+    return null;
+  }
+
+  if (!contents) {
+    return inst;
+  }
+
+  llong max_width = sizeof(char);
+  register llong total_length = Length(String, inst);
+  refeach (String, content, contents, {
+    if (!content) {
+      continue;
+    }
+
+    total_length += Length(String, content);
+    max_width = content->width > max_width ? content->width : max_width;
+  })
+
+  String *const ret = Create(String, total_length, max_width);
+  if (!ret) {
+    return inst;
+  }
+
+  /* First write the content from @inst. */
+  register llong written = 0;
+  foreachbyte (elem, inst, {
+    *refbyte(ret, written) = elem;
+    written++;
+  })
+
+  /* Then write in the strings from @contents. */
+  refeach (String, content, contents, {
+    if (!content) {
+      continue;
+    }
+
+    foreachbyte (elem, content, {
+      *refbyte(ret, written) = elem;
+      written++;
+    })
+  })
+
+  return ret;
+}
+
 inline Array(byte) *String_GetData(const String *const inst)
 {
   if (!inst) {
