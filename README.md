@@ -6,7 +6,7 @@
   complex systems by abstracting common tasks such as generic container
   management, string manipulation, and programmatically generated C code.
 
-  > To know more about generative source code licensing notice, see [Important Notice Regarding Generated Code](#important-notice-regarding-generated-code)
+  > To know more about generative source code licensing notices, see [Important Notice Regarding Generated Code](#important-notice-regarding-generated-code)
 
   Compound addresses the fragility of manual memory management in C through a
   built-in memory pool and recycler system, while maintaining performance and
