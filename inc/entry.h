@@ -50,7 +50,7 @@
      Array(String) *args = NULL;                                               \
      InitialiseMain(argc, argv, NULL, &args, NULL);                            \
                                                                                \
-     const int retval = _Main(args, NULL);                                     \
+     const int retval = _Main(args);                                           \
                                                                                \
      DeinitialiseMain(&args, NULL);                                            \
      return retval;                                                            \
@@ -61,7 +61,7 @@
    {                                                                           \
      InitialiseMain(0, NULL, NULL, NULL, NULL);                                \
                                                                                \
-     const int retval = _Main(NULL, NULL);                                     \
+     const int retval = _Main();                                               \
                                                                                \
      DeinitialiseMain(NULL, NULL);                                             \
      return retval;                                                            \
@@ -79,17 +79,14 @@
    int _Main(args, envs)
 # elif defined (__COMPOUND_FEATURE_ARGUMENT__)
 #  define Main(args)\
-   _Main(args, Array(String) *envs);\
+   _Main(args);\
    IMPL_MAIN\
-   int _Main(args, __attribute__((unused)) Array(String) *envs)
+   int _Main(args)
 # else
-#  define Main(void)\
-   _Main(Array(String) *args, Array(String) *envs);\
+#  define Main(...)\
+   _Main(void);\
    IMPL_MAIN\
-   int _Main(\
-     Array(String) *__attribute__((unused)) args,\
-     Array(String) *__attribute__((unused)) envs\
-   )
+   int _Main(void)
 # endif
 
 #endif  /* COMPOUND_ENTRY_H */

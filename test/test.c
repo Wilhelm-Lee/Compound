@@ -15,8 +15,6 @@
 
 int Main(void)
 {
-  ignore args, ignore envs;
-
   Class *const c_Command = class(public, Command, {
     field(private, String *, identifier, null);
     field(private, Array(Command) *, subcommands, null);
