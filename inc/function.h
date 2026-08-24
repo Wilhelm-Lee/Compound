@@ -29,13 +29,13 @@ typedef struct Function Function;
 
 ARRAY(Function)
 
-# define function(returning, identifier, body, ...)                            \
+# define function(returning_literal, identifier_literal, body, ...)            \
   Create(                                                                      \
     Function,                                                                  \
     Create(                                                                    \
       Signature,                                                               \
-      string(nameof(returning)),                                               \
-      string(nameof(identifier)),                                              \
+      string(nameof(returning_literal)),                                       \
+      string(nameof(identifier_literal)),                                      \
       Compose(Array(Parameter), __VA_ARGS__)                                   \
     ),                                                                         \
     body                                                                       \
@@ -47,7 +47,7 @@ ARRAY(Function)
 
 /* This is the actual macro used after the generation.
  * It is appended to the "user/header.h". */
-# define _invoke(identifier, ...)                                               \
+# define _invoke(identifier, ...)                                              \
   CONCAT(identifier, (__VA_ARGS__))
 
 Function *Function_Create(Signature *const signature, Body *const body);

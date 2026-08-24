@@ -28,11 +28,11 @@ typedef struct Constructor Constructor;
 
 ARRAY(Constructor)
 
-# define _constructor(super, access, block, ...)        \
-  Create(Constructor, super, method(access, function(Class *, Constructor, body(block), __VA_ARGS__)))
+# define _constructor(super, access_literal, block, ...)        \
+  Create(Constructor, super, method(access_literal, Class *, Constructor, body(block), __VA_ARGS__))
 
 # define constructor(access_literal, block, ...)                               \
-  _constructor(null, ACCESS_##access_literal, block, __VA_ARGS__)
+  _constructor(null, access_literal, block, __VA_ARGS__)
 
 Constructor *Constructor_Create(Constructor *const super, Method *const method);
 Constructor *Constructor_CopyOf(Constructor *const other);

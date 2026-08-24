@@ -28,11 +28,11 @@ typedef struct Destructor Destructor;
 
 ARRAY(Destructor)
 
-# define _destructor(super, access, block, ...)        \
-  Create(Destructor, super, method(access, function(void, Destructor, body(block), __VA_ARGS__)))
+# define _destructor(super, access_literal, block, ...)        \
+  Create(Destructor, super, method(access_literal, void, Destructor, block, __VA_ARGS__))
 
-# define destructor(access, block)                                             \
-  _destructor(null, ACCESS_##access, block, param(Class *const, this))
+# define destructor(access_literal, block)                                             \
+  _destructor(null, access_literal, block, param(Class *const, this))
 
 Destructor *Destructor_Create(Destructor *const super, Method *const method);
 Destructor *Destructor_CopyOf(Destructor *const other);

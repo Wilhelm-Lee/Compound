@@ -29,14 +29,14 @@ typedef struct Field Field;
 
 ARRAY(Field)
 
-# define field(access, type, identifier, ...)                                  \
-  Create(                                                                     \
+# define field(access_literal, type_literal, identifier_literal, ...)          \
+  Create(                                                                      \
     Field,                                                                     \
-    access,                                                                    \
+    ACCESS_##access_literal,                                                   \
     Create(                                                                    \
       Signature,                                                               \
-      string(nameof(type)),                                                    \
-      string(nameof(identifier)),                                              \
+      string(nameof(type_literal)),                                            \
+      string(nameof(identifier_literal)),                                      \
       null                                                                     \
     ),                                                                         \
     string(nameof(__VA_ARGS__))                                                \
