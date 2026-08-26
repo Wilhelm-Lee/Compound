@@ -79,8 +79,10 @@ boolean Parameter_Equals(Parameter *const obj1, Parameter *const obj2)
          Equals(String, obj1->type, obj2->type);
 }
 
-String *Parameter_Literalise(const Parameter *const inst)
-{
+String *Parameter_Literalise(
+  Parameter *const inst,
+  boolean need_identifier
+) {
   if (!inst) {
     return null;
   }
@@ -88,7 +90,7 @@ String *Parameter_Literalise(const Parameter *const inst)
   char *const flatten_type = flatten(char, inst->type);
   char *flatten_identifier = "";
   String *ret = format("%s", flatten_type);
-  if (inst->identifier && !blank(inst->identifier)) {
+  if (need_identifier && inst->identifier && !blank(inst->identifier)) {
     flatten_identifier = flatten(char, inst->identifier);
     ret = format("%s %s", flatten_type, flatten_identifier);
     Deallocate(flatten_identifier);
@@ -99,19 +101,5 @@ String *Parameter_Literalise(const Parameter *const inst)
   return ret;
 }
 
-void Parameter_Recreate(FILE *const fp, const Parameter *const inst)
-{
-  if (!inst || !fp) {
-    return;
-  }
-
-  String *const lit = lit(Parameter, inst);
-  char *const flatten = flatten(char, lit);
-
-  fprintf(fp, "%s", flatten);
-
-  Deallocate(flatten);
-  Delete(String, lit);
-}
-
 IMPL_ARRAY(Parameter)
+IMPL_ARRAY_LITERALISE_CONFIGS(Parameter, need_body, boolean need_body)

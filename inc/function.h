@@ -28,6 +28,7 @@
 typedef struct Function Function;
 
 ARRAY(Function)
+LITERALISE_ARGS(Function, boolean need_body)
 
 # define function(returning_literal, identifier_literal, body, ...)            \
   Create(                                                                      \
@@ -54,8 +55,5 @@ Function *Function_Create(Signature *const signature, Body *const body);
 Function *Function_CopyOf(const Function *const other);
 void Function_Delete(Function *const inst);
 boolean Function_Equals(Function *const obj1, Function *const obj2);
-
-String *Function_Literalise(const Function *const inst);
-void Function_Recreate(FILE *const fp, const Function *const inst);
 
 #endif  /* COMPOUND_FUNCTION_H */

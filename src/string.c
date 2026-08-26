@@ -230,6 +230,9 @@ String *String_Format(const char *restrict const format, ...)
     sizeof(byte)
   );
 
+  /* Parse the %{Object} pivots. */
+
+
   va_list ap;
   va_start(ap, format);
   const size_t written = vsnprintf(
@@ -1028,6 +1031,11 @@ String *String_Append(String *const inst, const Array(String) *const contents)
   return ret;
 }
 
+inline String *String_Literalise(String *const inst)
+{
+  return inst;
+}
+
 inline Array(byte) *String_GetData(const String *const inst)
 {
   if (!inst) {
@@ -1053,7 +1061,8 @@ inline Array(llong) *String_GetBreaks(const String *const inst)
   return inst->breaks;
 }
 
-IMPL_ARRAY_OBJECT(String)
+IMPL_ARRAY(String)
+IMPL_ARRAY_LITERALISE(String)
 Array(String) *StringArray_ComposeFromCstr(const llong arglen, ...)
 {
   if (!arglen) {
@@ -1074,69 +1083,4 @@ Array(String) *StringArray_ComposeFromCstr(const llong arglen, ...)
   va_end(ap);
 
   return inst;
-}
-
-String *StringArray_Literalise(
-  Array(String) *const inst,
-  String *const prefix,
-  String *const separator,
-  String *const suffix
-) {
-  if (!inst) {
-    return null;
-  }
-
-  const llong arraylen = Length(Array(String), inst);
-  const llong prefixlen = Length(String, prefix);
-  const llong separatorlen = Length(String, separator);
-  const llong suffixlen = Length(String, suffix);
-
-  /* Calculate total length. */
-  register llong length = 0;
-  refeach (String, string, inst, {
-    length += Length(String, string);
-  })
-  length += prefixlen + (separatorlen * (arraylen - 1)) + suffixlen;
-
-  if (!length) {
-    return string("");
-  }
-
-  String *const ret = Create(String, length, sizeof(char));
-  if (!ret) {
-    return null;
-  }
-
-  register llong offset = 0;
-  /* Write prefix. */
-  foreachbyte (byte, prefix, {
-    setbyte(ret, offset, byte);
-    offset++;
-  })
-
-  refeach (String, string, inst, {
-    foreachbyte (byte, string, {
-      setbyte(ret, offset, byte);
-      offset++;
-    })
-
-    /* Skip inserting a separator for the last element. */
-    if (_refeach_idx_string == arraylen - 1) {
-      continue;
-    }
-
-    /* Write separator. */
-    foreachbyte (byte, separator, {
-      setbyte(ret, offset, byte);
-      offset++;
-    })
-  })
-
-  /* Write suffix. */
-  foreachbyte (byte, suffix, {
-    setbyte(ret, offset, byte);
-    offset++;
-  })
-
-  return ret;
 }

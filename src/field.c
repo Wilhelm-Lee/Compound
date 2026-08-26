@@ -83,44 +83,33 @@ boolean Field_Equals(Field *const obj1, Field *const obj2)
          Equals(String, obj1->value, obj2->value);
 }
 
-String *Field_Literalise(const Field *const inst)
-{
+String *Field_Literalise(
+  Field *const inst,
+  boolean need_init_value,
+  boolean need_semicolon
+) {
   if (!inst) {
     return null;
   }
 
-  char *const flatten_signature = flatten(char, lit(Signature,inst->signature));
-  char *flatten_value = null;
-  char *format_cstr = "%s";
-  if (inst->value) {
-    flatten_value = flatten(char, inst->value);
-    format_cstr = "%s = %s";
+  String *ret = lit(Signature, inst->signature, yes);
+
+  if (inst->value && need_init_value) {
+    ret = append(ret, string(" = "), inst->value);
   }
 
-  String *format = format(
-    format_cstr,
-    flatten_signature,
-    flatten_value
-  );
-
-  Deallocate(flatten_signature);
-
-  return format;
-}
-
-void Field_Recreate(FILE *const fp, const Field *const inst)
-{
-  if (!inst || !fp) {
-    return;
+  if (need_semicolon) {
+    ret = concat(ret, string("; "));
   }
 
-  String *const lit = lit(Field, inst);
-  char *const flatten = flatten(char, lit);
-
-  fprintf(fp, "%s;"NEWLINE, flatten);
-
-  Deallocate(flatten);
-  Delete(String, lit);
+  return ret;
 }
 
 IMPL_ARRAY(Field)
+IMPL_ARRAY_LITERALISE_CONFIGS(
+  Field,
+  need_init_value,
+  need_semicolon,
+  boolean need_init_value,
+  boolean need_semicolon
+)

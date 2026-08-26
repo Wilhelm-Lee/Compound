@@ -27,6 +27,7 @@
 typedef struct Body Body;
 
 ARRAY(Body)
+LITERALISE(Body)
 
 # define body(...)                                                             \
   Create(Body, null, string(nameof(__VA_ARGS__)))
@@ -35,9 +36,6 @@ Body *Body_Create(void *(*Execution)(void *), String *const text);
 Body *Body_CopyOf(const Body *const other);
 void Body_Delete(Body *const inst);
 boolean Body_Equals(Body *const obj1, Body *const obj2);
-
 String *Body_GetText(const Body *const inst);
-
-String *Body_Literalise(const Body *const inst);
 
 #endif  /* COMPOUND_BODY_H */

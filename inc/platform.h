@@ -24,6 +24,8 @@
 
 # define __COMPOUND__  1
 
+# include "compatibility.h"
+
 # if defined __x86_64__ || defined __x86_64 || __WORDSIZE == 64
 #  define __COMPOUND_64__
 #  define __COMPOUND_PRODUCT__  "compound64"

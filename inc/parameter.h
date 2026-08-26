@@ -23,11 +23,12 @@
 # define COMPOUND_PARAMETER_H
 
 # include "string.h"
-# include "literalisation.h"
+# include "literalise.h"
 
 typedef struct Parameter Parameter;
 
 ARRAY(Parameter)
+LITERALISE_ARGS(Parameter, boolean need_identifier)
 
 # define param(...)                                                            \
   (parameter(__VA_ARGS__))
@@ -50,7 +51,5 @@ Parameter *Parameter_Create(
 Parameter *Parameter_CopyOf(const Parameter *const other);
 void Parameter_Delete(Parameter *const inst);
 boolean Parameter_Equals(Parameter *const obj1, Parameter *const obj2);
-String *Parameter_Literalise(const Parameter *const inst);
-void Parameter_Recreate(FILE *const fp, const Parameter *const inst);
 
 #endif  /* COMPOUND_PARAMETER_H */

@@ -24,19 +24,21 @@
 
 # include "access.h"
 # include "signature.h"
+# include "literalise.h"
 
 typedef struct Field Field;
 
 ARRAY(Field)
+LITERALISE_ARGS(Field, boolean need_init_value, boolean need_semicolon)
 
-# define field(access_literal, type_literal, identifier_literal, ...)          \
+# define field(class_identifier_literal, access_literal, type_literal, identifier_literal, ...)          \
   Create(                                                                      \
     Field,                                                                     \
     ACCESS_##access_literal,                                                   \
     Create(                                                                    \
       Signature,                                                               \
       string(nameof(type_literal)),                                            \
-      string(nameof(identifier_literal)),                                      \
+      string(nameof(class_identifier_literal##_##identifier_literal)),         \
       null                                                                     \
     ),                                                                         \
     string(nameof(__VA_ARGS__))                                                \
@@ -50,8 +52,5 @@ Field *Field_Create(
 Field *Field_CopyOf(Field *const other);
 void Field_Delete(Field *const inst);
 boolean Field_Equals(Field *const obj1, Field *const obj2);
-
-String *Field_Literalise(const Field *const inst);
-void Field_Recreate(FILE *const fp, const Field *const inst);
 
 #endif  /* COMPOUND_FIELD_H */

@@ -106,17 +106,5 @@ String *Preprocessor_Literalise(Preprocessor *const inst)
   return result;
 }
 
-void Preprocessor_Recreate(FILE *const fp, Preprocessor *const inst)
-{
-  if (!inst || !fp) {
-    return;
-  }
-
-  String *const lit = lit(Preprocessor, inst);
-  char *const flatten = flatten(char, lit);
-
-  fprintf(fp, "%s", flatten);
-
-  Deallocate(flatten);
-  Delete(String, lit);
-}
+IMPL_ARRAY(Preprocessor)
+IMPL_ARRAY_LITERALISE(Preprocessor)

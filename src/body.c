@@ -81,7 +81,7 @@ boolean Body_Equals(Body *const obj1, Body *const obj2)
          Equals(String, obj1->text, obj2->text);
 }
 
-String *Body_Literalise(const Body *const inst)
+String *Body_Literalise(Body *const inst)
 {
   if (!inst) {
     return null;
@@ -105,3 +105,4 @@ String *Body_GetText(const Body *const inst)
 }
 
 IMPL_ARRAY(Body)
+IMPL_ARRAY_LITERALISE(Body)

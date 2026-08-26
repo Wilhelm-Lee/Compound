@@ -17,52 +17,49 @@
  * <https://www.gnu.org/licenses/>.
  */
 
-/** @file method.c */
+/** @file literalise.c */
 
-#include "../inc/method.h"
+#include "../inc/literalise.h"
 
-struct Method {
-  Access access;
-  Function *function;
+struct Literaliser {
+  Literaliser *nested;
+  String *(*Literalise)(void *inst);
 };
 
-Method *Method_Create(const Access access, Function *const function)
-{
-  Method *const inst = Allocate(1, sizeof(Method));
+Literaliser *Literaliser_Create(
+  Literaliser *nested,
+  String *(*Literalise)(void *inst)
+) {
+  Literaliser *inst = Allocate(1, sizeof(Literaliser));
   if (!inst) {
     return null;
   }
 
-  inst->access = access;
-  inst->function = function;
-  if (!inst->function) {
-    Deallocate(inst);
-    return null;
-  }
+  inst->nested = nested;
+  inst->Literalise = Literalise;
 
   return inst;
 }
 
-Method *Method_CopyOf(Method *const other)
+Literaliser *Literaliser_CopyOf(Literaliser *const other)
 {
   if (!other) {
     return null;
   }
 
-  return Create(Method, other->access, other->function);
+  return Create(Literaliser, other->nested, other->Literalise);
 }
 
-void Method_Delete(Method *const inst)
+void Literaliser_Delete(Literaliser *const inst)
 {
   if (!inst) {
     return;
   }
 
-  Delete(Function, inst->function);
   Deallocate(inst);
 }
 
-boolean Method_Equals(Method *const obj1, Method *const obj2)
+boolean Literaliser_Equals(Literaliser *const obj1, Literaliser *const obj2)
 {
   if (!obj1 || !obj2) {
     return false;
@@ -72,18 +69,19 @@ boolean Method_Equals(Method *const obj1, Method *const obj2)
     return true;
   }
 
-  return obj1->access == obj2->access &&
-         Equals(Function, obj1->function, obj2->function);
+  return obj1->nested == obj2->nested && obj1->Literalise == obj2->Literalise;
 }
 
-String *Method_Literalise(Method *const inst, boolean need_body)
+String *Literaliser_Literalise(Literaliser *const inst, void *const object)
 {
   if (!inst) {
     return null;
   }
 
-  return lit(Function, inst->function, need_body);
-}
+  String *buffer = Create(String, 0, sizeof(char));
+  while (inst->nested) {
+    buffer = concat(buffer, inst->Literalise(object));
+  }
 
-IMPL_ARRAY(Method)
-IMPL_ARRAY_LITERALISE_CONFIGS(Method, need_body, boolean need_body)
+  return buffer;
+}

@@ -193,6 +193,110 @@
 # define ARRAY(elem_type)                                                      \
   ARRAY_OBJECT(elem_type)
 
+# define ALIAS_ARRAY_CLASS(class_name)                                         \
+  inline class_name *class_name##Array_Get(                                    \
+    const Array(class_name) *const inst,                                       \
+    const llong index                                                          \
+  ) {                                                                          \
+    return call(Array(Class), Get, (Array(Class) *)inst, index);               \
+  }                                                                            \
+  inline void class_name##Array_Set(                                           \
+    const Array(class_name) *const inst,                                       \
+    const llong index,                                                         \
+    class_name *const value                                                    \
+  ) {                                                                          \
+    call(Array(Class), Set, (Array(Class) *)inst, index, value);               \
+  }                                                                            \
+  inline class_name **class_name##Array_RefRef(                                \
+    const Array(class_name) *const inst,                                       \
+    const llong index                                                          \
+  ) {                                                                          \
+    return call(Array(Class), RefRef, (Array(Class) *)inst, index);            \
+  }                                                                            \
+  inline Array(class_name) *class_name##Array_Create(const llong capacity) {   \
+    return (Array(class_name) *)call(Array(Class), Create, capacity);          \
+  }                                                                            \
+  inline Array(class_name) *class_name##Array_CopyOf(                          \
+    const Array(class_name) *const other                                       \
+  ) {                                                                          \
+    return (Array(class_name) *)                                               \
+      call(Array(Class), CopyOf, (Array(Class) *)other);                       \
+  }                                                                            \
+  inline void class_name##Array_Delete(Array(class_name) *const inst) {        \
+    call(Array(Class), Delete, (Array(Class) *)inst);                          \
+  }                                                                            \
+  inline Array(class_name) *class_name##Array_Clone(                           \
+    const Array(class_name) *const other                                       \
+  ) {                                                                          \
+    return (Array(class_name) *)                                               \
+      call(Array(Class), Clone, (Array(Class) *)other);                        \
+  }                                                                            \
+  inline void class_name##Array_Erase(                                         \
+    Array(class_name) *const inst                                              \
+  ) {                                                                          \
+    call(Array(Class), Erase, (Array(Class) *)inst);                           \
+  }                                                                            \
+  inline Array(class_name) *class_name##Array_Fill(                            \
+    Array(class_name) *const inst,                                             \
+    class_name *value                                                          \
+  ) {                                                                          \
+    return (Array(class_name) *)                                               \
+      call(Array(Class), Fill, (Array(Class) *)inst, (Class *)value);          \
+  }                                                                            \
+  inline Array(class_name) *class_name##Array_Insert(                          \
+    Array(class_name) *const inst,                                             \
+    const llong index,                                                         \
+    class_name *const value                                                    \
+  ) {                                                                          \
+    return (Array(class_name) *)                                               \
+      call(Array(Class), Insert, (Array(Class) *)inst, index, value);          \
+  }                                                                            \
+  inline boolean class_name##Array_Equals(                                     \
+    Array(class_name) *const arr1,                                             \
+    Array(class_name) *const arr2,                                             \
+    boolean (*const IsEqual)(                                                  \
+      class_name *const obj1,                                                  \
+      class_name *const obj2                                                   \
+    )                                                                          \
+  ) {                                                                          \
+    return call(                                                               \
+      Array(Class),                                                            \
+      Equals,                                                                  \
+      (Array(Class) *)arr1,                                                    \
+      (Array(Class) *)arr2,                                                    \
+      IsEqual                                                                  \
+    );                                                                         \
+  }                                                                            \
+  inline class_name **class_name##Array_GetData(                               \
+    const Array(class_name) *const inst                                        \
+  ) {                                                                          \
+    return call(Array(Class), GetData, (Array(Class) *)inst);                  \
+  }                                                                            \
+  inline llong class_name##Array_GetCapacity(                                  \
+    const Array(class_name) *const inst                                        \
+  ) {                                                                          \
+    return call(Array(Class), GetCapacity, (Array(Class) *)inst);              \
+  }                                                                            \
+  inline String *class_name##Array_Literalise(                                 \
+    class_name##Array *const inst,                                             \
+    String *const prefix,                                                      \
+    String *const separator,                                                   \
+    String *const suffix,                                                      \
+    boolean want_fancy,                                                        \
+    boolean need_member_definition                                             \
+  ) {                                                                          \
+    return call(                                                               \
+      Array(Class),                                                            \
+      Literalise,                                                              \
+      (Array(Class) *)inst,                                                    \
+      prefix,                                                                  \
+      separator,                                                               \
+      suffix,                                                                  \
+      want_fancy,                                                              \
+      need_member_definition                                                   \
+    );                                                                         \
+  }
+
 # define ARRAY_OBJECT(elem_type)                                               \
   TYPEDEF_ARRAY(elem_type)                                                     \
   FUNC_ARRAY_OBJECT(elem_type)                                                 \
@@ -234,7 +338,7 @@
   Array(elem_type) *elem_type##Array_Clone(                                    \
     const Array(elem_type) *const other                                        \
   );                                                                           \
-  Array(elem_type) *elem_type##Array_Erase(Array(elem_type) *const inst);      \
+  void elem_type##Array_Erase(Array(elem_type) *const inst);                   \
   Array(elem_type) *elem_type##Array_Fill(                                     \
     Array(elem_type) *const inst,                                              \
     elem_type *value                                                           \
@@ -503,18 +607,16 @@ void elem_type##Array_Delete(Array(elem_type) *const inst)                     \
   Deallocate(inst);                                                            \
 }                                                                              \
                                                                                \
-Array(elem_type) *elem_type##Array_Erase(Array(elem_type) *const inst)         \
+void elem_type##Array_Erase(Array(elem_type) *const inst)                      \
 {                                                                              \
   if (!inst) {                                                                 \
-    return NULL;                                                               \
+    return;                                                                    \
   }                                                                            \
                                                                                \
   const llong capa = capacity(Array(elem_type), inst);                         \
   for (register llong i = 0; i < capa; i++) {                                  \
     Delete(elem_type, inst->data[i]);                                          \
   }                                                                            \
-                                                                               \
-  return inst;                                                                 \
 }                                                                              \
                                                                                \
 Array(elem_type) *elem_type##Array_Fill(                                       \

@@ -23,13 +23,14 @@
 # define COMPOUND_STRING_H
 
 # include <stdarg.h>
-# include <stdlib.h>
 # include <stdio.h>
+# include <stdlib.h>
 # include <string.h>
 
 # include "arrays.h"
 # include "common.h"
 # include "const.h"
+# include "literalise.h"
 
 # define STRING_LENGTH_MAXIMUM  INT32_MAX
 # define STRING_FORMAT_BUFFER_INITIAL_LENGTH  256LL
@@ -37,13 +38,14 @@
 typedef struct String String;
 
 ARRAY(String)
+LITERALISE(String)
 Array(String) *StringArray_ComposeFromCstr(const llong arglen, ...);
-String *StringArray_Literalise(
-  Array(String) *const inst,
-  String *const prefix,
-  String *const separator,
-  String *const suffix
-);
+// String *StringArray_Literalise(
+//   Array(String) *const inst,
+//   String *const prefix,
+//   String *const separator,
+//   String *const suffix
+// );
 
 # define string(char_ptr)\
   (String_Update(NULL, char_ptr))
@@ -222,7 +224,11 @@ String *String_Update(String **const inst, const char *restrict const cstr);
            comparing should be 0. */
 int String_Compare(const String *const string1, const String *const string2);
 
-/* @return The new string concatenates the two of given strings. */
+/* @return The new string concatenates the two of given strings.
+ * Compare to String_Append, this function is specialised to treat
+ * exactly TWO strings for their concatenation -- this is more performant
+ * for exactly two strings.
+ */
 String *String_Concat(String *const string1, const String *const string2);
 
 /**

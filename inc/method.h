@@ -28,9 +28,10 @@
 typedef struct Method Method;
 
 ARRAY(Method)
+LITERALISE_ARGS(Method, boolean need_body)
 
-# define method(access_literal, returning_literal, identifier_literal, block, ...)\
-  Create(Method, ACCESS_##access_literal, function(returning_literal, identifier_literal, body(block), __VA_ARGS__))
+# define method(class_identifier_literal, access_literal, returning_literal, identifier_literal, block, ...)\
+  Create(Method, ACCESS_##access_literal, function(returning_literal, class_identifier_literal##_##identifier_literal, body(block), param(class_identifier_literal *const, this), __VA_ARGS__))
 
 Method *Method_Create(const Access access, Function *const function);
 Method *Method_CopyOf(Method *const other);
