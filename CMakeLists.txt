@@ -79,6 +79,8 @@ target_compile_options(
   -g3
   -O0
   -fPIC
+  -D_FILE_OFFSET_BITS=64
+  -D_TIME_BITS=64
   # -fno-omit-frame-pointer  # __builtin_frame_address(1) for feature Backtracing.
   #-D__COMPOUND_FEATURECLASS_COMMANDLINE__
   -D__COMPOUND_FEATURE_RECYCLER__
