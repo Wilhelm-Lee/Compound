@@ -22,14 +22,14 @@
 #ifndef COMPOUND_PREPROCESSOR_H
 # define COMPOUND_PREPROCESSOR_H
 
-# include "literalisation.h"
 # include "string.h"
 
 typedef struct Preprocessor Preprocessor;
 
 ARRAY(Preprocessor)
+LITERALISE(Preprocessor)
 
-# define macro(...)                                         \
+# define macro(...)                                                            \
   preprocessor(__VA_ARGS__)
 
 # define preprocessor(identifier, ...)                                         \
@@ -49,7 +49,5 @@ Preprocessor *Preprocessor_Create(
 Preprocessor *Preprocessor_CopyOf(Preprocessor *const other);
 void Preprocessor_Delete(Preprocessor *const inst);
 boolean Preprocessor_Equals(Preprocessor *const obj1, Preprocessor *const obj2);
-String *Preprocessor_Literalise(Preprocessor *const inst);
-void Preprocessor_Recreate(FILE *const fp, Preprocessor *const inst);
 
 #endif  /* COMPOUND_PREPROCESSOR_H */

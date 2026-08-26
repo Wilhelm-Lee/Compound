@@ -23,7 +23,7 @@
 # define COMPOUND_ACCESS_H
 
 # include "string.h"
-# include "literalisation.h"
+# include "literalise.h"
 
 /* Defines access permissions for both ingress and egress
  * the privilege of a class to access others or be accessed by them. */
@@ -47,5 +47,6 @@ typedef enum {
 
 /* @accesser accesses @accessee. */
 boolean Access_IsAccessible(const Access accessee, const Access accesser);
+String *Access_Literalise(const Access access);
 
 #endif  /* COMPOUND_ACCESS_H */

@@ -76,4 +76,14 @@ boolean Destructor_Equals(Destructor *const obj1, Destructor *const obj2)
          Equals(Method, obj1->method, obj2->method);
 }
 
+String *Destructor_Literalise(Destructor *const inst, boolean need_body)
+{
+  if (!inst) {
+    return null;
+  }
+
+  return lit(Method, inst->method, need_body);
+}
+
 IMPL_ARRAY(Destructor)
+IMPL_ARRAY_LITERALISE_CONFIGS(Destructor, need_body, boolean need_body)

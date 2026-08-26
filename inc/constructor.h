@@ -27,12 +27,13 @@
 typedef struct Constructor Constructor;
 
 ARRAY(Constructor)
+LITERALISE_ARGS(Constructor, boolean need_body)
 
-# define _constructor(super, access_literal, block, ...)        \
-  Create(Constructor, super, method(access_literal, Class *, Constructor, body(block), __VA_ARGS__))
+# define _constructor(class_identifier_literal, super, access_literal, block, ...)        \
+  Create(Constructor, super, method(class_identifier_literal, access_literal, Class *, Constructor, block, __VA_ARGS__))
 
-# define constructor(access_literal, block, ...)                               \
-  _constructor(null, access_literal, block, __VA_ARGS__)
+# define constructor(class_identifier_literal, access_literal, block, ...)                               \
+  _constructor(class_identifier_literal, null, access_literal, block, __VA_ARGS__)
 
 Constructor *Constructor_Create(Constructor *const super, Method *const method);
 Constructor *Constructor_CopyOf(Constructor *const other);

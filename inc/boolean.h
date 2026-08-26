@@ -34,6 +34,8 @@ typedef unsigned char boolean;
 #  define _Bool boolean
 #  define false 0
 #  define true 1
+#  define no  false
+#  define yes  true
 # else
 typedef _Bool boolean;
 

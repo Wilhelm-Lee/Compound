@@ -92,16 +92,13 @@ boolean Signature_Equals(
          Equals(Array(Parameter), obj1->parameters, obj2->parameters, NULL);
 }
 
-String *Signature_Literalise(const Signature *const inst)
+String *Signature_Literalise(Signature *const inst, boolean need_identifier)
 {
   if (!inst) {
     return null;
   }
 
-  char *const flatten_returning = flatten(char, inst->returning);
-  char *const flatten_identifier = flatten(char, inst->identifier);
-
-  String *format = format("%s %s", flatten_returning, flatten_identifier);
+  String *format = append(inst->returning, inst->identifier);
   if (inst->parameters) {
     format = concat(format, string("("));
   }
@@ -110,16 +107,7 @@ String *Signature_Literalise(const Signature *const inst)
       break;
     }
 
-    String *lit = lit(Parameter, param);
-    if (!lit) {
-      Delete(String, format);
-      Deallocate(flatten_identifier);
-      Deallocate(flatten_returning);
-      return null;
-    }
-
-    format = concat(format, lit);
-    format = concat(format, string(", "));
+    format = append(format, lit(Parameter, param,need_identifier),string(", "));
   })
 
   if (inst->parameters) {
@@ -127,23 +115,14 @@ String *Signature_Literalise(const Signature *const inst)
     format = replace(&format, string(", )"), string(")"), 0);
   }
 
-  Deallocate(flatten_identifier);
-  Deallocate(flatten_returning);
+  format = replace(&format, string("* "), string("*"), 0);
 
   return format;
 }
 
-void Signature_Recreate(FILE *const fp, const Signature *const inst)
-{
-  if (!inst || !fp) {
-    return;
-  }
-
-  String *const lit = lit(Signature, inst);
-  char *const flatten = flatten(char, lit);
-
-  fprintf(fp, "%s", flatten);
-
-  Deallocate(flatten);
-  Delete(String, lit);
-}
+IMPL_ARRAY(Signature)
+IMPL_ARRAY_LITERALISE_CONFIGS(
+  Signature,
+  need_identifier,
+  boolean need_identifier
+)

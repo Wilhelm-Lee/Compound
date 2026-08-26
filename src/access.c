@@ -34,3 +34,18 @@ inline boolean Access_IsAccessible(const Access accessee, const Access accesser)
   /* Protected. */
   return accessee == accesser;
 }
+
+String *Access_Literalise(const Access access)
+{
+  switch (access) {
+  case ACCESS_PUBLIC:
+    return string("public");
+    break;
+  case ACCESS_PROTECTED:
+    return string("protected");
+    break;
+  default:
+    return string("private");
+    break;
+  }
+}

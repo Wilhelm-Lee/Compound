@@ -76,4 +76,14 @@ boolean Constructor_Equals(Constructor *const obj1, Constructor *const obj2)
          Equals(Method, obj1->method, obj2->method);
 }
 
+String *Constructor_Literalise(Constructor *const inst, boolean need_body)
+{
+  if (!inst) {
+    return null;
+  }
+
+  return lit(Method, inst->method, need_body);
+}
+
 IMPL_ARRAY(Constructor)
+IMPL_ARRAY_LITERALISE_CONFIGS(Constructor, need_body, boolean need_body)

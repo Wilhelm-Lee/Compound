@@ -26,6 +26,9 @@
 
 typedef struct Signature Signature;
 
+ARRAY(Signature)
+LITERALISE_ARGS(Signature, boolean need_identifier)
+
 Signature *Signature_Create(
   String *const returning,
   String *const identifier,
@@ -37,8 +40,5 @@ boolean Signature_Equals(
   Signature *const obj1,
   Signature *const obj2
 );
-
-String *Signature_Literalise(const Signature *const inst);
-void Signature_Recreate(FILE *const fp, const Signature *const inst);
 
 #endif  /* COMPOUND_SIGNATURE_H */

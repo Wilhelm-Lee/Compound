@@ -79,36 +79,18 @@ boolean Function_Equals(Function *const obj1, Function *const obj2)
          Equals(Body, obj1->body, obj2->body);
 }
 
-String *Function_Literalise(const Function *const inst)
+String *Function_Literalise(Function *const inst, boolean need_body)
 {
   if (!inst) {
     return null;
   }
 
-  char *const flatten_signature = flatten(char, lit(Signature,inst->signature));
-  char *const flatten_body = flatten(char, lit(Body, inst->body));
-
-  String *result = format("%s %s", flatten_signature, flatten_body);
-
-  Deallocate(flatten_body);
-  Deallocate(flatten_signature);
-
-  return result;
-}
-
-void Function_Recreate(FILE *const fp, const Function *const inst)
-{
-  if (!inst || !fp) {
-    return;
+  if (!need_body) {
+    return concat(lit(Signature, inst->signature, yes), string(";"));
   }
 
-  String *const lit = lit(Function, inst);
-  char *const flatten = flatten(char, lit);
-
-  fprintf(fp, "%s", flatten);
-
-  Deallocate(flatten);
-  Delete(String, lit);
+  return concat(lit(Signature, inst->signature, yes), lit(Body, inst->body));
 }
 
 IMPL_ARRAY(Function)
+IMPL_ARRAY_LITERALISE_CONFIGS(Function, need_body, boolean need_body)
