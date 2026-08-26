@@ -194,7 +194,7 @@ String *Class_Literalise(
 
 String *_GenerateYearString(void)
 {
-  time_t timestamp = time(NULL);
+  int64_t timestamp = time(NULL);
   struct tm *timer = gmtime(&timestamp);
   char year[5];
   strftime(year, sizeof(year), "%Y", timer);
