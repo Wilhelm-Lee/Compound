@@ -22,8 +22,6 @@
 #ifndef COMPOUND_MATCH_H
 # define COMPOUND_MATCH_H
 
-# include <regex.h>
-
 # include "arrays_lit.h"
 # include "string.h"
 
