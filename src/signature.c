@@ -33,17 +33,17 @@ Signature *Signature_Create(
   Array(Parameter) *const parameters
 ) {
   if (!identifier) {
-    return NULL;
+    return null;
   }
 
   Signature *const inst = Allocate(1, sizeof(Signature));
   if (!inst) {
-    return NULL;
+    return null;
   }
 
   inst->returning = returning;
   inst->identifier = identifier;
-  inst->parameters = parameters;
+  inst->parameters = parameters ? parameters : noparam;
 
   return inst;
 }
@@ -51,14 +51,14 @@ Signature *Signature_Create(
 Signature *Signature_CopyOf(const Signature *const other)
 {
   if (!other) {
-    return NULL;
+    return null;
   }
 
   return Create(
     Signature,
-    other->returning,
-    other->identifier,
-    other->parameters
+    CopyOf(String, other->returning),
+    CopyOf(String, other->identifier),
+    CopyOf(Array(Parameter), other->parameters)
   );
 }
 
@@ -89,40 +89,98 @@ boolean Signature_Equals(
 
   return Equals(String, obj1->returning, obj2->returning) &&
          Equals(String, obj1->identifier, obj2->identifier) &&
-         Equals(Array(Parameter), obj1->parameters, obj2->parameters, NULL);
+         Equals(Array(Parameter), obj1->parameters, obj2->parameters, null);
 }
 
-String *Signature_Literalise(Signature *const inst, boolean need_identifier)
+String *Signature_Literalise(
+  Signature *const inst,
+  boolean need_returning,
+  boolean need_identifier,
+  boolean need_param_types,
+  boolean need_param_identifiers,
+  boolean need_parameters
+) {
+  if (!inst) {
+    return null;
+  }
+
+  String *lit = null;
+
+  if (need_returning) {
+    lit = append(inst->returning, string(" "));
+  }
+
+  if (need_identifier) {
+    lit = append(lit, inst->identifier);
+  }
+
+  if (need_parameters && inst->parameters) {
+    lit = append(
+      lit,
+      string("("),
+      lit(
+        Array(Parameter),
+        inst->parameters,
+        null,
+        string(", "),
+        null,
+        need_param_types,
+        need_param_identifiers
+      )
+    );
+
+    lit = Concat(String, lit, string(")"));
+    // lit = replace(lit, string(", )"), string(")"), 0);
+  }
+
+  if (!inst->parameters) {
+    lit = append(lit, string("(void)"));
+  }
+
+  lit = replace(lit, string("* "), string("*"), 0);
+  lit = replace(lit, string("()"), string("(void)"), 0);
+
+  return lit;
+}
+
+String *Signature_GetReturning(const Signature *const inst)
 {
   if (!inst) {
     return null;
   }
 
-  String *format = append(inst->returning, inst->identifier);
-  if (inst->parameters) {
-    format = concat(format, string("("));
-  }
-  refeach (Parameter, param, inst->parameters, {
-    if (!param) {
-      break;
-    }
+  return inst->returning;
+}
 
-    format = append(format, lit(Parameter, param,need_identifier),string(", "));
-  })
-
-  if (inst->parameters) {
-    format = concat(format, string(")"));
-    format = replace(&format, string(", )"), string(")"), 0);
+String *Signature_GetIdentifier(const Signature *const inst)
+{
+  if (!inst) {
+    return null;
   }
 
-  format = replace(&format, string("* "), string("*"), 0);
+  return inst->identifier;
+}
 
-  return format;
+Array(Parameter) *Signature_GetParameters(Signature *const inst)
+{
+  if (!inst) {
+    return nll;
+  }
+
+  return inst->parameters;
 }
 
 IMPL_ARRAY(Signature)
 IMPL_ARRAY_LITERALISE_CONFIGS(
   Signature,
+  need_returning,
   need_identifier,
-  boolean need_identifier
+  need_param_types,
+  need_param_identifiers,
+  need_parameters,
+  boolean need_returning,
+  boolean need_identifier,
+  boolean need_param_types,
+  boolean need_param_identifiers,
+  boolean need_parameters
 )

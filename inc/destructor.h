@@ -27,17 +27,51 @@
 typedef struct Destructor Destructor;
 
 ARRAY(Destructor)
-LITERALISE_ARGS(Destructor, boolean need_body)
+LITERALISE_ARGS(
+  Destructor,
+  boolean need_returning,
+  boolean need_identifier,
+  boolean need_param_types,
+  boolean need_param_identifiers,
+  boolean need_parameters,
+  boolean need_body,
+  boolean need_semicolon
+)
 
-# define _destructor(class_identifier_literal, super, block, ...)                        \
-  Create(Destructor, super, method(class_identifier_literal, private, void, Destructor, block, __VA_ARGS__))
-
-# define destructor(class_identifier_literal, block)                                     \
-  _destructor(class_identifier_literal, null, block, null)
+# define destructor(                                                           \
+    ...                                                                        \
+  )                                                                            \
+  (call(                                                                       \
+    Class,                                                                     \
+    SetDestructor,                                                             \
+    this,                                                                      \
+    Create(                                                                    \
+      Destructor,                                                              \
+      null,                                                                    \
+      Create(                                                                  \
+        Method,                                                                \
+        ACCESS_PUBLIC,                                                         \
+        Create(                                                                \
+          Function,                                                            \
+          Create(                                                              \
+            Signature,                                                         \
+            string(nameof(void)),\
+            append(CLASS_IDENTIFIER_STR, string("_"), string(nameof(Destructor))),\
+            params_str(param_str(append(CLASS_IDENTIFIER_STR, string(" *const")), string(nameof(this))))\
+          ),                                                                   \
+          body(__VA_ARGS__)                                                    \
+        )                                                                      \
+      )                                                                        \
+    )                                                                          \
+  ));
 
 Destructor *Destructor_Create(Destructor *const super, Method *const method);
 Destructor *Destructor_CopyOf(Destructor *const other);
 void Destructor_Delete(Destructor *const inst);
 boolean Destructor_Equals(Destructor *const obj1, Destructor *const obj2);
+void Destructor_Inherit(Destructor *const inst, Destructor *const super);
+Destructor *Destructor_GetSuper(const Destructor *const inst);
+Method *Destructor_GetMethod(const Destructor *const inst);
+void Destructor_SetSuper(Destructor *const inst, Destructor *const super);
 
 #endif  /* COMPOUND_DESTRUCTOR_H */

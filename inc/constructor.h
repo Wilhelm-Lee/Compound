@@ -27,17 +27,52 @@
 typedef struct Constructor Constructor;
 
 ARRAY(Constructor)
-LITERALISE_ARGS(Constructor, boolean need_body)
+LITERALISE_ARGS(
+  Constructor,
+  boolean need_returning,
+  boolean need_identifier,
+  boolean need_param_types,
+  boolean need_param_identifiers,
+  boolean need_parameters,
+  boolean need_body,
+  boolean need_semicolon
+)
 
-# define _constructor(class_identifier_literal, super, access_literal, block, ...)        \
-  Create(Constructor, super, method(class_identifier_literal, access_literal, Class *, Constructor, block, __VA_ARGS__))
-
-# define constructor(class_identifier_literal, access_literal, block, ...)                               \
-  _constructor(class_identifier_literal, null, access_literal, block, __VA_ARGS__)
+# define constructor(                                                          \
+    param_clusters,                                                            \
+    ...                                                                        \
+  )                                                                            \
+  (call(                                                                       \
+    Class,                                                                     \
+    SetConstructor,                                                            \
+    this,                                                                      \
+    Create(                                                                    \
+      Constructor,                                                             \
+      null,                                                                    \
+      Create(                                                                  \
+        Method,                                                                \
+        ACCESS_PUBLIC,                                                         \
+        Create(                                                                \
+          Function,                                                            \
+          Create(                                                              \
+            Signature,                                                         \
+            append(CLASS_IDENTIFIER_STR, string(" *")),                        \
+            append(CLASS_IDENTIFIER_STR, string("_"), string(nameof(Create))), \
+            param_clusters                                                     \
+          ),                                                                   \
+          body(__VA_ARGS__)                                                    \
+        )                                                                      \
+      )                                                                        \
+    )                                                                          \
+  ));
 
 Constructor *Constructor_Create(Constructor *const super, Method *const method);
 Constructor *Constructor_CopyOf(Constructor *const other);
 void Constructor_Delete(Constructor *const inst);
 boolean Constructor_Equals(Constructor *const obj1, Constructor *const obj2);
+void Constructor_Inherit(Constructor *const inst, Constructor *const super);
+Constructor *Constructor_GetSuper(const Constructor *const inst);
+Method *Constructor_GetMethod(const Constructor *const inst);
+void Constructor_SetSuper(Constructor *const inst, Constructor *const super);
 
 #endif  /* COMPOUND_CONSTRUCTOR_H */

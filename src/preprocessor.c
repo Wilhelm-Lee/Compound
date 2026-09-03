@@ -85,23 +85,24 @@ String *Preprocessor_Literalise(Preprocessor *const inst)
     return null;
   }
 
-  char *const flatten_identifier = flatten(char, inst->identifier);
-  char *const flatten_args = flatten(
-    char,
+  String *const str_space = string(" ");
+
+  /* Preprocessors require a NEWLINE at the end. */
+  String *result = append(
+    string("#"),
+    inst->identifier,
+    str_space,
     lit(
       Array(String),
       inst->args,
       null,
-      null,
+      str_space,
       null
-    )
-  );
+    ),
+    string(NEWLINE)
+);
 
-  /* Preprocessors require a NEWLINE at the end. */
-  String *result = format("#%s %s"NEWLINE, flatten_identifier, flatten_args);
-
-  Deallocate(flatten_args);
-  Deallocate(flatten_identifier);
+  Delete(String, str_space);
 
   return result;
 }

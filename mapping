@@ -1,0 +1,2 @@
+invoke(${MethodIdentifier}, ${Parameters}) $= @{CLASS_IDENTIFIER_STR}_${MethodIdentifier}(${Parameters})
+of(${ClassInstance}, ${FieldIdentifier}) $= ${ClassInstance}->${FieldIdentifier}

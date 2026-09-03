@@ -31,12 +31,12 @@ Function *Function_Create(
   Body *const body
 ) {
   if (!signature || !body) {
-    return NULL;
+    return null;
   }
 
   Function *const inst = Allocate(1, sizeof(Function));
   if (!inst) {
-    return NULL;
+    return null;
   }
 
   inst->signature = signature;
@@ -48,10 +48,14 @@ Function *Function_Create(
 Function *Function_CopyOf(const Function *const other)
 {
   if (!other) {
-    return NULL;
+    return null;
   }
 
-  return Create(Function, other->signature, other->body);
+  return Create(
+    Function,
+    CopyOf(Signature, other->signature),
+    CopyOf(Body, other->body)
+  );
 }
 
 void Function_Delete(Function *const inst)
@@ -79,18 +83,75 @@ boolean Function_Equals(Function *const obj1, Function *const obj2)
          Equals(Body, obj1->body, obj2->body);
 }
 
-String *Function_Literalise(Function *const inst, boolean need_body)
+String *Function_Literalise(
+  Function *const inst,
+  boolean need_returning,
+  boolean need_identifier,
+  boolean need_param_types,
+  boolean need_param_identifiers,
+  boolean need_parameters,
+  boolean need_body,
+  boolean need_semicolon
+) {
+  if (!inst) {
+    return null;
+  }
+
+  String *lit = lit(
+    Signature,
+    inst->signature,
+    need_returning,
+    need_identifier,
+    need_param_types,
+    need_param_identifiers,
+    need_parameters
+  );
+
+  if (need_body) {
+    lit = append(lit, lit(Body, inst->body));
+    return lit;
+  }
+
+  if (need_semicolon) {
+    lit = append(lit, string(";"), string(NL));
+  }
+
+  return lit;
+}
+
+Signature *Function_GetSignature(const Function *const inst)
 {
   if (!inst) {
     return null;
   }
 
-  if (!need_body) {
-    return concat(lit(Signature, inst->signature, yes), string(";"));
+  return inst->signature;
+}
+
+Body *Function_GetBody(const Function *const inst)
+{
+  if (!inst) {
+    return null;
   }
 
-  return concat(lit(Signature, inst->signature, yes), lit(Body, inst->body));
+  return inst->body;
 }
 
 IMPL_ARRAY(Function)
-IMPL_ARRAY_LITERALISE_CONFIGS(Function, need_body, boolean need_body)
+IMPL_ARRAY_LITERALISE_CONFIGS(
+  Function,
+  need_returning,
+  need_identifier,
+  need_param_types,
+  need_param_identifiers,
+  need_parameters,
+  need_body,
+  need_semicolon,
+  boolean need_returning,
+  boolean need_identifier,
+  boolean need_param_types,
+  boolean need_param_identifiers,
+  boolean need_parameters,
+  boolean need_body,
+  boolean need_semicolon
+)

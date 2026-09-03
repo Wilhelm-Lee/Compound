@@ -17,35 +17,26 @@
  * <https://www.gnu.org/licenses/>.
  */
 
-/** @file init.h */
+/** @file match.h */
 
-#ifndef COMPOUND_INIT_H
-# define COMPOUND_INIT_H
+#ifndef COMPOUND_MATCH_H
+# define COMPOUND_MATCH_H
 
-# include "language.h"
-# include "memory_stack.h"
+# include <regex.h>
+
+# include "arrays_lit.h"
 # include "string.h"
 
-# ifdef __COMPOUND_FEATURE_STATUS__
-void InitialiseStatusStack(Stack(Status) **const instptr);
-void DeinitialiseStatusStack(Stack(Status) **const instptr);
-# endif
+typedef struct Match Match;
 
-# ifdef __COMPOUND_FEATURE_RECYCLER__
-void InitialiseMemoryStack(MemoryStack *const inst);
-void DeinitialiseMemoryStack(MemoryStack *const inst);
-# endif
+ARRAY(Match)
+LITERALISE(Match)
 
-int InitialiseMain(
-  const int argc,
-  const char *const *restrict const argv,
-  const char *const *restrict const envp,
-  Array(String) **const args,
-  Array(String) **const envs
-);
-int DeinitialiseMain(
-  Array(String) **const args,
-  Array(String) **const envs
-);
+Match *Match_Create(Array(llong) *const bounds);
+Match *Match_CopyOf(Match *const other);
+void Match_Delete(Match *const inst);
+boolean Match_Equals(Match *const obj1, Match *const obj2);
+llong Match_GetStart(const Match *const inst, const llong group_idx);
+llong Match_GetEnd(const Match *const inst, const llong group_idx);
 
-#endif  /* COMPOUND_INIT_H */
+#endif  /* COMPOUND_MATCH_H */

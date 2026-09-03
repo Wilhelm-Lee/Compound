@@ -30,6 +30,8 @@ struct Class {
   Array(Method) *methods;
   Constructor *constructor;
   Destructor *destructor;
+  Method *Equals;
+  Method *Literalise;
 };
 
 Class *Class_Create(
@@ -39,7 +41,9 @@ Class *Class_Create(
   Array(Field) *const fields,
   Array(Method) *const methods,
   Constructor *const constructor,
-  Destructor *const destructor
+  Destructor *const destructor,
+  Method *const Equals,
+  Method *const Literalise
 ) {
   if (!identifier || blank(identifier)) {
     return null;
@@ -50,14 +54,61 @@ Class *Class_Create(
     return null;
   }
 
+  String *const CLASS_IDENTIFIER_STR = CopyOf(String, identifier);
+
   inst->access = access;
   inst->identifier = identifier;
   inst->super = super;
   inst->this = inst;
-  inst->methods = methods;
-  inst->fields = fields;
+  inst->fields = fields ? fields : array(Field, 0);
+  inst->methods = methods ? methods : array(Method, 0);
   inst->constructor = constructor;
   inst->destructor = destructor;
+  inst->Equals = Equals ? Equals : Create(
+    Method,
+    ACCESS_PUBLIC,
+    inst->identifier,
+    Create(
+      Function,
+      Create(
+        Signature,
+        string("boolean"),
+        string("Equals"),
+        params_str(
+          param_str(append(inst->identifier, string(" *")), string("this")),
+          params_str(append(inst->identifier, string(" *")), string("other"))
+        )
+      ),
+      Create(
+        Body,
+        null,
+        append(string("return Equals("), inst->identifier, string(", this, other);"))
+      )
+    )
+  );
+  inst->Literalise = Literalise ? Literalise : Create(
+    Method,
+    ACCESS_PUBLIC,
+    inst->identifier,
+    Create(
+      Function,
+      Create(
+        Signature,
+        string("boolean"),
+        string("Literalise"),
+        params_str(
+          param_str(append(inst->identifier, string(" *")), string("this"))
+        )
+      ),
+      Create(
+        Body,
+        null,
+        append(string("return lit("), inst->identifier, string(", this);"))
+      )
+    )
+  );
+
+  Delete(String, CLASS_IDENTIFIER_STR);
 
   return inst;
 }
@@ -65,20 +116,6 @@ Class *Class_Create(
 Class *Class_CopyOf(Class *const other)
 {
   if (!other) {
-    return NULL;
-  }
-
-  Class *const inst = Create(
-    Class,
-    other->access,
-    other->identifier,
-    other->super,
-    other->fields,
-    other->methods,
-    other->constructor,
-    other->destructor
-  );
-  if (!inst) {
     return null;
   }
 
@@ -94,7 +131,21 @@ Class *Class_CopyOf(Class *const other)
    * With that said, Equals is recognising the @identifier for comparison over
    * the equality check on @name.
    */
-  inst->identifier = concat(inst->identifier, string(" copy"));
+  Class *const inst = Create(
+    Class,
+    other->access,
+    Concat(String, other->identifier, string(" copy")),
+    CopyOf(Class, other->super),
+    CopyOf(Array(Field), other->fields),
+    CopyOf(Array(Method), other->methods),
+    CopyOf(Constructor, other->constructor),
+    CopyOf(Destructor, other->destructor),
+    CopyOf(Method, other->Equals),
+    CopyOf(Method, other->Literalise)
+  );
+  if (!inst) {
+    return null;
+  }
 
   return inst;
 }
@@ -112,6 +163,8 @@ void Class_Delete(Class *const inst)
   Delete(Destructor, inst->destructor);
   erase(Array(Field), inst->fields);
   Delete(Array(Field), inst->fields);
+  Delete(Method, inst->Equals);
+  Delete(Method, inst->Literalise);
   Deallocate(inst);
 }
 
@@ -131,6 +184,166 @@ boolean Class_Equals(const Class *const obj1, const Class *const obj2)
     Equals(Array(Method), obj1->methods, obj2->methods, Method_Equals);
 }
 
+String *_Class_GenerateTypedef(Class *const inst)
+{
+  if (!inst) {
+    return nll;
+  }
+
+  return append(
+    string("typedef struct "),
+    inst->identifier,
+    string(" "),
+    inst->identifier,
+    string(";"),
+    string(NL)
+  );
+}
+
+String *_Class_GenerateArrayDeclarations(Class *const inst)
+{
+  return append(string("ARRAY("), inst->identifier, string(")"NL));
+}
+
+String *_Class_GenerateStruct(Class *const inst)
+{
+  String *const indent = string("  ");
+  String *const newline = string(NL);
+
+  String *lit = append(
+    string("struct "),
+    inst->identifier,
+    string(" {"NL),
+    lit(
+      Array(Field),
+      inst->fields,
+      indent,
+      Concat(String, newline, indent),
+      newline,
+      no,
+      yes
+    ),
+    string("};"NL)
+  );
+
+  Delete(String, newline);
+  Delete(String, indent);
+
+  return lit;
+}
+
+String *_Class_GenerateObjectEssentialDeclarations(Class *const inst)
+{
+  String *const indent = string("  ");
+  String *const newline = string(NL);
+
+  String *lit = append(
+    inst->identifier, string(" *"), inst->identifier, string("_Create"), lit(Constructor, inst->constructor, no, no, yes, yes, yes, no, no), string(";"NL),
+    inst->identifier, string(" *"), inst->identifier, string("_CopyOf("), inst->identifier, string(" *const other);"NL),
+    string("void "), inst->identifier, string("_Delete("), inst->identifier, string(" *const this);"NL),
+    string("boolean "), inst->identifier, string("_Equals("), inst->identifier, string(" *const obj1, "), inst->identifier, string(" *const obj2);"NL),
+    string("String *"), inst->identifier, string("_Literalise("), inst->identifier, string(" *const inst);"NL),
+    newline
+  );
+
+  Delete(String, newline);
+  Delete(String, indent);
+
+  return lit;
+}
+
+String *_Class_GenerateObjectEssentialImplementations(Class *const inst)
+{
+  String *const indent = string("  ");
+  String *const newline = string(NL);
+
+  /* Extract constructor parameters safely */
+  Array(Parameter) *constructor_params = Getter(
+    Signature, Parameters,
+    Getter(
+      Function, Signature,
+      Getter(
+        Method, Function,
+        Getter(Constructor, Method, inst->constructor)
+      )
+    )
+  );
+
+  String *lit = append(
+    inst->identifier, string(" *"), inst->identifier, string("_Create"), lit(Constructor, inst->constructor, no, no, yes, yes, yes, no, no), newline,
+    string("{"NL),
+    string("  "), inst->identifier, string(" *const this = Allocate(1, sizeof("), inst->identifier, string("));"NL),
+    string("  if (!this) {"NL),
+    string("    return nll;"NL),
+    string("  }"NL),
+    newline,
+    string("  "), lit(Constructor, inst->constructor, no, no, no, no, no, yes, no), newline,
+    string("}"NL),
+    newline,
+    string(""), inst->identifier, string(" *"), inst->identifier, string("_CopyOf("), inst->identifier, string(" *const other)"NL),
+    string("{"NL),
+    string("  if (!other) {"NL),
+    string("    return nll;"NL),
+    string("  }"NL),
+    newline,
+    string("  return Create("), inst->identifier, string(", "), lit(Array(Parameter), constructor_params, string("other->"), string(", other->"), nll, no, yes), string(");"NL),
+    string("}"NL),
+    newline,
+    string("void "), inst->identifier, string("_Delete("), inst->identifier, string(" *const this)"NL),
+    string("{"NL),
+    string("  if (!this) {"NL),
+    string("    return;"NL),
+    string("  }"NL),
+    string("  "), lit(Destructor, inst->destructor, no, no, no, no, no, yes, no), newline,
+    newline,
+    string("  Deallocate(this);"NL),
+    string("}"NL),
+    newline,
+    string("boolean "), inst->identifier, string("_Equals("), inst->identifier, string(" *const this, "), inst->identifier, string(" *const other)"NL),
+    string("{"NL),
+    string("  if (!this || !other) {"NL),
+    string("    return false;"NL),
+    string("  }"NL),
+    newline,
+    string("  if (this == other) {"NL),
+    string("    return true;"NL),
+    string("  }"NL),
+    string(""NL),
+    string("  "), lit(Method, inst->Equals, no, no, no, no, no, yes, no), newline,
+    string("}"NL),
+    newline,
+    string("String *"), inst->identifier, string("_Literalise("), inst->identifier, string(" *const this)"NL),
+    string("{"NL),
+    string("  if (!this) {"NL),
+    string("    return nll;"NL),
+    string("  }"NL),
+    string(""NL),
+    string("  "), lit(Method, inst->Literalise, no, no, no, no, no, yes, no), newline,
+    string("}"NL),
+    newline
+  );
+
+  Delete(String, newline);
+  Delete(String, indent);
+
+  return lit;
+}
+
+static inline String *_Class_GenerateArrayImplementations(Class *const inst)
+{
+  return append(string("IMPL_ARRAY("), inst->identifier, string(")"), string(NL));
+}
+
+static inline String *_Class_GenerateMethodDeclarations(Class *const inst)
+{
+  return lit(Array(Method), inst->methods, nll, string(NL), nll, yes, yes, yes, yes, yes, no, yes);
+}
+
+static inline String *_Class_GenerateMethodImplementations(Class *const inst)
+{
+  return lit(Array(Method), inst->methods, nll, string(NL), nll, yes, yes, yes, yes, yes, yes, no);
+}
+
 String *Class_Literalise(
   Class *const inst,
   boolean want_fancy,
@@ -140,61 +353,43 @@ String *Class_Literalise(
     return null;
   }
 
-  String *const str_NEWLINE = string(NEWLINE);
   String *const str_indent = string("  ");
   String *const str_comma_space = string(", ");
+  String *const str_semicolon = string(";");
 
   String *lit = null;
 
   if (want_fancy) {
     return string("fancy");
-  } else {
+  }
+
+  lit = append(
+    _Class_GenerateTypedef(inst),
+    _Class_GenerateArrayDeclarations(inst),
+    _Class_GenerateStruct(inst),
+    _Class_GenerateObjectEssentialDeclarations(inst),
+    _Class_GenerateMethodDeclarations(inst)
+  );
+
+  if (need_member_definition) {
     lit = append(
-      string("Class *"),
-      inst->identifier,
-      string(" = class("),
-      lit(Access, inst->access),
-      str_comma_space,
-      inst->identifier,
-      str_comma_space,
-      string("{"),
-      append(
-        lit(Array(Field), inst->fields, null, null, str_NEWLINE, need_member_definition, yes),
-        lit(Array(Method), inst->methods, null, str_NEWLINE, null, need_member_definition),
-        lit(Constructor, inst->constructor, need_member_definition),
-        lit(Destructor, inst->destructor, need_member_definition)
-      ),
-      string("});")
+      lit,
+      _Class_GenerateObjectEssentialImplementations(inst),
+      _Class_GenerateArrayImplementations(inst),
+      _Class_GenerateMethodImplementations(inst)
     );
   }
 
-  // String *ret = append(lit(Access, inst->access), string(" "),inst->identifier);
-
-  // if (inst->super) {
-  //   ret = append(string(" : "), inst->super->identifier);
-  // }
-
-
-  // ret = append(
-  //   ret,
-  //   string(" {"NEWLINE),
-  //   str_indent, lit(Array(Field), inst->fields, null, null, null), str_NEWLINE,
-  //   str_indent, lit(Array(Method), inst->methods, null, null, null),str_NEWLINE,
-  //   str_indent, lit(Constructor, inst->constructor), str_NEWLINE,
-  //   str_indent, lit(Destructor, inst->destructor), str_NEWLINE,
-  //   string("}")
-  // );
-
+  Delete(String, str_semicolon);
   Delete(String, str_comma_space);
   Delete(String, str_indent);
-  Delete(String, str_NEWLINE);
 
   return lit;
 }
 
 String *_GenerateYearString(void)
 {
-  time_t timestamp = time(NULL);
+  time_t timestamp = time(null);
   struct tm *timer = gmtime(&timestamp);
   char year[5];
   strftime(year, sizeof(year), "%Y", timer);
@@ -260,9 +455,9 @@ String *_GenerateHeaderContent(Class *const inst)
     identifier_cstr,
     identifier_cstr,
     identifier_cstr,
-    flatten(char, lit(Array(Method), inst->methods, null, null, null, no)),
-    flatten(char, lit(Constructor, inst->constructor, no)),
-    flatten(char, lit(Destructor, inst->destructor, no)),
+    flatten(char, lit(Array(Method), inst->methods, null, null, null, yes, yes, yes, yes, yes, no, no)),
+    flatten(char, lit(Constructor, inst->constructor, yes, yes, yes, yes, yes, no, no)),
+    flatten(char, lit(Destructor, inst->destructor, yes, yes, yes, yes, yes, no, no)),
     identifier_cstr
   );
 
@@ -277,9 +472,9 @@ String *_GenerateSourceContent(Class *const inst)
     return null;
   }
 
-  return concat(
+  return Concat(String,
     _GenerateLicenseBanner(),
-    lit(Array(Method), inst->methods, null, string(NEWLINE), null, yes)
+    lit(Array(Method), inst->methods, null, string(NEWLINE), null, yes, yes, yes, yes, yes, yes, no)
   );
 }
 
@@ -293,7 +488,7 @@ boolean _Class_RecreateHeader(FILE *const header, Class *const inst)
     header,
     "%s",
     flatten(
-      char, concat(_GenerateLicenseBanner(), _GenerateHeaderContent(inst))
+      char, Concat(String, _GenerateLicenseBanner(), _GenerateHeaderContent(inst))
     )
   );
 }
@@ -308,7 +503,7 @@ boolean _Class_RecreateSource(FILE *const header, Class *const inst)
     header,
     "%s",
     flatten(
-      char, concat(_GenerateLicenseBanner(), _GenerateSourceContent(inst))
+      char, Concat(String, _GenerateLicenseBanner(), _GenerateSourceContent(inst))
     )
   );
 }
@@ -324,6 +519,102 @@ boolean Class_Recreate(
 
   return _Class_RecreateHeader(header, inst) &&
          _Class_RecreateSource(source, inst);
+}
+
+Class *Class_AddField(Class *const inst, Field *const field)
+{
+  if (!inst || !field) {
+    return inst;
+  }
+
+  inst->fields = call(Array(Field), Insert, inst->fields, -1, field);
+  _Field_SetNumericalIdentifier(
+    ref(Array(Field), inst->fields, -1),
+    Length(Array(Field), inst->fields) - 1
+  );
+
+  return inst;
+}
+
+Class *Class_AddMethod(Class *const inst, Method *const method)
+{
+  if (!inst || !method) {
+    return inst;
+  }
+
+  inst->methods = call(Array(Method), Insert, inst->methods, -1, method);
+
+  return inst;
+}
+
+void Class_Inherit(Class *const inst, Class *const super)
+{
+  if (!inst || !super) {
+    ret;
+  }
+
+  inst->super = super;
+  inst->fields = Append(Array(Field), inst->fields, super->fields);
+  inst->methods = Append(Array(Method), inst->methods, super->methods);
+  fout(stderr, lit(Array(Method), inst->methods, nll, string(NL), string(NL), yes, yes, yes, yes, yes, yes, yes));
+  call(Constructor, Inherit, inst->constructor, super->constructor);
+  call(Destructor, Inherit, inst->destructor, super->destructor);
+}
+
+inline void Class_SetConstructor(Class *const inst, Constructor *const constructor)
+{
+  if (!inst) {
+    return;
+  }
+
+  Delete(Constructor, inst->constructor);
+
+  inst->constructor = constructor;
+}
+
+inline void Class_SetDestructor(Class *const inst, Destructor *const destructor)
+{
+  if (!inst) {
+    return;
+  }
+
+  Delete(Destructor, inst->destructor);
+
+  inst->destructor = destructor;
+}
+
+Field *Class_GetFieldByIdentifier(
+  Class *const inst,
+  String *const field_identifier
+) {
+  if (!inst) {
+    return nll;
+  }
+
+  refeach (Field, field, inst->fields, {
+    if (Equals(String, field_identifier, Getter(Field, Identifier, field))) {
+      return field;
+    }
+  })
+
+  return nll;
+}
+
+Method *Class_GetMethodByIdentifier(
+  Class *const inst,
+  String *const method_identifier
+) {
+  if (!inst) {
+    return nll;
+  }
+
+  refeach (Method, field, inst->fields, {
+    if (Equals(String, method_identifier, Getter(Method, Identifier, field))) {
+      return field;
+    }
+  })
+
+  return nll;
 }
 
 IMPL_ARRAY(Class)

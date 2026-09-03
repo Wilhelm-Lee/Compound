@@ -56,23 +56,25 @@
 # define transfer(type, inst_array_ptr, src_array_ptr)                         \
   (call(type, Transfer, (inst_array_ptr), (src_array_ptr)))
 
-# define iterate(type, it, array_ptr, block)                                   \
+# define iterate(elem_type, it, array_ptr, ...)                                \
   {                                                                            \
-    type *const __iterate_array_ptr_##it = (type *const)(array_ptr);           \
-    const llong __iterate_capacity_##it = CONCAT(type, _GetCapacity)(          \
+    Array(elem_type) *const __iterate_array_ptr_##it =                         \
+      (Array(elem_type) *const)(array_ptr);                                    \
+    const llong __iterate_capacity_##it =                                      \
+      CONCAT(Array(elem_type), _GetCapacity)(                                  \
       __iterate_array_ptr_##it                                                 \
     );                                                                         \
     loop (it, __iterate_capacity_##it)                                         \
-      block                                                                    \
+      __VA_ARGS__                                                              \
   }
 
-# define foreach(elem_type, it, array_ptr, block)                              \
+# define foreach(elem_type, it, array_ptr, ...)                                \
   {                                                                            \
     Array(elem_type) *const _foreach_array_ptr_##it =                          \
       (Array(elem_type) *const)(array_ptr);                                    \
     elem_type it = (elem_type)EMPTY;                                           \
     iterate (                                                                  \
-      Array(elem_type),                                                        \
+      elem_type,                                                               \
       _foreach_idx_##it,                                                       \
       (_foreach_array_ptr_##it),                                               \
       {                                                                        \
@@ -81,21 +83,21 @@
           (_foreach_array_ptr_##it),                                           \
           _foreach_idx_##it                                                    \
         );                                                                     \
-        block                                                                  \
+        __VA_ARGS__                                                            \
       }                                                                        \
     )                                                                          \
   }
 
-# define refeach(elem_type, it, array_ptr, block)                              \
-  _refeach_type(elem_type, elem_type, it, array_ptr, block)
+# define refeach(elem_type, it, array_ptr, ...)                                \
+  _refeach_type(elem_type, elem_type, it, array_ptr, __VA_ARGS__)
 
-# define _refeach_type(elem_type, nickname, it, array_ptr, block)              \
+# define _refeach_type(elem_type, nickname, it, array_ptr, ...)                \
   {                                                                            \
     Array(nickname) *const __refeach_array_ptr_##it =                          \
       (Array(nickname) *const)(array_ptr);                                     \
-    elem_type *it = NULL;                                                      \
+    elem_type *it = null;                                                      \
     iterate (                                                                  \
-      Array(nickname),                                                         \
+      nickname,                                                                \
       _refeach_idx_##it,                                                       \
       (__refeach_array_ptr_##it),                                              \
       {                                                                        \
@@ -104,21 +106,21 @@
           (__refeach_array_ptr_##it),                                          \
           _refeach_idx_##it                                                    \
         );                                                                     \
-        block                                                                  \
+        __VA_ARGS__                                                            \
       }                                                                        \
     )                                                                          \
   }
 
-# define refrefeach(elem_type, it, array_ptr, block)                           \
-  _refrefeach_type(elem_type, elem_type, it, array_ptr, block)
+# define refrefeach(elem_type, it, array_ptr, ...)                             \
+  _refrefeach_type(elem_type, elem_type, it, array_ptr, __VA_ARGS__)
 
-# define _refrefeach_type(elem_type, nickname, it, array_ptr, block)           \
+# define _refrefeach_type(elem_type, nickname, it, array_ptr, ...)             \
   {                                                                            \
     Array(nickname) *const __refrefeach_array_ptr_##it =                       \
       (Array(nickname) *const)(array_ptr);                                     \
-    elem_type **it = NULL;                                                     \
+    elem_type **it = null;                                                     \
     iterate (                                                                  \
-      Array(nickname),                                                         \
+      nickname,                                                                \
       _refrefeach_idx_##it,                                                    \
       (__refrefeach_array_ptr_##it),                                           \
       {                                                                        \
@@ -127,7 +129,7 @@
           (__refrefeach_array_ptr_##it),                                       \
           _refrefeach_idx_##it                                                 \
         );                                                                     \
-        block                                                                  \
+        __VA_ARGS__                                                            \
       }                                                                        \
     )                                                                          \
   }
@@ -148,7 +150,7 @@
   (call(type, Resize, (array_ptr), (capacity)))
 
 # define grow(type, array_ptr)                                                 \
-  (resize(type, (array_ptr), (capacity(*(array_ptr)) * 1.5)))
+  (resize(type, (array_ptr), ((capacity(type, (array_ptr)) * 3) / 2) + 1))
 
 # define Array(elem_type)                                                      \
   elem_type##Array
@@ -356,6 +358,15 @@
       elem_type *const obj2                                                    \
     )                                                                          \
   );                                                                           \
+  Array(elem_type) *elem_type##Array_Concat(                                   \
+    Array(elem_type) *const inst,                                              \
+    Array(elem_type) *const other                                              \
+  );                                                                           \
+  Array(elem_type) *elem_type##Array_Append(                                   \
+    Array(elem_type) *const inst,                                              \
+    const llong arglen,                                                        \
+    ...                                                                        \
+  );                                                                           \
   elem_type **elem_type##Array_GetData(const Array(elem_type) *const inst);
 
 # define FUNC_ARRAY_BASICTYPE(elem_type)                                       \
@@ -393,7 +404,12 @@
       elem_type *const obj2                                                    \
     )                                                                          \
   );                                                                           \
-  nickname *nickname##Array_GetData(const Array(nickname) *const inst);
+  nickname *nickname##Array_GetData(const Array(nickname) *const inst);        \
+  Array(nickname) *nickname##Array_Append(                                     \
+    Array(nickname) *const inst,                                               \
+    const llong arglen,                                                        \
+    ...                                                                        \
+  );
 
 # define FUNC_ARRAY_COMMON(elem_type)                                          \
   FUNC_ARRAY_COMMON_NICKNAME(elem_type, elem_type)
@@ -439,7 +455,7 @@ inline elem_type *elem_type##Array_Ref(                                        \
   const llong index                                                            \
 ) {                                                                            \
   if (!inst || !isinbound(Array(elem_type), inst, index)) {                    \
-    return NULL;                                                               \
+    return null;                                                               \
   }                                                                            \
                                                                                \
   return (inst->data[offsetting(Array(elem_type), inst, index)]);              \
@@ -450,7 +466,7 @@ inline elem_type **elem_type##Array_RefRef(                                    \
   const llong index                                                            \
 ) {                                                                            \
   if (!inst || !isinbound(Array(elem_type), inst, index)) {                    \
-    return NULL;                                                               \
+    return null;                                                               \
   }                                                                            \
                                                                                \
   return &(inst->data[offsetting(Array(elem_type), inst, index)]);             \
@@ -461,7 +477,7 @@ inline elem_type *elem_type##Array_Get(                                        \
   const llong index                                                            \
 ) {                                                                            \
   if (!inst || !isinbound(Array(elem_type), inst, index)) {                    \
-    return NULL;                                                               \
+    return null;                                                               \
   }                                                                            \
                                                                                \
   return (inst->data[offsetting(Array(elem_type), inst, index)]);              \
@@ -482,12 +498,12 @@ inline void elem_type##Array_Set(                                              \
 Array(elem_type) *elem_type##Array_Clone(const Array(elem_type) *const other)  \
 {                                                                              \
   if (!other) {                                                                \
-    return NULL;                                                               \
+    return null;                                                               \
   }                                                                            \
                                                                                \
   Array(elem_type) *inst = Create(Array(elem_type), other->capacity);          \
   if (!inst) {                                                                 \
-    return NULL;                                                               \
+    return null;                                                               \
   }                                                                            \
                                                                                \
 /* llong interrupted = -1; */                                                  \
@@ -513,21 +529,57 @@ Array(elem_type) *elem_type##Array_Clone(const Array(elem_type) *const other)  \
   return inst;                                                                 \
 }                                                                              \
                                                                                \
+/* Insert before @index. */                                                    \
 Array(elem_type) *elem_type##Array_Insert(                                     \
   Array(elem_type) *const inst,                                                \
   const llong index,                                                           \
   elem_type *const value                                                       \
 ) {                                                                            \
   if (!inst) {                                                                 \
-    return NULL;                                                               \
-  }                                                                            \
-                                                                               \
-  if (index > inst->capacity) {                                                \
-    return NULL;                                                               \
+    return null;                                                               \
   }                                                                            \
                                                                                \
   if (!value) {                                                                \
     return inst;                                                               \
+  }                                                                            \
+                                                                               \
+  if (inst->reserved) {                                                        \
+    Array(elem_type) *newarr = Create(Array(elem_type), 1);                    \
+    if (!newarr) {                                                             \
+      return inst;                                                             \
+    }                                                                          \
+                                                                               \
+    Delete(Array(elem_type), inst);                                            \
+                                                                               \
+    set(Array(elem_type), newarr, 0, CopyOf(elem_type, value));                \
+                                                                               \
+    return newarr;                                                             \
+  }                                                                            \
+                                                                               \
+  /* Inserting a new element at the end, */                                    \
+  /* but the array only has one element in store. */                           \
+  /* This is a special case -- -1 doesn't bring you beyond to capacity */      \
+  /* -- it doesn't insert at the end -- it inserts before the only element. */ \
+  if (Length(Array(elem_type), inst) == 1 && index == -1) {                    \
+    Array(elem_type) *newarr = Create(Array(elem_type), 2);                    \
+    if (!newarr) {                                                             \
+      return inst;                                                             \
+    }                                                                          \
+                                                                               \
+    set(Array(elem_type), newarr, 0, get(Array(elem_type), inst, 0));          \
+    set(Array(elem_type), newarr, 1, CopyOf(elem_type, value));                \
+                                                                               \
+    Delete(Array(elem_type), inst);                                            \
+                                                                               \
+    return newarr;                                                             \
+  }                                                                            \
+                                                                               \
+  /* Normalize negative indices to an absolute logical index. */               \
+  const llong norm_idx = index >= 0 ? index : index + inst->capacity;          \
+                                                                               \
+  /* Bounds check against the normalized index. */                             \
+  if (norm_idx < 0 || norm_idx > inst->capacity) {                             \
+    return null;                                                               \
   }                                                                            \
                                                                                \
   Array(elem_type) *newarr = Create(Array(elem_type), inst->capacity + 1);     \
@@ -535,13 +587,25 @@ Array(elem_type) *elem_type##Array_Insert(                                     \
     return inst;                                                               \
   }                                                                            \
                                                                                \
-  const llong pivot = offsetting(Array(elem_type), newarr, index);             \
-  for (register llong i = 0; i < pivot; i++) {                                 \
-    newarr->data[i] = inst->data[i];                                           \
+  /* Preserve the exact state metadata. */                                     \
+  newarr->reversed = inst->reversed;                                           \
+                                                                               \
+  /* Copy elements BEFORE the insertion point via logical mapping. */          \
+  for (register llong i = 0; i < norm_idx; i++) {                              \
+    const llong src = offsetting(Array(elem_type), inst, i);                   \
+    const llong dst = offsetting(Array(elem_type), newarr, i);                 \
+    newarr->data[dst] = inst->data[src];                                       \
   }                                                                            \
+                                                                               \
+  /* Insert the new Object reference at its mapped physical pivot. */          \
+  const llong pivot = offsetting(Array(elem_type), newarr, norm_idx);          \
   newarr->data[pivot] = value;                                                 \
-  for (register llong i = pivot; i < inst->capacity; i++) {                    \
-    newarr->data[i + 1] = inst->data[i];                                       \
+                                                                               \
+  /* Copy elements AFTER the insertion point via logical mapping. */           \
+  for (register llong i = norm_idx; i < inst->capacity; i++) {                 \
+    const llong src = offsetting(Array(elem_type), inst, i);                   \
+    const llong dst = offsetting(Array(elem_type), newarr, i + 1);             \
+    newarr->data[dst] = inst->data[src];                                       \
   }                                                                            \
                                                                                \
   Delete(Array(elem_type), inst);                                              \
@@ -552,18 +616,18 @@ Array(elem_type) *elem_type##Array_Insert(                                     \
 Array(elem_type) *elem_type##Array_Create(const llong capacity)                \
 {                                                                              \
   if (capacity < 0) {                                                          \
-    return NULL;                                                               \
+    return null;                                                               \
   }                                                                            \
                                                                                \
   Array(elem_type) *inst = Allocate(1, sizeof(Array(elem_type)));              \
   if (!inst) {                                                                 \
-    return NULL;                                                               \
+    return null;                                                               \
   }                                                                            \
                                                                                \
   inst->data = Allocate(capacity, sizeof(elem_type *));                        \
   if (!inst->data) {                                                           \
     Deallocate(inst);                                                          \
-    return NULL;                                                               \
+    return null;                                                               \
   }                                                                            \
                                                                                \
   inst->capacity = capacity;                                                   \
@@ -576,19 +640,21 @@ Array(elem_type) *elem_type##Array_Create(const llong capacity)                \
 Array(elem_type) *elem_type##Array_CopyOf(const Array(elem_type) *const other) \
 {                                                                              \
   if (!other) {                                                                \
-    return NULL;                                                               \
+    return null;                                                               \
   }                                                                            \
                                                                                \
   Array(elem_type) *inst = Allocate(1, sizeof(Array(elem_type)));              \
   if (!inst) {                                                                 \
-    return NULL;                                                               \
+    return null;                                                               \
   }                                                                            \
                                                                                \
   inst->data = Allocate(other->capacity, sizeof(elem_type *));                 \
   if (!inst->data) {                                                           \
     Deallocate(inst);                                                          \
-    return NULL;                                                               \
+    return null;                                                               \
   }                                                                            \
+                                                                               \
+  memcpy(inst->data, other->data, sizeof(elem_type *) * other->capacity);      \
                                                                                \
   inst->capacity = other->capacity;                                            \
   inst->reserved = other->reserved;                                            \
@@ -624,7 +690,7 @@ Array(elem_type) *elem_type##Array_Fill(                                       \
   elem_type *value                                                             \
 ) {                                                                            \
   if (!inst) {                                                                 \
-    return NULL;                                                               \
+    return null;                                                               \
   }                                                                            \
                                                                                \
   refrefeach (elem_type, it, inst, {                                           \
@@ -675,10 +741,129 @@ inline boolean elem_type##Array_Equals(                                        \
   return true;                                                                 \
 }                                                                              \
                                                                                \
+Array(elem_type) *elem_type##Array_Concat(                                     \
+  Array(elem_type) *const inst,                                                \
+  Array(elem_type) *const other                                                \
+) {                                                                            \
+  if (!inst) {                                                                 \
+    return null;                                                               \
+  }                                                                            \
+                                                                               \
+  if (!other) {                                                                \
+    return inst;                                                               \
+  }                                                                            \
+                                                                               \
+  const llong instlen = Length(Array(elem_type), inst);                        \
+  const llong otherlen = Length(Array(elem_type), other);                      \
+                                                                               \
+  /* Returning inst when nothing is added is safe ownership transfer */        \
+  if (!otherlen) {                                                             \
+    return inst;                                                               \
+  }                                                                            \
+                                                                               \
+  const llong finallen = instlen + otherlen;                                   \
+  Array(elem_type) *const concat = array(elem_type, finallen);                 \
+  if (!concat) {                                                               \
+    return inst;                                                               \
+  }                                                                            \
+                                                                               \
+  register llong off = 0;                                                      \
+  register llong instoff = 0;                                                  \
+  register llong otheroff = 0;                                                 \
+  refrefeach (elem_type, elemptr, concat, {                                    \
+    if (!elemptr) {                                                            \
+      off++;                                                                   \
+      continue;                                                                \
+    }                                                                          \
+                                                                               \
+    if (off < instlen) {                                                       \
+      *elemptr = ref(Array(elem_type), inst, instoff);                         \
+      instoff++;                                                               \
+    } else {                                                                   \
+      *elemptr = ref(Array(elem_type), other, otheroff);                       \
+      otheroff++;                                                              \
+    }                                                                          \
+                                                                               \
+    off++;                                                                     \
+  })                                                                           \
+                                                                               \
+  Delete(Array(elem_type), inst);                                              \
+                                                                               \
+  return concat;                                                               \
+}                                                                              \
+                                                                               \
+Array(elem_type) *elem_type##Array_Append(                                     \
+  Array(elem_type) *const inst,                                                \
+  const llong arglen,                                                          \
+  ...                                                                          \
+) {                                                                            \
+  if (!arglen) {                                                               \
+    return inst;                                                               \
+  }                                                                            \
+                                                                               \
+  register llong total_length = inst ? Length(Array(elem_type), inst) : 0;     \
+                                                                               \
+  va_list ap;                                                                  \
+                                                                               \
+  /* Calculate the total exact memory footprint required. */                   \
+  va_start(ap, arglen);                                                        \
+  loop (i, arglen) {                                                           \
+    Array(elem_type) *const other = va_arg(ap, Array(elem_type) *);            \
+    total_length += other ? Length(Array(elem_type), other) : 0;               \
+  }                                                                            \
+  va_end(ap);                                                                  \
+                                                                               \
+  Array(elem_type) *const appended = array(elem_type, total_length);           \
+  if (!appended) {                                                             \
+    return inst;                                                               \
+  }                                                                            \
+                                                                               \
+  register llong write_idx = 0;                                                \
+                                                                               \
+  /* Write the original contents from @inst. */                                \
+  if (inst) {                                                                  \
+    const llong instlen = Length(Array(elem_type), inst);                      \
+    loop (i, instlen) {                                                        \
+      set(                                                                     \
+        Array(elem_type),                                                      \
+        appended,                                                              \
+        write_idx,                                                             \
+        get(Array(elem_type), inst, i)                                         \
+      );                                                                       \
+      write_idx++;                                                             \
+    }                                                                          \
+  }                                                                            \
+                                                                               \
+  /* Reboot the va_list and sequentially write all elements from @contents. */ \
+  va_start(ap, arglen);                                                        \
+  loop (i, arglen) {                                                           \
+    Array(elem_type) *const other = va_arg(ap, Array(elem_type) *);            \
+    if (!other) {                                                              \
+      continue;                                                                \
+    }                                                                          \
+                                                                               \
+    const llong otherlen = Length(Array(elem_type), other);                    \
+    loop (j, otherlen) {                                                       \
+      set(                                                                     \
+        Array(elem_type),                                                      \
+        appended,                                                              \
+        write_idx,                                                             \
+        get(Array(elem_type), other, j)                                        \
+      );                                                                       \
+      write_idx++;                                                             \
+    }                                                                          \
+  }                                                                            \
+  va_end(ap);                                                                  \
+                                                                               \
+  Delete(Array(elem_type), inst);                                              \
+                                                                               \
+  return appended;                                                             \
+}                                                                              \
+                                                                               \
 inline elem_type **elem_type##Array_GetData(const Array(elem_type) *const inst)\
 {                                                                              \
   if (!inst) {                                                                 \
-    return NULL;                                                               \
+    return null;                                                               \
   }                                                                            \
                                                                                \
   return inst->data;                                                           \
@@ -703,7 +888,7 @@ inline nickname *nickname##Array_Ref(                                          \
   const llong index                                                            \
 ) {                                                                            \
   if (!inst || !isinbound(Array(nickname), inst, index)) {                     \
-    return NULL;                                                               \
+    return null;                                                               \
   }                                                                            \
                                                                                \
   return &(inst->data[offsetting(Array(nickname), inst, index)]);              \
@@ -734,17 +919,34 @@ inline void nickname##Array_Set(                                               \
   *ref = value;                                                                \
 }                                                                              \
                                                                                \
+/* Insert before @index. */                                                    \
 Array(nickname) *nickname##Array_Insert(                                       \
   Array(nickname) *const inst,                                                 \
   const llong index,                                                           \
   nickname value                                                               \
 ) {                                                                            \
   if (!inst) {                                                                 \
-    return NULL;                                                               \
+    return null;                                                               \
   }                                                                            \
                                                                                \
-  if (index > inst->capacity) {                                                \
-    return NULL;                                                               \
+  if (inst->reserved) {                                                        \
+    Array(nickname) *newarr = Create(Array(nickname), 1);                      \
+    if (!newarr) {                                                             \
+      return inst;                                                             \
+    }                                                                          \
+    Delete(Array(nickname), inst);                                             \
+                                                                               \
+    set(Array(nickname), newarr, 0, value);                                    \
+                                                                               \
+    return newarr;                                                             \
+  }                                                                            \
+                                                                               \
+  /* Normalize negative indices to an absolute logical index. */               \
+  const llong norm_idx = index >= 0 ? index : index + inst->capacity;          \
+                                                                               \
+  /* Bounds check against the normalized index. */                             \
+  if (norm_idx < 0 || norm_idx > inst->capacity) {                             \
+    return null;                                                               \
   }                                                                            \
                                                                                \
   Array(nickname) *newarr = Create(Array(nickname), inst->capacity + 1);       \
@@ -752,13 +954,24 @@ Array(nickname) *nickname##Array_Insert(                                       \
     return inst;                                                               \
   }                                                                            \
                                                                                \
-  const llong pivot = offsetting(Array(nickname), newarr, index);              \
-  for (register llong i = 0; i < pivot; i++) {                                 \
-    newarr->data[i] = inst->data[i];                                           \
+  newarr->reversed = inst->reversed;                                           \
+                                                                               \
+  /* Copy elements BEFORE the insertion point via logical mapping. */          \
+  for (register llong i = 0; i < norm_idx; i++) {                              \
+    const llong src = offsetting(Array(nickname), inst, i);                    \
+    const llong dst = offsetting(Array(nickname), newarr, i);                  \
+    newarr->data[dst] = inst->data[src];                                       \
   }                                                                            \
+                                                                               \
+  /* Insert the new value at its mapped physical pivot. */                     \
+  const llong pivot = offsetting(Array(nickname), newarr, norm_idx);           \
   newarr->data[pivot] = value;                                                 \
-  for (register llong i = pivot; i < inst->capacity; i++) {                    \
-    newarr->data[i + 1] = inst->data[i];                                       \
+                                                                               \
+  /* Copy elements AFTER the insertion point via logical mapping. */           \
+  for (register llong i = norm_idx; i < inst->capacity; i++) {                 \
+    const llong src = offsetting(Array(nickname), inst, i);                    \
+    const llong dst = offsetting(Array(nickname), newarr, i + 1);              \
+    newarr->data[dst] = inst->data[src];                                       \
   }                                                                            \
                                                                                \
   Delete(Array(nickname), inst);                                               \
@@ -769,18 +982,18 @@ Array(nickname) *nickname##Array_Insert(                                       \
 Array(nickname) *nickname##Array_Create(const llong capacity)                  \
 {                                                                              \
   if (capacity < 0) {                                                          \
-    return NULL;                                                               \
+    return null;                                                               \
   }                                                                            \
                                                                                \
   Array(nickname) *inst = Allocate(1, sizeof(Array(nickname)));                \
   if (!inst) {                                                                 \
-    return NULL;                                                               \
+    return null;                                                               \
   }                                                                            \
                                                                                \
   inst->data = Allocate(capacity, sizeof(elem_type));                          \
   if (!inst->data) {                                                           \
     Deallocate(inst);                                                          \
-    return NULL;                                                               \
+    return null;                                                               \
   }                                                                            \
                                                                                \
   inst->capacity = capacity;                                                   \
@@ -793,18 +1006,18 @@ Array(nickname) *nickname##Array_Create(const llong capacity)                  \
 Array(nickname) *nickname##Array_CopyOf(const Array(nickname) *const other)    \
 {                                                                              \
   if (!other) {                                                                \
-    return NULL;                                                               \
+    return null;                                                               \
   }                                                                            \
                                                                                \
   Array(nickname) *inst = Allocate(1, sizeof(Array(nickname)));                \
   if (!inst) {                                                                 \
-    return NULL;                                                               \
+    return null;                                                               \
   }                                                                            \
                                                                                \
   inst->data = Allocate(other->capacity, sizeof(elem_type));                   \
   if (!inst->data) {                                                           \
     Deallocate(inst);                                                          \
-    return NULL;                                                               \
+    return null;                                                               \
   }                                                                            \
                                                                                \
   memcpy(inst->data, other->data, sizeof(elem_type) * other->capacity);        \
@@ -830,7 +1043,7 @@ Array(nickname) *nickname##Array_Fill(                                         \
   elem_type value                                                              \
 ) {                                                                            \
   if (!inst) {                                                                 \
-    return NULL;                                                               \
+    return null;                                                               \
   }                                                                            \
                                                                                \
   if (!inst->data) {                                                           \
@@ -881,10 +1094,78 @@ inline boolean nickname##Array_Equals(                                         \
 inline nickname *nickname##Array_GetData(const Array(nickname) *const inst)    \
 {                                                                              \
   if (!inst) {                                                                 \
-    return NULL;                                                               \
+    return null;                                                               \
   }                                                                            \
                                                                                \
   return inst->data;                                                           \
+}                                                                              \
+                                                                               \
+Array(nickname) *nickname##Array_Append(                                       \
+  Array(nickname) *const inst,                                                 \
+  const llong arglen,                                                          \
+  ...                                                                          \
+) {                                                                            \
+  if (!arglen) {                                                               \
+    return inst;                                                               \
+  }                                                                            \
+                                                                               \
+  register llong total_length = inst ? Length(Array(nickname), inst) : 0;      \
+                                                                               \
+  va_list ap;                                                                  \
+                                                                               \
+  /* Calculate the total exact memory footprint required. */                   \
+  va_start(ap, arglen);                                                        \
+  loop (i, arglen) {                                                           \
+    Array(nickname) *const other = va_arg(ap, Array(nickname) *);              \
+    total_length += other ? Length(Array(nickname), other) : 0;                \
+  }                                                                            \
+  va_end(ap);                                                                  \
+                                                                               \
+  Array(nickname) *const appended = array(nickname, total_length);             \
+  if (!appended) {                                                             \
+    return inst;                                                               \
+  }                                                                            \
+                                                                               \
+  register llong write_idx = 0;                                                \
+                                                                               \
+  /* Write the original contents from @inst. */                                \
+  if (inst) {                                                                  \
+    const llong instlen = Length(Array(nickname), inst);                       \
+    loop (i, instlen) {                                                        \
+      set(                                                                     \
+        Array(nickname),                                                       \
+        appended,                                                              \
+        write_idx,                                                             \
+        get(Array(nickname), inst, i)                                          \
+      );                                                                       \
+      write_idx++;                                                             \
+    }                                                                          \
+  }                                                                            \
+                                                                               \
+  /* Reboot the va_list and sequentially write all elements from @contents. */ \
+  va_start(ap, arglen);                                                        \
+  loop (i, arglen) {                                                           \
+    Array(nickname) *const other = va_arg(ap, Array(nickname) *);              \
+    if (!other) {                                                              \
+      continue;                                                                \
+    }                                                                          \
+                                                                               \
+    const llong otherlen = Length(Array(nickname), other);                     \
+    loop (j, otherlen) {                                                       \
+      set(                                                                     \
+        Array(nickname),                                                       \
+        appended,                                                              \
+        write_idx,                                                             \
+        get(Array(nickname), other, j)                                         \
+      );                                                                       \
+      write_idx++;                                                             \
+    }                                                                          \
+  }                                                                            \
+  va_end(ap);                                                                  \
+                                                                               \
+  Delete(Array(nickname), inst);                                               \
+                                                                               \
+  return appended;                                                             \
 }
 
 # define IMPL_ARRAY_COMMON(elem_type)                                          \
@@ -897,6 +1178,11 @@ inline boolean nickname##Array_IsInBound(                                      \
 ) {                                                                            \
   if (!inst) {                                                                 \
     return false;                                                              \
+  }                                                                            \
+                                                                               \
+  /* Validate negative wrapping against the absolute capacity limit. */        \
+  if (index < 0) {                                                             \
+    return index >= -(inst->capacity);                                         \
   }                                                                            \
                                                                                \
   return (index < inst->capacity);                                             \
@@ -924,7 +1210,7 @@ Array(nickname) *nickname##Array_Resize(                                       \
   const llong capacity                                                         \
 ) {                                                                            \
   if (!inst) {                                                                 \
-    return NULL;                                                               \
+    return null;                                                               \
   }                                                                            \
                                                                                \
   if (capacity == inst->capacity) {                                            \
@@ -939,12 +1225,7 @@ Array(nickname) *nickname##Array_Resize(                                       \
   const llong delta = capacity - inst->capacity;                               \
   const llong final_capacity = delta > 0 ? inst->capacity : capacity;          \
                                                                                \
-  memcpy(array->data, inst->data, final_capacity * sizeof(elem_type));         \
-                                                                               \
-  /* Extending. */                                                             \
-  if (delta > 0) {                                                             \
-    memset(array->data, 0, delta * sizeof(elem_type));                         \
-  }                                                                            \
+  memcpy(array->data, inst->data, final_capacity * sizeof(inst->data[0]));     \
                                                                                \
   Delete(Array(nickname), inst);                                               \
                                                                                \
@@ -957,11 +1238,15 @@ Array(nickname) *nickname##Array_Remove(                                       \
   const llong index                                                            \
 ) {                                                                            \
   if (!inst) {                                                                 \
-    return NULL;                                                               \
+    return null;                                                               \
   }                                                                            \
                                                                                \
-  if (index < 0 || index >= inst->capacity) {                                  \
-    return NULL;                                                               \
+  /* 1. Normalize negative indices to an absolute logical index. */            \
+  const llong norm_idx = index < 0 ? index + inst->capacity : index;           \
+                                                                               \
+  /* 2. Bounds check against the normalized index. */                          \
+  if (norm_idx < 0 || norm_idx >= inst->capacity) {                            \
+    return null;                                                               \
   }                                                                            \
                                                                                \
   Array(nickname) *newarr = Create(Array(nickname), inst->capacity - 1);       \
@@ -969,20 +1254,22 @@ Array(nickname) *nickname##Array_Remove(                                       \
     return inst;                                                               \
   }                                                                            \
                                                                                \
-  if (index > 0) {                                                             \
-    memcpy(                                                                    \
-      &newarr->data[newarr->capacity],                                         \
-      &inst->data[index], index * sizeof(elem_type)                            \
-    );                                                                         \
+  /* 3. Preserve the exact state metadata. */                                  \
+  newarr->reserved = inst->reserved;                                           \
+  newarr->reversed = inst->reversed;                                           \
+                                                                               \
+  /* 4. Copy elements BEFORE the removed index. */                             \
+  for (register llong i = 0; i < norm_idx; i++) {                              \
+    const llong src = offsetting(Array(nickname), inst, i);                    \
+    const llong dst = offsetting(Array(nickname), newarr, i);                  \
+    newarr->data[dst] = inst->data[src];                                       \
   }                                                                            \
                                                                                \
-  llong remaining = newarr->capacity - index;                                  \
-  if (remaining > 0) {                                                         \
-    memcpy(                                                                    \
-      &newarr->data[index],                                                    \
-      &inst->data[index + 1],                                                  \
-      remaining * sizeof(elem_type)                                            \
-    );                                                                         \
+  /* 5. Copy elements AFTER the removed index (shifting left logically). */    \
+  for (register llong i = norm_idx + 1; i < inst->capacity; i++) {             \
+    const llong src = offsetting(Array(nickname), inst, i);                    \
+    const llong dst = offsetting(Array(nickname), newarr, i - 1);              \
+    newarr->data[dst] = inst->data[src];                                       \
   }                                                                            \
                                                                                \
   Delete(Array(nickname), inst);                                               \
@@ -993,7 +1280,7 @@ Array(nickname) *nickname##Array_Remove(                                       \
 inline Array(nickname) *nickname##Array_Reverse(Array(nickname) *const inst)   \
 {                                                                              \
   if (!inst) {                                                                 \
-    return NULL;                                                               \
+    return null;                                                               \
   }                                                                            \
                                                                                \
   inst->reversed = !inst->reversed;                                            \
@@ -1074,7 +1361,7 @@ Array(nickname) *nickname##Array_Compose(const llong arglen, ...)              \
                                                                                \
   Array(nickname) *const inst = Create(Array(nickname), arglen);               \
   if (!inst) {                                                                 \
-    return NULL;                                                               \
+    return null;                                                               \
   }                                                                            \
                                                                                \
   va_list ap;                                                                  \
@@ -1097,7 +1384,7 @@ Array(elem_type) *elem_type##Array_Compose(const llong arglen, ...)            \
                                                                                \
   Array(elem_type) *const inst = Create(Array(elem_type), arglen);             \
   if (!inst) {                                                                 \
-    return NULL;                                                               \
+    return null;                                                               \
   }                                                                            \
                                                                                \
   va_list ap;                                                                  \

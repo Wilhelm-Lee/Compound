@@ -28,21 +28,62 @@
 typedef struct Parameter Parameter;
 
 ARRAY(Parameter)
-LITERALISE_ARGS(Parameter, boolean need_identifier)
+LITERALISE_ARGS(Parameter, boolean need_type, boolean need_identifier)
+
+# define noparam                                                               \
+  params(null)
+
+# define p(...)                                                                \
+  (param(__VA_ARGS__))
 
 # define param(...)                                                            \
   (parameter(__VA_ARGS__))
 
-#define parameter(...)                                                         \
-  CONCAT(parameter_, arglen(__VA_ARGS__))(__VA_ARGS__)
+# define parameter(...)                                                        \
+  (CONCAT(parameter_, arglen(__VA_ARGS__))(__VA_ARGS__))
 
-/* Exactly 1 argument */
-#define parameter_1(type) \
-  (Create(Parameter, string(nameof(type)), string("")))
+# define ps(...)                                                               \
+  (params(__VA_ARGS__))
 
-/* Exactly 2 arguments */
-#define parameter_2(type, name) \
+# define params(...)                                                           \
+  (parameters(__VA_ARGS__))
+
+# define parameters(...)                                                       \
+  (Parameter_CreateMultiple(arglen(__VA_ARGS__), __VA_ARGS__))
+
+/* Exactly 1 argument. */
+# define parameter_1(type)                                                     \
+  (Create(Parameter, string(nameof(type)), null))
+
+/* Exactly 2 arguments. */
+# define parameter_2(type, name)                                               \
   (Create(Parameter, string(nameof(type)), string(nameof(name))))
+
+# define p_str(...)                                                            \
+  (param_str(__VA_ARGS__))
+
+# define param_str(...)                                                        \
+  (parameter_str(__VA_ARGS__))
+
+# define parameter_str(...)                                                    \
+  (CONCAT(parameter_str_, arglen(__VA_ARGS__))(__VA_ARGS__))
+
+# define ps_str(...)                                                           \
+  (params_str(__VA_ARGS__))
+
+# define params_str(...)                                                       \
+  (parameters_str(__VA_ARGS__))
+
+# define parameters_str(...)                                                   \
+  (Parameter_CreateMultiple(arglen(__VA_ARGS__), __VA_ARGS__))
+
+/* Exactly 1 argument. */
+# define parameter_str_1(type_str)                                             \
+  (Create(Parameter, type_str, null))
+
+/* Exactly 2 arguments. */
+# define parameter_str_2(type_str, name_str)                                   \
+  (Create(Parameter, type_str, name_str))
 
 Parameter *Parameter_Create(
   String *const type,
@@ -51,5 +92,8 @@ Parameter *Parameter_Create(
 Parameter *Parameter_CopyOf(const Parameter *const other);
 void Parameter_Delete(Parameter *const inst);
 boolean Parameter_Equals(Parameter *const obj1, Parameter *const obj2);
+Array(Parameter) *Parameter_CreateMultiple(const llong cluster_count, ...);
+String *Parameter_GetType(const Parameter *const inst);
+String *Parameter_GetIdentifier(const Parameter *const inst);
 
 #endif  /* COMPOUND_PARAMETER_H */

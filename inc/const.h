@@ -33,4 +33,12 @@
 
 # define PUNCTUATION  "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
 
+# define LOWERCASE  "abcedfghijklmnopqrstuvwxyz"
+# define UPPERCASE  "ABCEDFGHIJKLMNOPQRSTUVWXYZ"
+
+# define ALPHABET  UPPERCASE LOWERCASE
+# define DIGIT  "0123456789"
+
+# define NONWORDING  WHITESPACE PUNCTUATION SPACE TABULATION DIGIT
+
 #endif  /* COMPOUND_CONST_H */

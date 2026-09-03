@@ -58,8 +58,8 @@
                                                                                \
   const llong arraylen = Length(Array(elem_type), inst);                       \
                                                                                \
-  String *ret = CopyOf(String, final_prefix);                                  \
-  if (!ret) {                                                                  \
+  String *rtn = CopyOf(String, final_prefix);                                  \
+  if (!rtn) {                                                                  \
     return null;                                                               \
   }                                                                            \
                                                                                \
@@ -73,16 +73,65 @@
       continue;                                                                \
     }                                                                          \
                                                                                \
-    ret = append(ret, lit_elem, final_separator);                              \
+    rtn = append(rtn, lit_elem, final_separator);                              \
   })                                                                           \
                                                                                \
-  ret = append(                                                                \
-    ret,                                                                       \
+  rtn = append(                                                                \
+    rtn,                                                                       \
     lit_last,                                                                  \
     final_suffix                                                               \
   );                                                                           \
                                                                                \
-  return ret;
+  Delete(String, str_empty);                                                   \
+                                                                               \
+  return rtn;
+
+# define FUNC_ARRAY_BASICTYPE_LITERALISE(elem_type)                            \
+  String *elem_type##Array_Literalise(_ARRAY_LITERALISE_PARAMS(elem_type));
+
+# define IMPL_ARRAY_BASICTYPE_LITERALISE(elem_type, format_str)                \
+String *elem_type##Array_Literalise(_ARRAY_LITERALISE_PARAMS(elem_type))       \
+{                                                                              \
+  if (!inst) {                                                                 \
+    return null;                                                               \
+  }                                                                            \
+                                                                               \
+  String *str_empty = string("");                                              \
+  String *const final_prefix = prefix ? prefix : str_empty;                    \
+  String *const final_separator = separator ? separator : str_empty;           \
+  String *const final_suffix = suffix ? suffix : str_empty;                    \
+                                                                               \
+  const llong arraylen = Length(Array(elem_type), inst);                       \
+  String *rtn = CopyOf(String, final_prefix);                                  \
+  if (!rtn) {                                                                  \
+    return null;                                                               \
+  }                                                                            \
+                                                                               \
+  for (register llong i = 0; i < arraylen; i++) {                              \
+    elem_type *elem = ref(Array(elem_type), inst, i);                          \
+    if (!elem) {                                                               \
+      continue;                                                                \
+    }                                                                          \
+                                                                               \
+    /* format() returns a new string which append() takes ownership of. */     \
+    String *val_str = format(format_str, *elem);                               \
+                                                                               \
+    /* Use CopyOf to avoid double-free during append's erase(). */             \
+    if (i == arraylen - 1) {                                                   \
+      rtn = append(rtn, val_str, CopyOf(String, final_suffix));                \
+    } else {                                                                   \
+      rtn = append(rtn, val_str, CopyOf(String, final_separator));             \
+    }                                                                          \
+  }                                                                            \
+                                                                               \
+  if (arraylen == 0) {                                                         \
+    rtn = append(rtn, CopyOf(String, final_suffix));                           \
+  }                                                                            \
+                                                                               \
+  Delete(String, str_empty);                                                   \
+                                                                               \
+  return rtn;                                                                  \
+}
 
 # define FUNC_ARRAY_LITERALISE(elem_type)                                      \
 String *elem_type##Array_Literalise(_ARRAY_LITERALISE_PARAMS(elem_type));
@@ -129,6 +178,84 @@ String *elem_type##Array_Literalise(                                           \
     elem_type,                                                                 \
     lit(elem_type, elem, var1, var2),                                          \
     lit(elem_type, ref(Array(elem_type), inst, -1), var1, var2)                \
+  )                                                                            \
+}
+
+/* 3 Config Parameters (7 Total Arguments) */
+# define IMPL_ARRAY_LITERALISE_CONFIGS_7(elem_type, var1, var2, var3, ...)     \
+String *elem_type##Array_Literalise(                                           \
+  _ARRAY_LITERALISE_PARAMS(elem_type),                                         \
+  __VA_ARGS__                                                                  \
+) {                                                                            \
+  _IMPL_ARRAY_LITERALISE_BODY(                                                 \
+    elem_type,                                                                 \
+    lit(elem_type, elem, var1, var2, var3),                                    \
+    lit(elem_type, ref(Array(elem_type), inst, -1), var1, var2, var3)          \
+  )                                                                            \
+}
+
+/* 4 Config Parameters (9 Total Arguments) */
+# define IMPL_ARRAY_LITERALISE_CONFIGS_9(elem_type, var1, var2, var3, var4, ...)\
+String *elem_type##Array_Literalise(                                           \
+  _ARRAY_LITERALISE_PARAMS(elem_type),                                         \
+  __VA_ARGS__                                                                  \
+) {                                                                            \
+  _IMPL_ARRAY_LITERALISE_BODY(                                                 \
+    elem_type,                                                                 \
+    lit(elem_type, elem, var1, var2, var3, var4),                              \
+    lit(elem_type, ref(Array(elem_type), inst, -1), var1, var2, var3, var4)    \
+  )                                                                            \
+}
+
+/* 5 Config Parameters (11 Total Arguments) */
+# define IMPL_ARRAY_LITERALISE_CONFIGS_11(elem_type, var1, var2, var3, var4, var5, ...)\
+String *elem_type##Array_Literalise(                                           \
+  _ARRAY_LITERALISE_PARAMS(elem_type),                                         \
+  __VA_ARGS__                                                                  \
+) {                                                                            \
+  _IMPL_ARRAY_LITERALISE_BODY(                                                 \
+    elem_type,                                                                 \
+    lit(elem_type, elem, var1, var2, var3, var4, var5),                        \
+    lit(elem_type, ref(Array(elem_type), inst, -1), var1, var2, var3, var4, var5)\
+  )                                                                            \
+}
+
+/* 6 Config Parameters (13 Total Arguments) */
+# define IMPL_ARRAY_LITERALISE_CONFIGS_13(elem_type, var1, var2, var3, var4, var5, var6, ...)\
+String *elem_type##Array_Literalise(                                           \
+  _ARRAY_LITERALISE_PARAMS(elem_type),                                         \
+  __VA_ARGS__                                                                  \
+) {                                                                            \
+  _IMPL_ARRAY_LITERALISE_BODY(                                                 \
+    elem_type,                                                                 \
+    lit(elem_type, elem, var1, var2, var3, var4, var5, var6),                  \
+    lit(elem_type, ref(Array(elem_type), inst, -1), var1, var2, var3, var4, var5, var6)\
+  )                                                                            \
+}
+
+/* 7 Config Parameters (15 Total Arguments) */
+# define IMPL_ARRAY_LITERALISE_CONFIGS_15(elem_type, var1, var2, var3, var4, var5, var6, var7, ...)\
+String *elem_type##Array_Literalise(                                           \
+  _ARRAY_LITERALISE_PARAMS(elem_type),                                         \
+  __VA_ARGS__                                                                  \
+) {                                                                            \
+  _IMPL_ARRAY_LITERALISE_BODY(                                                 \
+    elem_type,                                                                 \
+    lit(elem_type, elem, var1, var2, var3, var4, var5, var6, var7),                  \
+    lit(elem_type, ref(Array(elem_type), inst, -1), var1, var2, var3, var4, var5, var6, var7)\
+  )                                                                            \
+}
+
+/* 8 Config Parameters (17 Total Arguments) */
+# define IMPL_ARRAY_LITERALISE_CONFIGS_17(elem_type, var1, var2, var3, var4, var5, var6, var7, var8, ...)\
+String *elem_type##Array_Literalise(                                           \
+  _ARRAY_LITERALISE_PARAMS(elem_type),                                         \
+  __VA_ARGS__                                                                  \
+) {                                                                            \
+  _IMPL_ARRAY_LITERALISE_BODY(                                                 \
+    elem_type,                                                                 \
+    lit(elem_type, elem, var1, var2, var3, var4, var5, var6, var7, var8),      \
+    lit(elem_type, ref(Array(elem_type), inst, -1), var1, var2, var3, var4, var5, var6, var7, var8)\
   )                                                                            \
 }
 

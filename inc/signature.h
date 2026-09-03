@@ -27,7 +27,14 @@
 typedef struct Signature Signature;
 
 ARRAY(Signature)
-LITERALISE_ARGS(Signature, boolean need_identifier)
+LITERALISE_ARGS(
+  Signature,
+  boolean need_returning,
+  boolean need_identifier,
+  boolean need_param_types,
+  boolean need_param_identifiers,
+  boolean need_parameters
+)
 
 Signature *Signature_Create(
   String *const returning,
@@ -40,5 +47,8 @@ boolean Signature_Equals(
   Signature *const obj1,
   Signature *const obj2
 );
+String *Signature_GetReturning(const Signature *const inst);
+String *Signature_GetIdentifier(const Signature *const inst);
+Array(Parameter) *Signature_GetParameters(Signature *const inst);
 
 #endif  /* COMPOUND_SIGNATURE_H */

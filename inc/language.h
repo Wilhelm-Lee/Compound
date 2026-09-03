@@ -107,7 +107,7 @@ static const char *restrict const ENABLED_PROFILE =
 # elif defined(__COMPOUND_PROFILE_PERFORMANCE__)
   "PERFORMANCE"
 # else
-  NULL
+  null
 # endif
 ;
 
@@ -134,7 +134,7 @@ static const char *restrict const ENABLED_FEATURECLASSES[] = {
 # if defined(__COMPOUND_FEATURECLASS_STATUS__)
   "STATUS",
 # endif
-  NULL
+  null
 };
 
 /* Multiple selections. */
@@ -160,7 +160,7 @@ static const char *restrict const ENABLED_FEATURES[] = {
 # if defined(__COMPOUND_FEATURE_STATUS__)
   "STATUS",
 # endif
-  NULL
+  null
 };
 
 /* goto is not allowed to prevent conflicting with Status. */
