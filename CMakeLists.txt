@@ -74,8 +74,8 @@ pkg_check_modules(PCRE2 REQUIRED IMPORTED_TARGET libpcre2-8)
 # Rename the executable to avoid conflict with the library 'compound' On
 # MacOS/Windows 'Compound' == 'compound', which breaks the build.
 add_library(CommonCompilationFlags INTERFACE)
-add_library(Fundation OBJECT ${SOURCES})
-add_library(compound SHARED $<TARGET_OBJECTS:Fundation>)
+add_library(Foundation OBJECT ${SOURCES})
+add_library(compound SHARED $<TARGET_OBJECTS:Foundation>)
 
 target_compile_options(
   CommonCompilationFlags
@@ -98,8 +98,8 @@ target_compile_options(
 add_executable(CompoundTest test/test.c)
 # add_executable(CompoundDemo test/demo.c)
 
-target_link_libraries(Fundation PRIVATE CommonCompilationFlags)
-target_link_libraries(Fundation PUBLIC PkgConfig::PCRE2)
+target_link_libraries(Foundation PRIVATE CommonCompilationFlags)
+target_link_libraries(Foundation PUBLIC PkgConfig::PCRE2)
 target_link_libraries(compound PUBLIC PkgConfig::PCRE2)
 
 target_link_libraries(CompoundTest PRIVATE compound CommonCompilationFlags)
