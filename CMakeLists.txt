@@ -61,17 +61,8 @@ set(
 )
 
 
-find_package(PCRE2 NAMES pcre2 QUIET)
-
-if(PCRE2_FOUND)
-  set(PCRE2_LINK_TARGET PCRE2::pcre2-8)
-else()
-  # Fallback to pkg-config (Perfect for Ubuntu/apt and macOS/brew)
-  find_package(PkgConfig REQUIRED)
-  # The IMPORTED_TARGET flag automatically bundles the library paths safely
-  pkg_check_modules(PCRE2 REQUIRED IMPORTED_TARGET libpcre2-8)
-  set(PCRE2_LINK_TARGET PkgConfig::PCRE2)
-endif()
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(PCRE2 REQUIRED IMPORTED_TARGET libpcre2-8)
 
 
 #add_library(
@@ -108,7 +99,7 @@ add_executable(CompoundTest test/test.c)
 # add_executable(CompoundDemo test/demo.c)
 
 target_link_libraries(Fundation PRIVATE CommonCompilationFlags)
-target_link_libraries(Fundation PUBLIC ${PCRE2_LINK_TARGET})
-target_link_libraries(compound PUBLIC ${PCRE2_LINK_TARGET})
+target_link_libraries(Fundation PUBLIC PkgConfig::PCRE2)
+target_link_libraries(compound PUBLIC PkgConfig::PCRE2)
 
 target_link_libraries(CompoundTest PRIVATE compound CommonCompilationFlags)
