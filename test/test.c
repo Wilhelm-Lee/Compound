@@ -117,78 +117,6 @@ String *Variable_Literalise(Variable *const inst)
 IMPL_ARRAY(Variable)
 IMPL_ARRAY_LITERALISE(Variable)
 
-String *ParseBetween(
-  String *const content,
-  String *const left,
-  String *const right,
-  llong *const offset
-) {
-  if (!content || !left || !right || !offset) {
-    return nll;
-  }
-
-  /* Find the left delimiter starting from the current offset. */
-  const llong leftwhence = whence(content, left, *offset);
-  /* No more matches exist. */
-  if (leftwhence < 0) {
-    return nll;
-  }
-
-  /* Find the right delimiter starting AFTER the left delimiter. */
-  const llong start_idx = leftwhence + Length(String, left);
-  const llong rightwhence = whence(content, right, start_idx);
-  if (rightwhence < 0) {
-    return nll;
-  }
-
-  /* Advance the tracked offset past the right delimiter for the next iteration. */
-  *offset = rightwhence + Length(String, right);
-
-  /* Extract exactly the content between the delimiters. */
-  return substr(content, start_idx, rightwhence - start_idx);
-}
-
-Array(Variable) *ParseVariables(String *const line)
-{
-  if (!line) {
-    return nll;
-  }
-
-  Array(Variable) *vars = array(Variable, 0);
-
-  String *str_left = string("${");
-  String *str_right = string("}");
-  String *str_assign = string("$=");
-
-  llong offset = 0;
-
-  while (true) {
-    String *appearance = ParseBetween(line, str_left, str_right, &offset);
-    /* End of line reached. */
-    if (!appearance) {
-      break;
-    }
-
-    llong assign_idx = whence(line, str_assign, offset);
-    /* Malformed line; abort. */
-    if (assign_idx < 0) {
-      break;
-    }
-    offset = assign_idx + Length(String, str_assign);
-
-    String *value = ParseBetween(line, str_left, str_right, &offset);
-    /* Malformed line; abort. */
-    if (!value) {
-      break;
-    }
-
-    Variable *const var = Create(Variable, appearance, value);
-    vars = call(Array(Variable), Insert, vars, -1, var);
-  }
-
-  return vars;
-}
-
 int Main(void)
 {
   Stream *const stream = stream("mapping", "r");
@@ -202,7 +130,7 @@ int Main(void)
   while ((line = ReadLine(stream, 0))) {
     Regex *const expr = regex(line, "\$\{(\w*)\}");
     Array(String) *const found = extract(expr, 1);
-    outln(lit(Array(String), found, nll, string(NL), nll))
+    outln(lit(Array(String), found, nll, string(NL), nll));
   }
 
   Close(stream);
