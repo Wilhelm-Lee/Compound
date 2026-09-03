@@ -98,8 +98,8 @@ target_compile_options(
 add_executable(CompoundTest test/test.c)
 # add_executable(CompoundDemo test/demo.c)
 
-target_include_directories(Fundation PUBLIC ${PCRE2_INCLUDE_DIRS}})
-target_include_directories(compound PUBLIC ${PCRE2_INCLUDE_DIRS}})
+target_include_directories(Fundation PUBLIC ${PCRE2_INCLUDE_DIRS})
+target_include_directories(compound PUBLIC ${PCRE2_INCLUDE_DIRS})
 
 target_link_libraries(Fundation PRIVATE CommonCompilationFlags)
 target_link_libraries(Fundation PUBLIC ${PCRE2_LIBRARIES})
