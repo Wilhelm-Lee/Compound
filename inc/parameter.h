@@ -31,7 +31,7 @@ ARRAY(Parameter)
 LITERALISE_ARGS(Parameter, boolean need_type, boolean need_identifier)
 
 # define noparam                                                               \
-  params(null)
+  Parameter_CreateMultiple(0)
 
 # define p(...)                                                                \
   (param(__VA_ARGS__))

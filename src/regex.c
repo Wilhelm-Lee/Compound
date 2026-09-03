@@ -233,9 +233,9 @@ Array(String) *Regex_Extract(Regex *const inst, Array(int) *const indices)
       continue;
     }
 
-    refeach (llong, g, groups, {
-      const llong start = Match_GetStart(match, *g);
-      const llong end = Match_GetEnd(match, *g);
+    refeach (llong, group, groups, {
+      const llong start = Match_GetStart(match, *group);
+      const llong end = Match_GetEnd(match, *group);
 
       if (start < 0 || end < 0 || end < start) {
         set(Array(String), extracted, write_idx, string(""));
