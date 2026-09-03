@@ -61,8 +61,7 @@ set(
 )
 
 
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(PCRE2 REQUIRED libpcre2-8)
+find_package(PCRE2 NAMES pcre2 REQUIRED)
 
 
 #add_library(
@@ -98,12 +97,9 @@ target_compile_options(
 add_executable(CompoundTest test/test.c)
 # add_executable(CompoundDemo test/demo.c)
 
-target_include_directories(Fundation PUBLIC ${PCRE2_INCLUDE_DIRS})
-target_include_directories(compound PUBLIC ${PCRE2_INCLUDE_DIRS})
-
 target_link_libraries(Fundation PRIVATE CommonCompilationFlags)
-target_link_libraries(Fundation PUBLIC ${PCRE2_LIBRARIES})
-target_link_libraries(compound PUBLIC ${PCRE2_LIBRARIES})
+target_link_libraries(Fundation PUBLIC pcre2::pcre2-8)
+target_link_libraries(compound PUBLIC pcre2::pcre2-8)
 
 # Executables link against both the final shared library AND the compilation flags.
 target_link_libraries(CompoundTest PRIVATE compound CommonCompilationFlags)
