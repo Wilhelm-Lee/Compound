@@ -1,5 +1,7 @@
 #include "../inc/init.h"
 
+extern MemoryStack MEMORY_STACK;
+
 # ifdef __COMPOUND_FEATURE_STATUS__
 void InitialiseStatusStack(Stack(Status) **const instptr)
 {
@@ -17,7 +19,7 @@ void DeinitialiseStatusStack(Stack(Status) **const instptr)
   }
 
   Delete(Stack(Status), instptr);
-  *instptr = NULL;
+  *instptr = null;
 }
 # endif
 
@@ -78,7 +80,7 @@ int InitialiseMain(
     return 1;
   }
 
-  iterate (Array(String), i, *args, {
+  iterate (String, i, *args, {
     set(Array(String), *args, i, string(argv[i]));
   })
 # endif
@@ -115,13 +117,13 @@ int DeinitialiseMain(
   if (envs) {
     erase(Array(String), *envs);
     Delete(Array(String), *envs);
-    *envs = NULL;
+    *envs = null;
   }
 
   if (args) {
     erase(Array(String), *args);
     Delete(Array(String), *args);
-    *args = NULL;
+    *args = null;
   }
 
 # ifdef __COMPOUND_FEATURE_STATUS__

@@ -47,139 +47,158 @@ Array(String) *StringArray_ComposeFromCstr(const llong arglen, ...);
 //   String *const suffix
 // );
 
-# define string(char_ptr)\
-  (String_Update(NULL, char_ptr))
+# define string(char_ptr)                                                      \
+  (String_Update(null, char_ptr))
 
-# define update(string_ptr_ptr, char_ptr)\
-  (String_Update(string_ptr_ptr, char_ptr))
+# define update(string_ptr, char_ptr)                                          \
+  (String_Update(string_ptr, char_ptr))
 
-# define refbyte(string_ptr, idx)\
+# define refbyte(string_ptr, idx)                                              \
   (ref(Array(byte), Getter(String, Data, (string_ptr)), idx))
 
-# define getbyte(string_ptr, idx)\
+# define getbyte(string_ptr, idx)                                              \
   (get(Array(byte), Getter(String, Data, (string_ptr)), idx))
 
-# define setbyte(string_ptr, idx, byte_ptr)\
+# define setbyte(string_ptr, idx, byte_ptr)                                    \
   (set(Array(byte), Getter(String, Data, (string_ptr)), idx, byte_ptr))
 
-# define compare(string_ptr1, string_ptr2)\
+# define compare(string_ptr1, string_ptr2)                                     \
   (String_Compare((string_ptr1), (string_ptr2)))
 
-# define concat(string_ptr1, string_ptr2)\
-  (String_Concat((string_ptr1), (string_ptr2)))
-
-# define substr(string_ptr, offset, length)\
+# define substr(string_ptr, offset, length)                                    \
   (String_Substr((string_ptr), (offset), (length)))
 
-# define firstat(string_ptr, target_byte, offset)\
+# define firstat(string_ptr, target_byte, offset)                              \
   (String_FirstAt(string_ptr, target_byte, offset))
 
-# define lastat(string_ptr, target_byte, offset)\
+# define lastat(string_ptr, target_byte, offset)                               \
   (String_LastAt(string_ptr, target_byte, offset))
 
-# define firstof(string_ptr)\
+# define firstof(string_ptr)                                                   \
   getbyte(string_ptr, 0)
 
-# define lastof(string_ptr)\
+# define lastof(string_ptr)                                                    \
   getbyte(string_ptr, length(string_ptr) - 1)
 
-# define tokens(string_ptr, delim_cstr)\
+# define tokens(string_ptr, delim_cstr)                                        \
   (String_Tokens(string_ptr, delim_cstr))
 
-# define breaks(string_ptr, tokenth)\
+# define breaks(string_ptr, tokenth)                                           \
   (String_Breaks(string_ptr, tokenth))
 
 /* WARNING: Large amount of data might be allocated unnoticed. */
-# define gather(string_ptr)\
+# define gather(string_ptr)                                                    \
   (String_Gather(string_ptr))
 
-# define whence(string_ptr, string_target_ptr, offset)\
+# define fragmentise(string_ptr, delim_cstr)                                   \
+  (String_Fragmentise(string_ptr, delim_cstr),                                 \
+   String_Collect(string_ptr))
+
+# define fragments(string_ptr, delim_cstr)                                     \
+  (String_Fragmentise(string_ptr, delim_cstr))
+
+# define pieces(string_ptr, fragth)                                            \
+  (String_Pieces(string_ptr, fragth))
+
+# define whence(string_ptr, string_target_ptr, offset)                         \
   (String_Whence(string_ptr, string_target_ptr, offset))
 
-# define blank(string_ptr)\
+# define blank(string_ptr)                                                     \
   (String_Blank(string_ptr))
 
-# define tokenise_idx(string_ptr, delim_cstr, idx)\
-  (String_Tokens(string_ptr, delim_cstr),\
+# define tokenise_idx(string_ptr, delim_cstr, idx)                             \
+  (String_Tokens(string_ptr, delim_cstr),                                      \
    String_Breaks(string_ptr, idx))
 
-# define tokenise(string_ptr, delim_cstr)\
-  (String_Tokens(string_ptr, delim_cstr),\
+# define tokenise(string_ptr, delim_cstr)                                      \
+  (String_Tokens(string_ptr, delim_cstr),                                      \
    String_Gather(string_ptr))
 
-# define trim(string_ptr_ptr)\
-  (String_Trim(string_ptr_ptr))
+# define trim(string_ptr)                                                      \
+  (String_Trim(string_ptr))
 
 /* Returns an array of two parts from @string. */
-# define strcut(string_ptr_ptr, index)\
-  (String_Strcut(string_ptr_ptr, index))
+# define strcut(string_ptr, index)                                             \
+  (String_Strcut(string_ptr, index))
 
-# define format(format_cstr, ...)\
+# define format(format_cstr, ...)                                              \
   (String_Format(format_cstr, __VA_ARGS__))
 
-# define insert(string_ptr_ptr, string_source_ptr, index)\
-  (String_Insert(string_ptr_ptr, string_source_ptr, index))
+# define insert(string_ptr, string_source_ptr, index)                          \
+  (String_Insert(string_ptr, string_source_ptr, index))
 
 /* The size of given @type must be larger than or equals to
  * @string_ptr->width to prevent irrational-cross-byte access. */
-# define flatten(type, string_ptr)\
+# define flatten(type, string_ptr)                                             \
   ((type *)String_Flatten(string_ptr, sizeof(type)))
 
-# define contains(string_ptr, string_target_ptr)\
+# define contains(string_ptr, string_target_ptr)                               \
   (String_Contains(string_ptr, string_target_ptr))
 
-# define remove(string_ptr_ptr, offset, length)\
-  (String_Remove(string_ptr_ptr, offset, length))
+# define remove(string_ptr, offset, length)                                    \
+  (String_Remove(string_ptr, offset, length))
 
-# define count(string_ptr, string_target_ptr, offset)\
+# define count(string_ptr, string_target_ptr, offset)                          \
   (String_CountOccurrences(string_ptr, string_target_ptr, offset))
 
-# define occurrences(string_ptr, string_target_ptr, offset)\
+# define occurrences(string_ptr, string_target_ptr, offset)                    \
   (String_Occurrences(string_ptr, string_target_ptr, offset))
 
-# define append(string_ptr, ...)\
+# define append(string_ptr, ...)                                               \
   (String_Append(string_ptr, Compose(Array(String), __VA_ARGS__)))
 
-# define replace_first(\
-    string_ptr_ptr,\
-    string_target_ptr,\
-    string_replacement_ptr,\
-    offset\
-  )\
-  (String_ReplaceFirst(\
-    string_ptr_ptr,\
-    string_target_ptr,\
-    string_replacement_ptr,\
+# define replace_first(                                                        \
+    string_ptr,                                                                \
+    string_target_ptr,                                                         \
+    string_replacement_ptr,                                                    \
+    offset                                                                     \
+  )                                                                            \
+  (String_ReplaceFirst(                                                        \
+    string_ptr,                                                                \
+    string_target_ptr,                                                         \
+    string_replacement_ptr,                                                    \
     offset))
 
-# define replace(\
-    string_ptr_ptr,\
-    string_target_ptr,\
-    string_replacement_ptr,\
-    offset\
-  )\
-  (String_ReplaceAll(\
-    string_ptr_ptr,\
-    string_target_ptr,\
-    string_replacement_ptr,\
+# define replace(                                                              \
+    string_ptr,                                                                \
+    string_target_ptr,                                                         \
+    string_replacement_ptr,                                                    \
+    offset                                                                     \
+  )                                                                            \
+  (String_ReplaceAll(                                                          \
+    string_ptr,                                                                \
+    string_target_ptr,                                                         \
+    string_replacement_ptr,                                                    \
     offset))
 
-# define iteratebyte(it, string_ptr, block)\
-  do {\
-    const llong CONCAT(it, len) = Length(String, string_ptr);\
-    for (register llong it = 0; i < CONCAT(it, len); i++) {\
-      block\
-    }\
+# define iteratebyte(it, string_ptr, block)                                    \
+  do {                                                                         \
+    const llong CONCAT(it, len) = Length(String, string_ptr);                  \
+    for (register llong it = 0; i < CONCAT(it, len); i++) {                    \
+      block                                                                    \
+    }                                                                          \
   } while (0);
 
-# define foreachbyte(it, string_ptr, block)\
-  do {\
-    const llong CONCAT(it, len) = Length(String, string_ptr);\
-    for (register llong i = 0; i < CONCAT(it, len); i++) {\
-      const byte it = getbyte(string_ptr, i);\
-      block\
-    }\
+# define foreachbyte(it, string_ptr, block)                                    \
+  do {                                                                         \
+    const llong CONCAT(it, len) = Length(String, string_ptr);                  \
+    for (register llong i = 0; i < CONCAT(it, len); i++) {                     \
+      const byte it = getbyte(string_ptr, i);                                  \
+      block                                                                    \
+    }                                                                          \
   } while (0);
+
+# define refeachbyte(it, string_ptr, block)                                    \
+  do {                                                                         \
+    const llong CONCAT(it, len) = Length(String, string_ptr);                  \
+    for (register llong i = 0; i < CONCAT(it, len); i++) {                     \
+      byte *const it = refbyte(string_ptr, i);                                 \
+      block                                                                    \
+    }                                                                          \
+  } while (0);
+
+# define ComposeFromCstr(type, ...)                                            \
+  (call(type, ComposeFromCstr, arglen(__VA_ARGS__), __VA_ARGS__))
 
 String *String_Create(const llong length, const llong width);
 
@@ -189,20 +208,7 @@ void String_Delete(String *const inst);
 
 boolean String_Equals(String *const string1, String *const string2);
 
-/* Transfer from @provider to @receiver about for object's memory.
-   @receiver has to be NULL and un-allocated; otherwise no operations are
-   performed -- resulting NULL returned.
-
-   This feature exist due to the Opaque Pointer design of current object,
-   which requires wrapped internal assignments.
-
-   The provider is freed after transferring its members to the receiver, leaving
-   it safe from double free-ing.  The provider then refers to the receiver, as a
-   pure reference.
-
-   Returns @*receiver after all operations, which is equivalent as @provider.
- */
-String *String_Transfer(String **const receiver, String *const provider);
+String *String_Transfer(String **const receiver, String **const provider);
 
 /**
  * @brief Construct the instance by sampling from @content.
@@ -214,7 +220,7 @@ String *String_Transfer(String **const receiver, String *const provider);
  *
  * @return A new string composed with @content.
  */
-String *String_Update(String **const inst, const char *restrict const cstr);
+String *String_Update(String *const inst, const char *restrict const cstr);
 
 /* @return The value under a given indexer from @string1
            minus to the one from @string2.
@@ -237,8 +243,8 @@ String *String_Concat(String *const string1, const String *const string2);
  * @param offset The beginning indexer of the sub-string.
  * @param length The duration length of the sub-string.
  * @return A reference to newly allocated string processed.
- *         NULL when either:
- *             @source is NULL
+ *         null when either:
+ *             @source is null
  *             @offset + @length is greater than the length of @source.
  */
 String *String_Substr(
@@ -259,6 +265,11 @@ String *String_Breaks(const String *const source, const llong tokenth);
 /* @return An array that holds the collection of
  * the references of all pieces by @breaks. */
 Array(String) *String_Gather(const String *const inst);
+
+llong String_CountFragments(const String *const inst);
+llong String_Fragmentise(String *const inst, const char *restrict const delim_cstr);
+String *String_Pieces(const String *const source, const llong fragth);
+Array(String) *String_Collect(const String *const inst);
 
 /* @return The indexer of the first occurrence of @target in @source
            by @offset. */
@@ -290,14 +301,11 @@ boolean String_Empty(const String *const source);
 
 boolean String_Blank(const String *const source);
 
-/* @return An new string after trimming. */
-String *String_Trim(String **const inst);
+String *String_Trim(String *inst);
 
-/* @return An new string after trimming. */
-String *String_RemoveLeadingWhitespace(String **const inst);
+String *String_RemoveLeadingWhitespace(String *const inst);
 
-/* @return An new string after trimming. */
-String *String_RemoveTrailingWhitespace(String **const inst);
+String *String_RemoveTrailingWhitespace(String *const inst);
 
 /* @return If @ch is contained in any element from @targets. */
 boolean String_MatchesAny(const byte target, const char *const group);
@@ -320,7 +328,7 @@ llong String_Length(const String *const string);
 
 /* Insert @source at @index in @inst. */
 String *String_Insert(
-  String **const inst,
+  String *const inst,
   const String *const source,
   const llong index
 );
@@ -347,7 +355,7 @@ Array(llong) *String_Occurrences(
 /* Replace the first occurrence of @target with @replacement
  * from @inst start from @offset. */
 String *String_ReplaceFirst(
-  String **const inst,
+  String *const inst,
   const String *target,
   const String *replacement,
   const llong offset
@@ -356,7 +364,7 @@ String *String_ReplaceFirst(
 /* Replace all the occurrences of @target with @replacement
  * from @inst start from @offset. */
 String *String_ReplaceAll(
-  String **const inst,
+  String *const inst,
   const String *target,
   const String *replacement,
   const llong offset
@@ -374,7 +382,7 @@ String *String_Reverse(String *const inst);
  * @param    contents  The instances of String to append.
  * @returns  The re-allocated String inst.
  */
-String *String_Append(String *const inst, const Array(String) *const contents);
+String *String_Append(String *const inst, Array(String) *const contents);
 
 Array(byte) *String_GetData(const String *const inst);
 

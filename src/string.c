@@ -25,27 +25,28 @@ struct String {
   Array(byte) *data;
   llong width;  // Byte width.
   Array(llong) *breaks;  // Token descriptors.  See doc/STRING.md.
+  Array(llong) *frags;  // Fragment descriptors.
 };
 
 String *String_Create(const llong length, const llong width)
 {
   if (width <= 0) {
-    return NULL;
+    return null;
   }
 
   if (length > INT32_MAX) {
-    return NULL;
+    return null;
   }
 
   String *inst = Allocate(1, sizeof(String));
   if (!inst) {
-    return NULL;
+    return null;
   }
 
   inst->data = array(byte, length + 1);
   if (!inst->data) {
     Deallocate(inst);
-    return NULL;
+    return null;
   }
 
   inst->width = width;
@@ -53,7 +54,15 @@ String *String_Create(const llong length, const llong width)
   if (!inst->breaks) {
     Deallocate(inst->data);
     Deallocate(inst);
-    return NULL;
+    return null;
+  }
+
+  inst->frags = array(llong, 0);
+  if (!inst->frags) {
+    Delete(Array(llong), inst->breaks);
+    Deallocate(inst->data);
+    Deallocate(inst);
+    return null;
   }
 
   return inst;
@@ -62,28 +71,28 @@ String *String_Create(const llong length, const llong width)
 String *String_CopyOf(const String *const other)
 {
   if (!other) {
-    return NULL;
+    return null;
   }
 
   if (other->width <= 0) {
-    return NULL;
+    return null;
   }
 
   const llong length = Length(String, other);
 
   if (length > INT32_MAX) {
-    return NULL;
+    return null;
   }
 
   String *inst = Allocate(1, sizeof(String));
   if (!inst) {
-    return NULL;
+    return null;
   }
 
   inst->data = array(byte, length + 1);
   if (!inst->data) {
     Deallocate(inst);
-    return NULL;
+    return null;
   }
 
   memmove(refbyte(inst, 0), refbyte(other, 0), length + 1);
@@ -92,7 +101,15 @@ String *String_CopyOf(const String *const other)
   if (!inst->breaks) {
     Deallocate(inst->data);
     Deallocate(inst);
-    return NULL;
+    return null;
+  }
+
+  inst->frags = CopyOf(Array(llong), other->frags);
+  if (!inst->frags) {
+    Delete(Array(llong), inst->breaks);
+    Deallocate(inst->data);
+    Deallocate(inst);
+    return null;
   }
 
   return inst;
@@ -105,6 +122,7 @@ void String_Delete(String *const inst)
   }
 
   inst->width = 0;
+  Delete(Array(llong), inst->frags);
   Delete(Array(llong), inst->breaks);
   Delete(Array(byte), inst->data);
   Deallocate(inst);
@@ -115,29 +133,30 @@ inline boolean String_Equals(
   String *const string2
 ) {
   return (!compare(string1, string2))
-         && Equals(Array(llong), string1->breaks, string2->breaks, NULL);
+         && Equals(Array(llong), string1->frags, string2->frags, null)
+         && Equals(Array(llong), string1->breaks, string2->breaks, null);
 }
 
 inline String *String_Transfer(
   String **const receiver,
-  String *const provider
+  String **const provider
 ) {
-  if (!receiver || !*receiver) {
-    return NULL;
+  if (!receiver) {
+    return null;
   }
 
-  Delete(String, *receiver);
-
-  *receiver = provider;
+  // *receiver = provider;
+  *receiver = *provider;
+  *provider = null;
 
   return *receiver;
 }
 
-String *String_Update(String **const inst, const char *restrict const cstr)
+String *String_Update(String *const inst, const char *restrict const cstr)
 {
   /* For getting an empty string, provide "" instead. */
   if (!cstr) {
-    return NULL;
+    return null;
   }
 
   const llong length = strnlen(cstr, STRING_LENGTH_MAXIMUM);
@@ -145,8 +164,8 @@ String *String_Update(String **const inst, const char *restrict const cstr)
   String *const string = String_Create(length, sizeof(cstr[0]));
 
   /* Clean resource before re-creating. */
-  if (inst && *inst) {
-    Delete(String, *inst);
+  if (inst) {
+    Delete(String, inst);
   }
 
   memmove(Getter(Array(byte), Data, string->data), cstr, sizeof(char) * length);
@@ -180,7 +199,7 @@ int String_Compare(const String *const string1, const String *const string2)
 String *String_Concat(String *const string1, const String *const string2)
 {
   if (!string1 && !string2) {
-    return NULL;
+    return null;
   }
 
   if (!string1) {
@@ -201,7 +220,7 @@ String *String_Concat(String *const string1, const String *const string2)
 
   String *const concat = Create(String, string1_len + string2_len, width);
 
-  iterate (Array(byte), i, concat->data, {
+  iterate (byte, i, concat->data, {
     if (i < string1_len) {
       setbyte(concat, i, getbyte(string1, i));
       continue;
@@ -210,13 +229,15 @@ String *String_Concat(String *const string1, const String *const string2)
     setbyte(concat, i, getbyte(string2, i - string1_len));
   })
 
+  Delete(String, string1);
+
   return concat;
 }
 
 String *String_Format(const char *restrict const format, ...)
 {
   if (!format) {
-    return NULL;
+    return null;
   }
 
   const llong formatlen = strnlen(format, STRING_LENGTH_MAXIMUM);
@@ -257,7 +278,7 @@ String *String_Substr(
   const llong length
 ) {
   if (!source) {
-    return NULL;
+    return null;
   }
 
   const llong sourcelen = Length(String, source);
@@ -274,7 +295,7 @@ String *String_Substr(
 
   const llong source_length = Length(String, source);
   if (offset + final_length > source_length) {
-    return NULL;
+    return null;
   }
 
   String *substring = Create(String, final_length, source->width);
@@ -306,7 +327,7 @@ boolean String_Blank(const String *const source)
   }
 
   for (register llong i = 0; i < sourcelen; i++) {
-    if (!String_MatchesAny(*refbyte(source, i), WHITESPACE)) {
+    if (!String_MatchesAny(getbyte(source, i), WHITESPACE)) {
       return false;
     }
   }
@@ -314,16 +335,75 @@ boolean String_Blank(const String *const source)
   return true;
 }
 
-String *String_Trim(String **const inst)
+String *String_RemoveLeadingWhitespace(String *const inst)
 {
-  if (!inst || !*inst) {
-    return NULL;
+  if (!inst) {
+    return null;
   }
 
-  *inst = String_RemoveLeadingWhitespace(inst);
-  *inst = String_RemoveTrailingWhitespace(inst);
+  llong first_non_whitespace_byte = -1;
+  const llong len = Length(String, inst);
 
-  return *inst;
+  /* Iterate forward and break on the first valid character */
+  loop (i, len) {
+    if (!String_MatchesAny(getbyte(inst, i), WHITESPACE)) {
+      first_non_whitespace_byte = i;
+      break;
+    }
+  }
+
+  /* Not found. The whole string was whitespace. */
+  if (first_non_whitespace_byte < 0) {
+    Delete(String, inst);
+    return string("");
+  }
+
+  String *substring = substr(inst, first_non_whitespace_byte, -1);
+  Delete(String, inst);
+
+  return substring;
+}
+
+String *String_RemoveTrailingWhitespace(String *const inst)
+{
+  if (!inst) {
+    return null;
+  }
+
+  llong last_non_whitespace_byte = -1;
+  const llong len = Length(String, inst);
+
+  /* Iterate backwards efficiently using rloop */
+  rloop (i, len) {
+    if (!String_MatchesAny(getbyte(inst, i), WHITESPACE)) {
+      last_non_whitespace_byte = i;
+      break;
+    }
+  }
+
+  /* Not found. The whole string was whitespace. */
+  if (last_non_whitespace_byte < 0) {
+    Delete(String, inst);
+    return string("");
+  }
+
+  /* Create substring from index 0 with length (last_index + 1) */
+  String *substring = substr(inst, 0, last_non_whitespace_byte + 1);
+  Delete(String, inst);
+
+  return substring;
+}
+
+String *String_Trim(String *inst)
+{
+  if (!inst) {
+    return null;
+  }
+
+  inst = String_RemoveLeadingWhitespace(inst);
+  inst = String_RemoveTrailingWhitespace(inst);
+
+  return inst;
 }
 
 inline llong String_CountTokens(const String *const inst)
@@ -353,7 +433,7 @@ llong String_Tokens(String *const inst, const char *restrict const delim_cstr)
   llong end = 0;
   boolean refreshed = false;
   for (register llong i = 0; i < Length(String, inst); i++) {
-    const boolean delimed = String_MatchesAny(*refbyte(inst, i), delim_cstr);
+    const boolean delimed = String_MatchesAny(getbyte(inst, i), delim_cstr);
 
     /* First byte of a token. */
     if (!refreshed && !delimed) {
@@ -395,18 +475,18 @@ llong String_Tokens(String *const inst, const char *restrict const delim_cstr)
 String *String_Breaks(const String *const source, const llong tokenth)
 {
   if (!source || tokenth < 0) {
-    return NULL;
+    return null;
   }
 
   const llong sourcelen = Length(String, source);
   if (!sourcelen) {
-    return NULL;
+    return null;
   }
 
   const llong count = String_CountTokens(source);
 
   if (!count) {
-    return NULL;
+    return null;
   }
 
   const llong offset = get(Array(llong), source->breaks, tokenth * 2);
@@ -423,20 +503,116 @@ String *String_Breaks(const String *const source, const llong tokenth)
 Array(String) *String_Gather(const String *const inst)
 {
   if (!inst) {
-    return NULL;
+    return null;
   }
 
   const llong count = String_CountTokens(inst);
   if (!count) {
-    return NULL;
+    return null;
   }
 
   Array(String) *tokens = array(String, count);
-  iterate (Array(String), i, tokens, {
+  iterate (String, i, tokens, {
     set(Array(String), tokens, i, breaks(inst, i));
   })
 
   return tokens;
+}
+
+inline llong String_CountFragments(const String *const inst)
+{
+  if (!inst || !inst->frags) return 0;
+
+  return (call(Array(llong), GetCapacity, inst->frags) % 2) +
+         (call(Array(llong), GetCapacity, inst->frags) / 2);
+}
+
+llong String_Fragmentise(String *const inst, const char *restrict const delim_cstr)
+{
+  if (!inst) {
+    return -1;
+  }
+
+  const llong instlen = Length(String, inst);
+  if (!instlen) {
+    return 0;
+  }
+
+  String *delim_str = string(delim_cstr);
+  const llong delim_len = Length(String, delim_str);
+  if (!delim_len) {
+    Delete(String, delim_str);
+    return -1;
+  }
+
+  /* Reset previous fragments to avoid cross-contamination */
+  Delete(Array(llong), inst->frags);
+  inst->frags = array(llong, 0);
+
+  llong fragth = 0;
+  llong offset = 0;
+  llong whence_idx = -1;
+
+  while ((whence_idx = whence(inst, delim_str, offset)) >= 0) {
+    const llong frag_len = whence_idx - offset;
+
+    /* Skip empty fragments to mirror String_Tokens behavior */
+    if (frag_len > 0) {
+      inst->frags = call(Array(llong), Insert, inst->frags, capacity(Array(llong), inst->frags), offset);
+      inst->frags = call(Array(llong), Insert, inst->frags, capacity(Array(llong), inst->frags), frag_len);
+      fragth++;
+    }
+
+    offset = whence_idx + delim_len; /* Jump entirely over the delim substring */
+  }
+
+  /* Capture the remaining tail of the string */
+  if (offset < instlen) {
+    inst->frags = call(Array(llong), Insert, inst->frags, capacity(Array(llong), inst->frags), offset);
+    inst->frags = call(Array(llong), Insert, inst->frags, capacity(Array(llong), inst->frags), instlen - offset);
+    fragth++;
+  }
+
+  Delete(String, delim_str);
+
+  return fragth;
+}
+
+String *String_Pieces(const String *const source, const llong fragth)
+{
+  if (!source || fragth < 0) {
+    return null;
+  }
+
+  const llong count = String_CountFragments(source);
+  if (!count || fragth >= count) {
+    return null;
+  }
+
+  const llong offset = get(Array(llong), source->frags, fragth * 2);
+  const llong length = get(Array(llong), source->frags, fragth * 2 + 1);
+
+  return substr(source, offset, length);
+}
+
+Array(String) *String_Collect(const String *const inst)
+{
+  if (!inst) {
+    return null;
+  }
+
+  const llong count = String_CountFragments(inst);
+  if (!count) {
+    return null;
+  }
+
+  Array(String) *fragments = array(String, count);
+
+  iterate (String, i, fragments, {
+    set(Array(String), fragments, i, pieces(inst, i));
+  })
+
+  return fragments;
 }
 
 inline llong String_Whence(
@@ -445,6 +621,10 @@ inline llong String_Whence(
   const llong offset
 ) {
   if (!source || !target || offset < 0) {
+    return -1;
+  }
+
+  if (source->width != target->width) {
     return -1;
   }
 
@@ -462,66 +642,18 @@ inline llong String_Whence(
     return -1;
   }
 
-  char *match = strstr(
-    (char *)refbyte(source, offset),
-    (char *)refbyte(target, 0)
-  );
-  if (!match) {
-    return -1;
-  }
+  const byte *src_bytes = refbyte(source, 0);
+  const byte *tgt_bytes = refbyte(target, 0);
+  const llong search_limit = sourcelen - targetlen;
 
-  return match - (char *)refbyte(source, 0);
-}
-
-String *String_RemoveLeadingWhitespace(String **const inst)
-{
-  if (!inst || !*inst) {
-    return NULL;
-  }
-
-  llong first_non_whitespace_byte = -1;
-  foreach (byte, it, inst, {
-    if (!String_MatchesAny(it, WHITESPACE)) {
-      first_non_whitespace_byte = _foreach_idx_it;
+  /* Traverse the continuous memory block using memcmp. */
+  for (reg llong i = offset; i <= search_limit; i++) {
+    if (memcmp(src_bytes + i, tgt_bytes, targetlen) == 0) {
+      return i;
     }
-  })
-
-  /* Not found.  The whole string was whitespace. */
-  if (first_non_whitespace_byte < 0) {
-    Delete(String, *inst);
-    return string("");
   }
 
-  String *substring = substr(*inst, first_non_whitespace_byte, -1);
-  Delete(String, *inst);
-
-  return substring;
-}
-
-String *String_RemoveTrailingWhitespace(String **const inst)
-{
-  if (!inst || !*inst) {
-    return NULL;
-  }
-
-  llong last_non_whitespace_byte = -1;
-  foreach (byte, it, inst, {
-    if (!String_MatchesAny(it, WHITESPACE)) {
-      last_non_whitespace_byte = _foreach_idx_it;
-    }
-  })
-
-  /* Not found. The whole string was whitespace. */
-  if (last_non_whitespace_byte < 0) {
-    Delete(String, *inst);
-    return string("");
-  }
-
-  /* Create substring from index 0 with length (last_index + 1) */
-  String *substring = substr(*inst, 0, last_non_whitespace_byte + 1);
-  Delete(String, *inst);
-
-  return substring;
+  return -1;
 }
 
 boolean String_MatchesAny(const byte target, const char *const group)
@@ -582,13 +714,22 @@ llong String_LastAt(
     return -1;
   }
 
-  reverse(Array(byte), Getter(String, Data, source));
+  const llong sourcelen = Length(String, source);
+  if (!sourcelen) {
+    return -1;
+  }
 
-  const llong index = String_FirstAt(source, target, offset);
+  if (offset < 0 || offset >= sourcelen) {
+    return -1;
+  }
 
-  reverse(Array(byte), Getter(String, Data, source));
+  for (register llong i = sourcelen - 1; i >= offset; i--) {
+    if (target == getbyte(source, i)) {
+      return i;
+    }
+  }
 
-  return index;
+  return -1;
 }
 
 String *String_Strcut(
@@ -596,7 +737,7 @@ String *String_Strcut(
   const llong index
 ) {
   if (!source || !*source) {
-    return NULL;
+    return null;
   }
 
   const llong sourcelen = Length(String, *source);
@@ -605,7 +746,7 @@ String *String_Strcut(
   }
 
   if (index <= 0 || index >= sourcelen) {
-    return NULL;
+    return null;
   }
 
   String *remain = substr(*source, 0, index);
@@ -623,59 +764,54 @@ inline llong String_Length(const String *const string)
     return 0;
   }
 
-  // register llong length = 0;
-  // while (getbyte(string, length)) {
-  //   length += 1;
-  // }
-
-  byte *const ref_index0 = refbyte(string, 0);
-  if (!ref_index0) {
+  if (!refbyte(string, 0)) {
     return 0;
   }
 
-  /* Temporary optimisation applied before Char exist. */
-  return strnlen((const char *)ref_index0, STRING_LENGTH_MAXIMUM);
+  return capacity(Array(byte), string->data) - 1;
 }
 
 String *String_Insert(
-  String **const inst,
+  String *const inst,
   const String *const source,
   const llong index
 ) {
-  if (!inst || !*inst) {
-    return NULL;
+  if (!inst) {
+    return null;
   }
 
   if (!source) {
-    return *inst;
+    return inst;
   }
 
-  const llong instlen = Length(String, *inst);
-  if (index < 0 || index > instlen) {
-    return *inst;
+  const llong pivot = offsetting(Array(byte), inst->data, index);
+
+  const llong instlen = Length(String, inst);
+  if (index > instlen) {
+    return inst;
   }
 
   const llong sourcelen = Length(String, source);
   if (!sourcelen) {
-    return *inst;
+    return inst;
   }
 
-  const llong final_width = ((*inst)->width > source->width
-                               ? (*inst)->width
+  const llong final_width = (inst->width > source->width
+                               ? inst->width
                                : source->width);
 
   const llong length = instlen + sourcelen;
 
   String *insert = String_Create(length, final_width);
-  memmove(refbyte(insert, 0), refbyte((*inst), 0), index);
-  memmove(refbyte(insert, index), refbyte(source, 0), sourcelen);
+  memmove(refbyte(insert, 0), refbyte(inst, 0), pivot);
+  memmove(refbyte(insert, pivot), refbyte(source, 0), sourcelen);
   memmove(
-    refbyte(insert, index + sourcelen), refbyte((*inst), index),
-    instlen - index
+    refbyte(insert, pivot + sourcelen), refbyte(inst, pivot),
+    instlen - pivot
   );
   *refbyte(insert, length) = 0;
 
-  Delete(String, *inst);
+  Delete(String, inst);
 
   return insert;
 }
@@ -686,7 +822,7 @@ String *String_Remove(
   const llong length
 ) {
   if (!inst || !*inst) {
-    return NULL;
+    return null;
   }
 
   const llong instlen = Length(String, *inst);
@@ -758,18 +894,18 @@ Array(llong) *String_Occurrences(
   const llong offset
 ) {
   if (!content || !target || offset < 0) {
-    return NULL;
+    return null;
   }
 
   const llong contentlen = Length(String, content);
   const llong targetlen = Length(String, target);
   if (offset > contentlen || offset + targetlen > contentlen) {
-    return NULL;
+    return null;
   }
 
   Array(llong) *occurrences = array(llong, contentlen);
   if (!occurrences) {
-    return NULL;
+    return null;
   }
 
   llong occurrence_accum = 0;
@@ -787,29 +923,29 @@ Array(llong) *String_Occurrences(
 }
 
 String *String_ReplaceFirst(
-  String **const inst,
+  String *const inst,
   const String *target,
   const String *replacement,
   const llong offset
 ) {
-  if (!inst || !*inst) {
-    return NULL;
+  if (!inst) {
+    return null;
   }
 
-  const llong instlen = Length(String, *inst);
+  const llong instlen = Length(String, inst);
   const llong targetlen = Length(String, target);
   if (!instlen || !target || !replacement || !targetlen || targetlen > instlen
       || (offset + targetlen) > instlen) {
-    return *inst;
+    return inst;
   }
 
-  const llong occurrence = String_Whence(*inst, target, offset);
+  const llong occurrence = String_Whence(inst, target, offset);
   if (occurrence < 0) {
-    return *inst;
+    return inst;
   }
 
-  const llong final_width = ((*inst)->width >= replacement->width
-                               ? (*inst)->width
+  const llong final_width = (inst->width >= replacement->width
+                               ? inst->width
                                : replacement->width);
 
   const llong replacementlen = Length(String, replacement);
@@ -817,10 +953,10 @@ String *String_ReplaceFirst(
     instlen + (replacementlen - targetlen), final_width
   );
   if (!replace) {
-    return NULL;
+    return null;
   }
 
-  memmove(refbyte(replace, 0), refbyte((*inst), 0), occurrence);
+  memmove(refbyte(replace, 0), refbyte(inst, 0), occurrence);
   memmove(
     refbyte(replace, occurrence),
     refbyte(replacement, 0),
@@ -828,41 +964,41 @@ String *String_ReplaceFirst(
   );
   memmove(
     refbyte(replace, occurrence + replacementlen),
-    refbyte((*inst), occurrence + targetlen),
+    refbyte(inst, occurrence + targetlen),
     instlen - (occurrence + targetlen)
   );
 
-  Delete(String, *inst);
+  Delete(String, inst);
 
   return replace;
 }
 
 String *String_ReplaceAll(
-  String **const inst,
+  String *const inst,
   const String *target,
   const String *replacement,
   const llong offset
 ) {
-  if (!inst || !*inst) {
-    return NULL;
+  if (!inst) {
+    return null;
   }
 
-  const llong instlen = Length(String, *inst);
+  const llong instlen = Length(String, inst);
   const llong targetlen = Length(String, target);
   if (!instlen || !target || !replacement || !targetlen || targetlen > instlen
       || (offset + targetlen) > instlen) {
-    return *inst;
+    return inst;
   }
 
-  Array(llong) *occurrences = String_Occurrences(*inst, target, offset);
+  Array(llong) *occurrences = String_Occurrences(inst, target, offset);
   if (!occurrences) {
-    return *inst;
+    return inst;
   }
 
   const llong replacementlen = Length(String, replacement);
   const llong diff = replacementlen - targetlen;
-  const llong final_width = ((*inst)->width >= replacement->width
-                               ? (*inst)->width
+  const llong final_width = (inst->width >= replacement->width
+                               ? inst->width
                                : replacement->width);
 
   String *replace = String_Create(
@@ -870,7 +1006,7 @@ String *String_ReplaceAll(
   );
   if (!replace) {
     Delete(Array(llong), occurrences);
-    return NULL;
+    return null;
   }
 
   llong dst_idx = 0;
@@ -884,7 +1020,7 @@ String *String_ReplaceAll(
     if (seg_length > 0) {
       memcpy(
         refbyte(replace, dst_idx),
-        refbyte((*inst), src_idx),
+        refbyte(inst, src_idx),
         seg_length
       );
       dst_idx += seg_length;
@@ -909,13 +1045,13 @@ String *String_ReplaceAll(
   if (tail_length > 0) {
     memcpy(
       refbyte(replace, dst_idx),
-      refbyte((*inst), src_idx),
+      refbyte(inst, src_idx),
       tail_length
     );
   }
 
   Delete(Array(llong), occurrences);
-  Delete(String, *inst);
+  Delete(String, inst);
 
   return replace;
 }
@@ -923,7 +1059,7 @@ String *String_ReplaceAll(
 void *String_Flatten(const String *const inst, const llong width)
 {
   if (!inst) {
-    return NULL;
+    return null;
   }
 
   byte *const index0 = refbyte(inst, 0);
@@ -934,7 +1070,7 @@ void *String_Flatten(const String *const inst, const llong width)
        zeros everything out whatsoever. */
     void *const empty_buffer = Allocate(1, sizeof(byte));
     if (!empty_buffer) {
-      return NULL;
+      return null;
     }
 
     /* Returning an empty string but to allocate it is to align with the
@@ -958,6 +1094,11 @@ boolean String_Contains(const String *const inst, const String *const target)
     return false;
   }
 
+  /* Prevent comparing strings with mismatched encodings. */
+  if (inst->width != target->width) {
+    return false;
+  }
+
   const llong instlen = Length(String, inst);
   const llong targetlen = Length(String, target);
   if (instlen < targetlen) {
@@ -975,7 +1116,7 @@ boolean String_Contains(const String *const inst, const String *const target)
 inline String *String_Reverse(String *const inst)
 {
   if (!inst) {
-    return NULL;
+    return null;
   }
 
   ig call(Array(byte), Reverse, Getter(String, Data, inst));
@@ -983,8 +1124,10 @@ inline String *String_Reverse(String *const inst)
   return inst;
 }
 
-String *String_Append(String *const inst, const Array(String) *const contents)
-{
+String *String_Append(
+  String *const inst,
+  Array(String) *const contents
+) {
   if (!inst && !contents) {
     return null;
   }
@@ -1004,17 +1147,19 @@ String *String_Append(String *const inst, const Array(String) *const contents)
     max_width = content->width > max_width ? content->width : max_width;
   })
 
-  String *const ret = Create(String, total_length, max_width);
-  if (!ret) {
+  String *const rtn = Create(String, total_length, max_width);
+  if (!rtn) {
     return inst;
   }
 
   /* First write the content from @inst. */
   register llong written = 0;
-  foreachbyte (elem, inst, {
-    *refbyte(ret, written) = elem;
-    written++;
-  })
+  if (inst) {  // If @inst is available.
+    foreachbyte (elem, inst, {
+      *refbyte(rtn, written) = elem;
+      written++;
+    })
+  }
 
   /* Then write in the strings from @contents. */
   refeach (String, content, contents, {
@@ -1023,23 +1168,27 @@ String *String_Append(String *const inst, const Array(String) *const contents)
     }
 
     foreachbyte (elem, content, {
-      *refbyte(ret, written) = elem;
+      *refbyte(rtn, written) = elem;
       written++;
     })
   })
 
-  return ret;
+  Delete(String, inst);
+  erase(Array(String), contents);
+  Delete(Array(String), contents);
+
+  return rtn;
 }
 
 inline String *String_Literalise(String *const inst)
 {
-  return inst;
+  return CopyOf(String, inst);
 }
 
 inline Array(byte) *String_GetData(const String *const inst)
 {
   if (!inst) {
-    return NULL;
+    return null;
   }
 
   return inst->data;
@@ -1055,7 +1204,7 @@ inline llong String_GetWidth(const String *const inst)
 inline Array(llong) *String_GetBreaks(const String *const inst)
 {
   if (!inst) {
-    return NULL;
+    return null;
   }
 
   return inst->breaks;
@@ -1071,7 +1220,7 @@ Array(String) *StringArray_ComposeFromCstr(const llong arglen, ...)
 
   Array(String) *const inst = Create(Array(String), arglen);
   if (!inst) {
-    return NULL;
+    return null;
   }
 
   va_list ap;

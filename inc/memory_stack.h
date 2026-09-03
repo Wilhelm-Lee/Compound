@@ -31,9 +31,11 @@
 
 typedef struct Memory Memory;
 
-typedef struct MemoryStack MemoryStack;
-
-extern MemoryStack *MEMORY_STACK;
+typedef struct MemoryStack {
+  void **data;
+  llong capacity;  // The total capacity of the instance.
+  llong height;  // The current indexer of the instance.
+} MemoryStack;
 
 void *Allocate(const size_t nmemb, const size_t size);
 void _Deallocate(void *const inst);
@@ -49,11 +51,11 @@ void _Deallocate(void *const inst);
  * @return The registered indexer in @MEMORY_STACK if succeeded.
  *         -1 when failed.
  */
-llong MemoryStack_Push(MemoryStack *const inst, Memory memory);
+llong MemoryStack_Push(MemoryStack *const inst, void *const addr);
 void MemoryStack_Pop(MemoryStack *const inst);
-Memory *MemoryStack_Top(MemoryStack *const inst);
+void *MemoryStack_Top(MemoryStack *const inst);
 
-/* Returns -1 either when @inst is NULL
+/* Returns -1 either when @inst is null
  * or when @inst the stack is empty. */
 llong MemoryStack_GetHeight(MemoryStack *const inst);
 

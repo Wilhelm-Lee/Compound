@@ -38,7 +38,7 @@ LITERALISE(Preprocessor)
     string(nameof(identifier)),                                                \
     ComposeFromCstr(                                                           \
       Array(String),                                                           \
-      QUOTE_EACH(__VA_ARGS__)                                                  \
+      #__VA_ARGS__                                                             \
     )                                                                          \
   )                                                                            \
 

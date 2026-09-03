@@ -31,12 +31,12 @@ Parameter *Parameter_Create(
   String *const identifier
 ) {
   if (!type) {
-    return NULL;
+    return null;
   }
 
   Parameter *inst = Allocate(1, sizeof(Parameter));
   if (!inst) {
-    return NULL;
+    return null;
   }
 
   inst->type = type;
@@ -48,10 +48,14 @@ Parameter *Parameter_Create(
 Parameter *Parameter_CopyOf(const Parameter *const other)
 {
   if (!other) {
-    return NULL;
+    return null;
   }
 
-  return Create(Parameter, other->type, other->identifier);
+  return Create(
+    Parameter,
+    CopyOf(String, other->type),
+    CopyOf(String, other->identifier)
+  );
 }
 
 void Parameter_Delete(Parameter *const inst)
@@ -79,27 +83,69 @@ boolean Parameter_Equals(Parameter *const obj1, Parameter *const obj2)
          Equals(String, obj1->type, obj2->type);
 }
 
+Array(Parameter) *Parameter_CreateMultiple(const llong cluster_count, ...)
+{
+  if (!cluster_count) {
+    return array(Parameter, 0);
+  }
+
+  va_list ap;
+  va_start(ap, cluster_count);
+  Array(Parameter) *const inst = array(Parameter, cluster_count);
+  register llong actual_offset = 0;
+  loop (i, cluster_count) {
+    Parameter *const cluster = va_arg(ap, Parameter *);
+    if (!cluster) {
+      continue;
+    }
+
+    set(Array(Parameter), inst, actual_offset, cluster);
+    actual_offset++;
+  }
+  va_end(ap);
+
+  return inst;
+}
+
 String *Parameter_Literalise(
   Parameter *const inst,
+  boolean need_type,
   boolean need_identifier
 ) {
   if (!inst) {
     return null;
   }
 
-  char *const flatten_type = flatten(char, inst->type);
-  char *flatten_identifier = "";
-  String *ret = format("%s", flatten_type);
-  if (need_identifier && inst->identifier && !blank(inst->identifier)) {
-    flatten_identifier = flatten(char, inst->identifier);
-    ret = format("%s %s", flatten_type, flatten_identifier);
-    Deallocate(flatten_identifier);
+  String *lit = string("");
+
+  if (need_type) {
+    lit = append(lit, inst->type);
   }
 
-  Deallocate(flatten_type);
+  if (need_identifier) {
+    lit = append(lit, string(" "), inst->identifier);
+  }
 
-  return ret;
+  return lit;
+}
+
+String *Parameter_GetType(const Parameter *const inst)
+{
+  if (!inst) {
+    return null;
+  }
+
+  return inst->type;
+}
+
+String *Parameter_GetIdentifier(const Parameter *const inst)
+{
+  if (!inst) {
+    return null;
+  }
+
+  return inst->identifier;
 }
 
 IMPL_ARRAY(Parameter)
-IMPL_ARRAY_LITERALISE_CONFIGS(Parameter, need_body, boolean need_body)
+IMPL_ARRAY_LITERALISE_CONFIGS(Parameter, need_type, need_identifier, boolean need_type, boolean need_identifier)

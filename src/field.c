@@ -25,6 +25,7 @@ struct Field {
   Access access;
   Signature *signature;
   String *value;  // The initial value; can be null as when not given.
+  llong numerical_identifier;
 };
 
 Field *Field_Create(
@@ -44,6 +45,7 @@ Field *Field_Create(
   inst->access = access;
   inst->signature = signature;
   inst->value = value;
+  inst->numerical_identifier = -1;
 
   return inst;
 }
@@ -54,7 +56,12 @@ Field *Field_CopyOf(Field *const other)
     return null;
   }
 
-  return Create(Field, other->access, other->signature, other->value);
+  return Create(
+    Field,
+    other->access,
+    CopyOf(Signature, other->signature),
+    CopyOf(String, other->value)
+  );
 }
 
 void Field_Delete(Field *const inst)
@@ -92,17 +99,37 @@ String *Field_Literalise(
     return null;
   }
 
-  String *ret = lit(Signature, inst->signature, yes);
+  String *rtn = lit(Signature, inst->signature, yes, yes, yes, yes, no);
 
   if (inst->value && need_init_value) {
-    ret = append(ret, string(" = "), inst->value);
+    rtn = append(rtn, string(" = "), inst->value);
   }
 
   if (need_semicolon) {
-    ret = concat(ret, string("; "));
+    rtn = Concat(String, rtn, string("; "));
   }
 
-  return ret;
+  return rtn;
+}
+
+inline void _Field_SetNumericalIdentifier(
+  Field *const inst,
+  const llong numerical_identifier
+) {
+  if (!inst) {
+    return;
+  }
+
+  inst->numerical_identifier = numerical_identifier;
+}
+
+inline String *Field_GetIdentifier(Field *const inst)
+{
+  if (!inst) {
+    return nll;
+  }
+
+  return Getter(Signature, Identifier, inst->signature);
 }
 
 IMPL_ARRAY(Field)

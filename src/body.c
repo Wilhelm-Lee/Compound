@@ -39,7 +39,7 @@ Body *Body_Create(
 
   Body *const inst = Allocate(1, sizeof(Body));
   if (!inst) {
-    return NULL;
+    return null;
   }
 
   inst->Execution = Execution;
@@ -51,7 +51,7 @@ Body *Body_Create(
 Body *Body_CopyOf(const Body *const other)
 {
   if (!other) {
-    return NULL;
+    return null;
   }
 
   return Create(Body, other->Execution, other->text);
@@ -102,6 +102,15 @@ String *Body_GetText(const Body *const inst)
   }
 
   return inst->text;
+}
+
+void Body_SetText(Body *const inst, const String *const text)
+{
+  if (!inst) {
+    ret;
+  }
+
+  inst->text = CopyOf(String, text);
 }
 
 IMPL_ARRAY(Body)

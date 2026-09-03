@@ -28,14 +28,73 @@
 typedef struct Method Method;
 
 ARRAY(Method)
-LITERALISE_ARGS(Method, boolean need_body)
+LITERALISE_ARGS(
+  Method,
+  boolean need_returning,
+  boolean need_identifier,
+  boolean need_param_types,
+  boolean need_param_identifiers,
+  boolean need_parameters,
+  boolean need_body,
+  boolean need_semicolon
+)
 
-# define method(class_identifier_literal, access_literal, returning_literal, identifier_literal, block, ...)\
-  Create(Method, ACCESS_##access_literal, function(returning_literal, class_identifier_literal##_##identifier_literal, body(block), param(class_identifier_literal *const, this), __VA_ARGS__))
+# define _create_method(                                                       \
+    access_literal,                                                            \
+    returning_type_literal,                                                    \
+    identifier_literal,                                                        \
+    param_clusters,                                                            \
+    ...                                                                        \
+  )                                                                            \
+    Create(                                                                    \
+      Method,                                                                  \
+      ACCESS_##access_literal,                                                 \
+      CLASS_IDENTIFIER_STR,                                                    \
+      function(                                                                \
+        string(nameof(returning_type_literal)),                                \
+        string(nameof(identifier_literal)),                                    \
+        call(                                                                  \
+          Array(Parameter),                                                    \
+          Concat,                                                              \
+          params_str(                                                          \
+            param_str(                                                         \
+              append(                                                          \
+                CLASS_IDENTIFIER_STR,                                          \
+                string(" *const")                                              \
+              ),                                                               \
+              string(nameof(this))                                             \
+            )                                                                  \
+          ),                                                                   \
+          param_clusters                                                       \
+        ),                                                                     \
+        __VA_ARGS__                                                            \
+      )                                                                        \
+    )
 
-Method *Method_Create(const Access access, Function *const function);
+# define method(                                                               \
+    access_literal,                                                            \
+    returning_type_literal,                                                    \
+    identifier_literal,                                                        \
+    param_clusters,                                                            \
+    ...                                                                        \
+  )                                                                            \
+  (call(                                                                       \
+    Class,                                                                     \
+    AddMethod,                                                                 \
+    this,                                                                      \
+    _create_method(access_literal, returning_type_literal, identifier_literal, param_clusters, __VA_ARGS__)\
+  ));
+
+Method *Method_Create(
+  const Access access,
+  String *const class_identifier,
+  Function *const function
+);
 Method *Method_CopyOf(Method *const other);
 void Method_Delete(Method *const inst);
 boolean Method_Equals(Method *const obj1, Method *const obj2);
+Access Method_GetAccess(const Method *const inst);
+Function *Method_GetFunction(const Method *const inst);
+String *Method_GetIdentifier(Method *const inst);
 
 #endif  /* COMPOUND_METHOD_H */

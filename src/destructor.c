@@ -49,7 +49,11 @@ Destructor *Destructor_CopyOf(Destructor *const other)
     return null;
   }
 
-  return Create(Destructor, other->super, other->method);
+  return Create(
+    Destructor,
+    CopyOf(Destructor, other->super),
+    CopyOf(Method, other->method)
+  );
 }
 
 void Destructor_Delete(Destructor *const inst)
@@ -76,14 +80,102 @@ boolean Destructor_Equals(Destructor *const obj1, Destructor *const obj2)
          Equals(Method, obj1->method, obj2->method);
 }
 
-String *Destructor_Literalise(Destructor *const inst, boolean need_body)
+void Destructor_Inherit(Destructor *const inst, Destructor *const super)
+{
+  if (!inst || !super) {
+    ret;
+  }
+
+  inst->super = super;
+  Setter(
+      Body, Text,
+      Getter(
+          Function, Body,
+          Getter(Method, Function, Getter(Destructor, Method, super))),
+      append(
+          Getter(
+              Body, Text,
+              Getter(
+                  Function, Body,
+                  Getter(
+                      Method, Function, Getter(Destructor, Method, super)))),
+          Getter(
+              Body, Text,
+              Getter(
+                  Function, Body,
+                  Getter(
+                      Method, Function, Getter(Destructor, Method, inst))))));
+}
+
+Destructor *Destructor_GetSuper(const Destructor *const inst)
 {
   if (!inst) {
     return null;
   }
 
-  return lit(Method, inst->method, need_body);
+  return inst->super;
+}
+
+Method *Destructor_GetMethod(const Destructor *const inst)
+{
+  if (!inst) {
+    return null;
+  }
+
+  return inst->method;
+}
+
+void Destructor_SetSuper(Destructor *const inst, Destructor *const super)
+{
+  if (!inst) {
+    ret;
+  }
+
+  inst->super = super;
+}
+
+String *Destructor_Literalise(
+  Destructor *const inst,
+  boolean need_returning,
+  boolean need_identifier,
+  boolean need_param_types,
+  boolean need_param_identifiers,
+  boolean need_parameters,
+  boolean need_body,
+  boolean need_semicolon
+) {
+  if (!inst) {
+    return null;
+  }
+
+  return lit(
+    Method,
+    inst->method,
+    need_returning,
+    need_identifier,
+    need_param_types,
+    need_param_identifiers,
+    need_parameters,
+    need_body,
+    need_semicolon
+  );
 }
 
 IMPL_ARRAY(Destructor)
-IMPL_ARRAY_LITERALISE_CONFIGS(Destructor, need_body, boolean need_body)
+IMPL_ARRAY_LITERALISE_CONFIGS(
+  Destructor,
+  need_returning,
+  need_identifier,
+  need_param_types,
+  need_param_identifiers,
+  need_parameters,
+  need_body,
+  need_semicolon,
+  boolean need_returning,
+  boolean need_identifier,
+  boolean need_param_types,
+  boolean need_param_identifiers,
+  boolean need_parameters,
+  boolean need_body,
+  boolean need_semicolon
+)

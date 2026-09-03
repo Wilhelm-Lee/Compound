@@ -32,8 +32,8 @@
      const char *const *const argv,                                            \
      const char *const *const envp                                             \
    ) {                                                                         \
-     Array(String) *args = NULL;                                               \
-     Array(String) *envs = NULL;                                               \
+     Array(String) *args = null;                                               \
+     Array(String) *envs = null;                                               \
      InitialiseMain(argc, argv, envp, &args, &envs);                           \
                                                                                \
      const int retval = _Main(args, envs);                                     \
@@ -47,23 +47,23 @@
      const int argc,                                                           \
      const char *const *const argv                                             \
    ) {                                                                         \
-     Array(String) *args = NULL;                                               \
-     InitialiseMain(argc, argv, NULL, &args, NULL);                            \
+     Array(String) *args = null;                                               \
+     InitialiseMain(argc, argv, null, &args, null);                            \
                                                                                \
      const int retval = _Main(args);                                           \
                                                                                \
-     DeinitialiseMain(&args, NULL);                                            \
+     DeinitialiseMain(&args, null);                                            \
      return retval;                                                            \
    }
 # else
 #  define IMPL_MAIN                                                            \
    int main(void)                                                              \
    {                                                                           \
-     InitialiseMain(0, NULL, NULL, NULL, NULL);                                \
+     InitialiseMain(0, null, null, null, null);                                \
                                                                                \
      const int retval = _Main();                                               \
                                                                                \
-     DeinitialiseMain(NULL, NULL);                                             \
+     DeinitialiseMain(null, null);                                             \
      return retval;                                                            \
    }
 # endif

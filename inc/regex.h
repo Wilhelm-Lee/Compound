@@ -17,35 +17,31 @@
  * <https://www.gnu.org/licenses/>.
  */
 
-/** @file init.h */
+/** @file regex.h */
 
-#ifndef COMPOUND_INIT_H
-# define COMPOUND_INIT_H
+#ifndef COMPOUND_REGEX_H
+# define COMPOUND_REGEX_H
 
-# include "language.h"
-# include "memory_stack.h"
-# include "string.h"
+#define PCRE2_CODE_UNIT_WIDTH 8
+#include <pcre2.h>
 
-# ifdef __COMPOUND_FEATURE_STATUS__
-void InitialiseStatusStack(Stack(Status) **const instptr);
-void DeinitialiseStatusStack(Stack(Status) **const instptr);
-# endif
+# include "match.h"
 
-# ifdef __COMPOUND_FEATURE_RECYCLER__
-void InitialiseMemoryStack(MemoryStack *const inst);
-void DeinitialiseMemoryStack(MemoryStack *const inst);
-# endif
+typedef struct Regex Regex;
 
-int InitialiseMain(
-  const int argc,
-  const char *const *restrict const argv,
-  const char *const *restrict const envp,
-  Array(String) **const args,
-  Array(String) **const envs
-);
-int DeinitialiseMain(
-  Array(String) **const args,
-  Array(String) **const envs
-);
+ARRAY(Regex)
+LITERALISE(Regex)
 
-#endif  /* COMPOUND_INIT_H */
+# define regex(string_ptr, ...)\
+  (Create(Regex, string_ptr, string(#__VA_ARGS__)))
+
+# define extract(regex_ptr, ...)\
+  Regex_Extract(regex_ptr, Compose(Array(int), __VA_ARGS__))
+
+Regex *Regex_Create(String *const original, String *const expression);
+Regex *Regex_CopyOf(Regex *const other);
+void Regex_Delete(Regex *const inst);
+boolean Regex_Equals(Regex *const obj1, Regex *const obj2);
+Array(String) *Regex_Extract(Regex *const inst, Array(int) *const indices);
+
+#endif  /* COMPOUND_REGEX_H */

@@ -28,32 +28,34 @@
 typedef struct Function Function;
 
 ARRAY(Function)
-LITERALISE_ARGS(Function, boolean need_body)
+LITERALISE_ARGS(
+  Function,
+  boolean need_returning,
+  boolean need_identifier,
+  boolean need_param_types,
+  boolean need_param_identifiers,
+  boolean need_parameters,
+  boolean need_body,
+  boolean need_semicolon
+)
 
-# define function(returning_literal, identifier_literal, body, ...)            \
+# define function(returning_type_str, identifier_str, param_clusters, ...)     \
   Create(                                                                      \
     Function,                                                                  \
     Create(                                                                    \
       Signature,                                                               \
-      string(nameof(returning_literal)),                                       \
-      string(nameof(identifier_literal)),                                      \
-      Compose(Array(Parameter), __VA_ARGS__)                                   \
+      returning_type_str,                                                      \
+      identifier_str,                                                          \
+      param_clusters                                                           \
     ),                                                                         \
-    body                                                                       \
+    body(__VA_ARGS__)                                                          \
   )
-
-/* Before the generation, this macro is suppose to be making no difference to
- * the current version of the source code. */
-# define invoke(identifier, ...)
-
-/* This is the actual macro used after the generation.
- * It is appended to the "user/header.h". */
-# define _invoke(identifier, ...)                                              \
-  CONCAT(identifier, (__VA_ARGS__))
 
 Function *Function_Create(Signature *const signature, Body *const body);
 Function *Function_CopyOf(const Function *const other);
 void Function_Delete(Function *const inst);
 boolean Function_Equals(Function *const obj1, Function *const obj2);
+Signature *Function_GetSignature(const Function *const inst);
+Body *Function_GetBody(const Function *const inst);
 
 #endif  /* COMPOUND_FUNCTION_H */

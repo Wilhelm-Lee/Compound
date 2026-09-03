@@ -23,17 +23,22 @@
 
 struct Method {
   Access access;
+  String *class_identifier;
   Function *function;
 };
 
-Method *Method_Create(const Access access, Function *const function)
-{
+Method *Method_Create(
+  const Access access,
+  String *const class_identifier,
+  Function *const function
+) {
   Method *const inst = Allocate(1, sizeof(Method));
-  if (!inst) {
+  if (!inst || !class_identifier) {
     return null;
   }
 
   inst->access = access;
+  inst->class_identifier = class_identifier;
   inst->function = function;
   if (!inst->function) {
     Deallocate(inst);
@@ -49,7 +54,12 @@ Method *Method_CopyOf(Method *const other)
     return null;
   }
 
-  return Create(Method, other->access, other->function);
+  return Create(
+    Method,
+    other->access,
+    CopyOf(String, other->class_identifier),
+    CopyOf(Function, other->function)
+  );
 }
 
 void Method_Delete(Method *const inst)
@@ -59,6 +69,7 @@ void Method_Delete(Method *const inst)
   }
 
   Delete(Function, inst->function);
+  Delete(String, inst->class_identifier);
   Deallocate(inst);
 }
 
@@ -76,14 +87,79 @@ boolean Method_Equals(Method *const obj1, Method *const obj2)
          Equals(Function, obj1->function, obj2->function);
 }
 
-String *Method_Literalise(Method *const inst, boolean need_body)
+String *Method_Literalise(
+  Method *const inst,
+  boolean need_returning,
+  boolean need_identifier,
+  boolean need_param_types,
+  boolean need_param_identifiers,
+  boolean need_parameters,
+  boolean need_body,
+  boolean need_semicolon
+) {
+  if (!inst) {
+    return null;
+  }
+
+  return lit(
+    Function,
+    inst->function,
+    need_returning,
+    need_identifier,
+    need_param_types,
+    need_param_identifiers,
+    need_parameters,
+    need_body,
+    need_semicolon
+  );
+}
+
+inline Access Method_GetAccess(const Method *const inst)
+{
+  if (!inst) {
+    return ACCESS_PRIVATE;
+  }
+
+  return inst->access;
+}
+
+inline Function *Method_GetFunction(const Method *const inst)
 {
   if (!inst) {
     return null;
   }
 
-  return lit(Function, inst->function, need_body);
+  return inst->function;
+}
+
+inline String *Method_GetIdentifier(Method *const inst)
+{
+  if (!inst) {
+    return nll;
+  }
+
+  return Getter(
+    Signature,
+    Identifier,
+    Getter(Function, Signature, inst->function)
+  );
 }
 
 IMPL_ARRAY(Method)
-IMPL_ARRAY_LITERALISE_CONFIGS(Method, need_body, boolean need_body)
+IMPL_ARRAY_LITERALISE_CONFIGS(
+  Method,
+  need_returning,
+  need_identifier,
+  need_param_types,
+  need_param_identifiers,
+  need_parameters,
+  need_body,
+  need_semicolon,
+  boolean need_returning,
+  boolean need_identifier,
+  boolean need_param_types,
+  boolean need_param_identifiers,
+  boolean need_parameters,
+  boolean need_body,
+  boolean need_semicolon
+)
