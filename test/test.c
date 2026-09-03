@@ -189,7 +189,7 @@ Array(Variable) *ParseVariables(String *const line)
   return vars;
 }
 
-int Main()
+int Main(void)
 {
   Stream *const stream = stream("mapping", "r");
   if (!stream) {

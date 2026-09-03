@@ -47,13 +47,34 @@ jobs:
           cmake: true
           ninja: true
 
+      - name: Install PCRE2 Dependency
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" == "Linux" ]; then
+            sudo apt-get update
+            sudo apt-get install -y libpcre2-dev
+          elif [ "$RUNNER_OS" == "macOS" ]; then
+            brew install pcre2
+          elif [ "$RUNNER_OS" == "Windows" ]; then
+            # We must explicitly request the MinGW triplet because the Windows matrix uses GCC
+            vcpkg install pcre2:x64-mingw-dynamic
+          fi
+
       - name: Configure CMake
-        run: >
-          cmake -B ${{ steps.strings.outputs.build-output-dir }}
-          -G Ninja
-          -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
-          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-          -S ${{ github.workspace }}
+        shell: bash
+        run: |
+          EXTRA_ARGS=""
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            # Tell CMake to use vcpkg to resolve the PCRE2 dependency for MinGW
+            EXTRA_ARGS="-DCMAKE_TOOLCHAIN_FILE=$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-mingw-dynamic"
+          fi
+
+          cmake -B ${{ steps.strings.outputs.build-output-dir }} \
+            -G Ninja \
+            -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
+            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+            $EXTRA_ARGS \
+            -S ${{ github.workspace }}
 
       - name: Build
         run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
@@ -61,3 +82,4 @@ jobs:
       - name: Test
         working-directory: ${{ steps.strings.outputs.build-output-dir }}
         run: ctest --build-config ${{ matrix.build_type }} --output-on-failure
+
