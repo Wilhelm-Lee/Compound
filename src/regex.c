@@ -192,7 +192,7 @@ boolean Regex_Compile(Regex *const inst)
 }
 
 /* Update Regex_Extract to accept and process varargs */
-Array(String) *Regex_Extract(Regex *const inst, const llong group_count, ...)
+Array(String) *Regex_Extract(Regex *const inst, Array(int) *const indices)
 {
   if (!inst) {
     return nll;
@@ -204,18 +204,17 @@ Array(String) *Regex_Extract(Regex *const inst, const llong group_count, ...)
 
   Regex_Compile(inst);
 
+  const llong group_count = Length(Array(int), indices);
+
   /* Default to fetching group 0 (full match) if no arguments provided */
-  const llong actual_count = group_count > 0 ? group_count : 1;
+  const llong actual_count = Length(Array(int), indices);
   Array(llong) *groups = array(llong, actual_count);
 
   if (group_count > 0) {
-    va_list ap;
-    va_start(ap, group_count);
-    loop(i, group_count) {
+    loop (i, group_count) {
       /* C varargs promote standard integer literals to 'int' */
-      set(Array(llong), groups, i, (llong)va_arg(ap, int));
+      set(Array(llong), groups, i, get(Array(int), indices, i));
     }
-    va_end(ap);
   } else {
     set(Array(llong), groups, 0, 0);
   }
