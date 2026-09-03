@@ -64,12 +64,11 @@ set(
 find_package(PCRE2 NAMES pcre2 QUIET)
 
 if(PCRE2_FOUND)
-  # The official PCRE2 CMake target is PCRE2::8Bit
-  set(PCRE2_LINK_TARGET PCRE2::8Bit)
+  set(PCRE2_LINK_TARGET PCRE2::pcre2-8)
 else()
   # Fallback to pkg-config (Perfect for Ubuntu/apt and macOS/brew)
   find_package(PkgConfig REQUIRED)
-  # The IMPORTED_TARGET flag automatically bundles the library paths safely!
+  # The IMPORTED_TARGET flag automatically bundles the library paths safely
   pkg_check_modules(PCRE2 REQUIRED IMPORTED_TARGET libpcre2-8)
   set(PCRE2_LINK_TARGET PkgConfig::PCRE2)
 endif()
@@ -112,10 +111,4 @@ target_link_libraries(Fundation PRIVATE CommonCompilationFlags)
 target_link_libraries(Fundation PUBLIC ${PCRE2_LINK_TARGET})
 target_link_libraries(compound PUBLIC ${PCRE2_LINK_TARGET})
 
-# Executables link against both the final shared library AND the compilation flags.
 target_link_libraries(CompoundTest PRIVATE compound CommonCompilationFlags)
-# target_link_libraries(CompoundDemo PRIVATE compound CommonCompilationFlags)
-
-#target_include_directories(hashmap PUBLIC ${hashmap_SOURCE_DIR})
-#target_link_libraries(CompoundTest PUBLIC hashmap)
-#target_link_libraries(compound PUBLIC hashmap)
