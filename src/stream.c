@@ -28,6 +28,74 @@ struct Stream {
   FILE *fileptr;
 };
 
+static boolean _Stream_SkipLines(Stream *const inst, llong lines_to_skip)
+{
+  while (lines_to_skip > 0) {
+    byte read_byte = 0;
+    size_t count = fread(&read_byte, sizeof(byte), 1, inst->fileptr);
+
+    /* EOF or Error encountered. */
+    if (count == 0 || feof(inst->fileptr) || ferror(inst->fileptr)) {
+      return false;
+    }
+
+    if (read_byte == '\n') {
+      lines_to_skip--;
+    }
+  }
+  return true;
+}
+
+static boolean _Stream_ReadTargetLine(Stream *const inst)
+{
+  boolean chars_read = false;
+
+  while (true) {
+    byte read_byte = 0;
+    size_t count = fread(&read_byte, sizeof(byte), 1, inst->fileptr);
+
+    if (count == 0 || feof(inst->fileptr) || ferror(inst->fileptr)) {
+      /* Return false if we hit EOF immediately without reading anything. */
+      if (!chars_read && Getter(Buffer, Cursor, inst->buffer) == 0) {
+        return false;
+      }
+      break;
+    }
+
+    if (read_byte == '\n') {
+      break;
+    }
+
+    if (read_byte == '\r') {
+      continue;
+    }
+
+    chars_read = true;
+    call(Buffer, Append, inst->buffer, read_byte);
+  }
+
+  return true;
+}
+
+static String *_Stream_ExtractBuffer(Stream *const inst)
+{
+  const llong cursor = Getter(Buffer, Cursor, inst->buffer);
+  Array(byte) *const data = Getter(Buffer, Data, inst->buffer);
+
+  char *c_str = Allocate(cursor + 1, sizeof(char));
+  if (cursor > 0) {
+    memmove(c_str, ref(Array(byte), data, 0), cursor);
+  }
+  c_str[cursor] = '\0';
+
+  String *value = string(c_str);
+
+  /* Reset the buffer for the next read cycle. */
+  call(Buffer, Clear, inst->buffer);
+
+  return value;
+}
+
 Stream *Stream_Create(const String *const filepath, const String *const mode)
 {
   if (!filepath || !mode) {
@@ -193,19 +261,9 @@ boolean Stream_WriteLine(
     /* Flush any pending writes in our Buffer before switching to system reads. */
     Stream_Flush(inst);
 
-    register llong skip_countdown = lines_to_skip;
-    while (skip_countdown > 0) {
-      byte read_byte = 0;
-      size_t count = fread(&read_byte, sizeof(byte), 1, inst->fileptr);
-
-      if (count == 0 || feof(inst->fileptr) || ferror(inst->fileptr)) {
-        break; /* Hit EOF or error before finishing our skips. */
-      }
-
-      if (read_byte == '\n') {
-        skip_countdown--;
-      }
-    }
+    /* Reuse our static helper! If it hits EOF/error, it returns false.
+       Ignoring the return value acts exactly like the original 'break'. */
+    _Stream_SkipLines(inst, lines_to_skip);
 
     /* C standard requires a positioning operation between read and write. */
     fseek(inst->fileptr, 0, SEEK_CUR);
@@ -213,18 +271,13 @@ boolean Stream_WriteLine(
 
   /* Phase 2: Write the target line. */
   String *newline = string(NEWLINE);
-  const llong value_len = Length(String, value);
 
-  if (!value_len) {
-    Stream_Write(inst, newline);
-    Delete(String, newline);
-
-    return true;
+  /* Length() safely returns 0 if value is null, bypassing this block. */
+  if (Length(String, value) > 0) {
+    Stream_Write(inst, value);
   }
 
-  Stream_Write(inst, value);
   Stream_Write(inst, newline);
-
   Delete(String, newline);
 
   return true;
@@ -288,62 +341,17 @@ String *Stream_ReadLine(Stream *const inst, const llong lines_to_skip)
   /* C standard requires a positioning operation or fflush between write and read. */
   fseek(inst->fileptr, 0, SEEK_CUR);
 
-  register llong skip_countdown = lines_to_skip;
-
-  /* Still skipped. */
-  while (skip_countdown > 0) {
-    byte read_byte = 0;
-    size_t count = fread(&read_byte, sizeof(byte), 1, inst->fileptr);
-
-    /* EOF. */
-    if (count == 0 || feof(inst->fileptr) || ferror(inst->fileptr)) {
+  if (lines_to_skip > 0) {
+    if (!_Stream_SkipLines(inst, lines_to_skip)) {
       return null;
     }
-
-    if (read_byte == '\n') {
-      skip_countdown--;
-    }
   }
 
-  /* Read the actual target line. */
-  boolean chars_read = false;
-  while (true) {
-    byte read_byte = 0;
-    size_t count = fread(&read_byte, sizeof(byte), 1, inst->fileptr);
-
-    if (count == 0 || feof(inst->fileptr) || ferror(inst->fileptr)) {
-      if (!chars_read && Getter(Buffer, Cursor, inst->buffer) == 0) {
-        return null;
-      }
-      break;
-    }
-
-    if (read_byte == '\n') {
-      break;
-    }
-
-    if (read_byte == '\r') {
-      continue;
-    }
-
-    chars_read = true;
-    call(Buffer, Append, inst->buffer, read_byte);
+  if (!_Stream_ReadTargetLine(inst)) {
+    return null;
   }
 
-  const llong cursor = Getter(Buffer, Cursor, inst->buffer);
-  Array(byte) *const data = Getter(Buffer, Data, inst->buffer);
-
-  char *c_str = Allocate(cursor + 1, sizeof(char));
-  if (cursor > 0) {
-    memmove(c_str, ref(Array(byte), data, 0), cursor);
-  }
-  c_str[cursor] = '\0';
-
-  String *value = string(c_str);
-
-  call(Buffer, Clear, inst->buffer);
-
-  return value;
+  return _Stream_ExtractBuffer(inst);
 }
 
 String *Stream_Literalise(Stream *const inst)
