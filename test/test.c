@@ -36,7 +36,6 @@
 #include "../inc/field.h"
 #include "../inc/function.h"
 #include "../inc/memory_stack.h"
-#include "../inc/memusage.h"
 #include "../inc/origin.h"
 #include "../inc/preprocessor.h"
 #include "../inc/recollector.h"

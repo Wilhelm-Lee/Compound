@@ -40,7 +40,6 @@ set(
   src/init.c
   src/match.c
   src/memory_stack.c
-  src/memusage.c
   src/method.c
   src/origin.c
   src/parameter.c
