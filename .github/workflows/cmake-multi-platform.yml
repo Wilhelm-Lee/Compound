@@ -47,19 +47,6 @@ jobs:
           cmake: true
           ninja: true
 
-      - name: Install PCRE2 Dependency
-        shell: bash
-        run: |
-          if [ "$RUNNER_OS" == "Linux" ]; then
-            sudo apt-get update
-            sudo apt-get install -y libpcre2-dev
-          elif [ "$RUNNER_OS" == "macOS" ]; then
-            brew install pcre2
-          elif [ "$RUNNER_OS" == "Windows" ]; then
-            # We must explicitly request the MinGW triplet because the Windows matrix uses GCC
-            vcpkg install pcre2:x64-mingw-dynamic
-          fi
-
       - name: Configure CMake
         shell: bash
         run: |
