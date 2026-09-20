@@ -38,7 +38,7 @@
 #include "../inc/memory_stack.h"
 #include "../inc/origin.h"
 #include "../inc/preprocessor.h"
-#include "../inc/recollector.h"
+// #include "../inc/recollector.h"
 #include "../inc/regex.h"
 #include "../inc/stream.h"
 

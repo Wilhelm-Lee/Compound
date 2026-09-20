@@ -23,7 +23,7 @@
 # define COMPOUND_MEMORY_INTERNAL_H
 
 # include "common.h"
-# include "frame.h"
+// # include "frame.h"
 # include "types.h"
 
 # define MEMORY_FRAME_ID_NULL  0

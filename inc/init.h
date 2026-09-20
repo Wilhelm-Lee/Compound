@@ -24,7 +24,7 @@
 
 # include "language.h"
 # include "memory_stack.h"
-# include "recollector.h"
+// # include "recollector.h"
 # include "string.h"
 
 # ifdef __COMPOUND_FEATURE_STATUS__

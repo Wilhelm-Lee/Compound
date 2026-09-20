@@ -20,7 +20,8 @@
 /** @file allocator.c */
 
 #include "../inc/allocator.h"
-#include "../inc/recollector.h"
+#include "../inc/memory_stack.h"
+// #include "../inc/recollector.h"
 
 extern MemoryStack MEMORY_STACK;
 
