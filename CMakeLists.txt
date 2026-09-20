@@ -20,6 +20,8 @@ set(CMAKE_CACHEFILE_DIR ${CMAKE_BUILD_DIR})
 set(USER_DIRECTORY "${PROJECT_SOURCE_DIR}/usr")
 set(USER_HEADER "${USER_DIRECTORY}/header.h")
 
+set(DEP_DIRECTORY "${PROJECT_SOURCE_DIR}/dep")
+
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(
@@ -55,6 +57,24 @@ set(
 # Setup environments for source code generation.
 file(MAKE_DIRECTORY "${PROJECT_SOURCE_DIR}/usr")
 file(TOUCH "${USER_HEADER}")
+
+
+file(MAKE_DIRECTORY "${DEP_DIRECTORY}")
+find_package(Git QUIET)
+if(NOT GIT_FOUND)
+  message(FATAL_ERROR "Cannot find the git executable.  Make sure you have read README.md for necessary dependencies to build this project.")
+endif()
+
+execute_process(
+    COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
+    WORKING_DIRECTORY "${DEP_DIRECTORY}"
+    RESULT_VARIABLE git_result
+)
+
+if(NOT ${git_result} EQUAL 0)
+  message(FATAL_ERROR "Failed to execute: ${GIT_EXECUTABLE} submodule update --init --recursive; exit code: ${git_result}")
+endif()
+
 
 # Dependencies.  (git submodule-ed)
 add_subdirectory(dep/pcre2)
