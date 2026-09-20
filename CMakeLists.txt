@@ -37,7 +37,6 @@ set(
   src/destructor.c
   src/field.c
   src/function.c
-  src/heap.c
   src/init.c
   src/match.c
   src/memory_stack.c
