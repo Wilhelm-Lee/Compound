@@ -302,10 +302,6 @@ void *Origin_Allocate(const llong requirement)
   }
 
   llong heap_offset = GetFirstFitOffset(origin->heap.occupations, __COMPOUND_ORIGIN_HEAP_OCCUPATION_COUNT_MAXIMUM__, requirement);
-  if (heap_offset < 0) {
-    return nll;
-  }
-
   if (heap_offset < 0 || heap_offset >= __COMPOUND_ORIGIN_HEAP_CHUNK_COUNT__) {
     return nll;
   }
@@ -467,11 +463,10 @@ void VisualiseMemoryByMemoryOccupation(const char *const title)
       printf(" ");
     }
 
+    /* This @ref will always be valid because the address it takes is
+     * from the compile-time-allocate memory.
+     */
     register Memory *const ref = &origin->meta.data[i];
-    if (!ref) {
-      printf("E");
-      continue;
-    }
 
     if (ref->header.actual) {
       printf("@");
@@ -491,7 +486,7 @@ void DumpHeap(const char *const title)
   register llong usage = 0;
 
   printf("=== Heap Occupation Summary (%s) ===\n", title ? title : "");
-  printf("Capacity: 0x%llX"NL, __COMPOUND_ORIGIN_HEAP_SIZE_MAXIMUM__);
+  printf("Capacity: 0x%llX"NL, (ullong)__COMPOUND_ORIGIN_HEAP_SIZE_MAXIMUM__);
 
   for (register llong i = 0; i < cap; i++) {
     if (i % (64 * 8) == 0) {
