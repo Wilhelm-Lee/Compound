@@ -74,7 +74,7 @@ endif()
 
 
 # Dependencies.  (git submodule-ed)
-add_subdirectory("${DEP_DIRECTORY}"/pcre2)
+add_subdirectory("${DEP_DIRECTORY}/pcre2")
 
 
 # Rename the executable to avoid conflict with the library 'compound' On
