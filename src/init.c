@@ -71,7 +71,7 @@ int InitialiseMain(
   InitialiseMemoryStack();
 # endif
 
-  InitialiseHeap();
+  InitialiseOrigin();
 
 # ifdef __COMPOUND_FEATURE_ARGUMENT__
   *args = array(String, argc);
@@ -138,7 +138,7 @@ int DeinitialiseMain(
   DeinitialiseRecollector();
 # endif
 
-  DeinitialiseHeap();
+  DeinitialiseOrigin();
 
   return 0;
 }

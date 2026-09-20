@@ -35,7 +35,6 @@
 #include "../inc/entry.h"
 #include "../inc/field.h"
 #include "../inc/function.h"
-#include "../inc/heap.h"
 #include "../inc/memory_stack.h"
 #include "../inc/memusage.h"
 #include "../inc/origin.h"

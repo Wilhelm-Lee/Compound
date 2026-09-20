@@ -401,12 +401,8 @@ void InitialiseOrigin(void)
   origin = &_origin;
 }
 
-void DeinitialiseOrigin(Origin *const inst)
+void DeinitialiseOrigin(void)
 {
-  if (!inst) {
-    return;
-  }
-
   *origin = (Origin)Empty;
 }
 
@@ -507,12 +503,10 @@ void DumpHeap(const char *const title)
       printf(" ");
     }
 
-
+    /* This @ref will always be valid because the address it takes is
+     * from the compile-time-allocate memory.
+     */
     register byte *const ref = &origin->heap.data[i];
-    if (!ref) {
-      printf("E");
-      continue;
-    }
 
     if (isalpha(*ref) || isdigit(*ref) || ispunct(*ref)) {
       printf("%c", *ref);

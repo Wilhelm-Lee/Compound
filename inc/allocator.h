@@ -25,7 +25,6 @@
 # include <stdlib.h>
 
 # include "common.h"
-# include "heap.h"
 # include "types.h"
 
 /*  *** Hint ********************************  */

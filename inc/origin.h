@@ -28,7 +28,6 @@
 
 # include <ctype.h>
 
-# include "heap.h"
 # include "memory.h"
 # include "memory_internal.h"
 # include "memory_stack.h"
@@ -73,7 +72,7 @@ extern Origin *origin;
 extern void Recollector_Recollect(void);
 
 void InitialiseOrigin(void);
-void DeinitialiseOrigin(Origin *const inst);
+void DeinitialiseOrigin(void);
 
 Origin *Origin_Create(void);
 Origin *Origin_CopyOf(Origin *const other);
