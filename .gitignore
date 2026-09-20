@@ -10,7 +10,7 @@ out/
 todo.md
 
 # Compound Directories
-user
+usr
 
 # Eclipse IDE
 .cproject
@@ -26,18 +26,7 @@ CompoundTest
 .idea/editor.xml
 .idea/inspectionProfiles/Project_Default.xml
 
-# Misc.
-for_each
-func_reg
-generate_incompleted.sh
-highlight.css
-run
-run.sh
-status.h
-to_fix
-oop
-format
-abstraction
+# Unprepared Source Code
 doc/*
 inc/date.h
 inc/datetime.h
@@ -62,4 +51,25 @@ src/parser.c
 src/recollector.c
 src/runtime.c
 src/stacks.c
+inc/memusage.*
+src/memusage.*
+
+# Misc.
+for_each
+func_reg
+generate_incompleted.sh
+highlight.css
+run
+run.sh
+status.h
+to_fix
+oop
+format
+abstraction
+commit_summarise_prompt.md
+conclude
+da bomb
+graph
+objects
+intersections
 *~

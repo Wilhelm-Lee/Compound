@@ -33,7 +33,7 @@ LITERALISE(Buffer)
 Buffer *Buffer_Create(const llong capacity);
 Buffer *Buffer_CopyOf(const Buffer *const other);
 void Buffer_Delete(Buffer *const inst);
-boolean Buffer_Equals(const Buffer *const obj1, const Buffer *const obj2);
+boolean Buffer_Equals(const Buffer *const inst, const Buffer *const other);
 
 boolean Buffer_Sample(Buffer *const inst, const String *const string);
 void Buffer_Rewind(Buffer *const inst);

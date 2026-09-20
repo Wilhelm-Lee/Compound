@@ -82,7 +82,7 @@ static String *_Stream_ExtractBuffer(Stream *const inst)
   const llong cursor = Getter(Buffer, Cursor, inst->buffer);
   Array(byte) *const data = Getter(Buffer, Data, inst->buffer);
 
-  char *c_str = Allocate(cursor + 1, sizeof(char));
+  char *c_str = Allocate((cursor + 1) * sizeof(char));
   if (cursor > 0) {
     memmove(c_str, ref(Array(byte), data, 0), cursor);
   }
@@ -96,13 +96,13 @@ static String *_Stream_ExtractBuffer(Stream *const inst)
   return value;
 }
 
-Stream *Stream_Create(const String *const filepath, const String *const mode)
+Stream *Stream_Create(String *const filepath, String *const mode)
 {
   if (!filepath || !mode) {
     return null;
   }
 
-  Stream *const inst = Allocate(1, sizeof(Stream));
+  Stream *const inst = Allocate(sizeof(Stream));
   if (!inst) {
     return null;
   }
@@ -121,7 +121,7 @@ Stream *Stream_CopyOf(const Stream *const other)
     return null;
   }
 
-  Stream *const inst = Allocate(1, sizeof(Stream));
+  Stream *const inst = Allocate(sizeof(Stream));
   if (!inst) {
     return null;
   }
@@ -130,6 +130,13 @@ Stream *Stream_CopyOf(const Stream *const other)
   inst->filepath = CopyOf(String, other->filepath);
   inst->mode = CopyOf(String, other->mode);
   inst->fileptr = other->fileptr;
+
+  if (!inst->buffer || !inst->filepath || !inst->mode) {
+    Delete(Buffer, inst->buffer);
+    Delete(String, inst->filepath);
+    Delete(String, inst->mode);
+    return nll;
+  }
 
   return inst;
 }
@@ -150,13 +157,13 @@ void Stream_Delete(Stream *const inst)
   Deallocate(inst);
 }
 
-boolean Stream_Equals(const Stream *const obj1, const Stream *const obj2)
+boolean Stream_Equals(const Stream *const inst, const Stream *const other)
 {
-  if (!obj1 || !obj2) return false;
-  if (obj1 == obj2) return true;
+  if (!inst || !other) return false;
+  if (inst == other) return true;
 
-  return Equals(String, obj1->filepath, obj2->filepath) &&
-         Equals(String, obj1->mode, obj2->mode);
+  return Equals(String, inst->filepath, other->filepath) &&
+         Equals(String, inst->mode, other->mode);
 }
 
 boolean Stream_Open(Stream *const inst)
@@ -169,6 +176,9 @@ boolean Stream_Open(Stream *const inst)
   char *const mode_cstr = flatten(char, inst->mode);
 
   inst->fileptr = fopen(filepath_cstr, mode_cstr);
+
+  /* Temporal solution. */
+  setvbuf(inst->fileptr, nll, _IONBF, 0);
 
   Deallocate(filepath_cstr);
   Deallocate(mode_cstr);
@@ -256,7 +266,7 @@ boolean Stream_WriteLine(
     return false;
   }
 
-  /* Phase 1: Skip existing lines if requested. */
+  /* Skip existing lines if requested. */
   if (lines_to_skip > 0) {
     /* Flush any pending writes in our Buffer before switching to system reads. */
     Stream_Flush(inst);
@@ -269,7 +279,6 @@ boolean Stream_WriteLine(
     fseek(inst->fileptr, 0, SEEK_CUR);
   }
 
-  /* Phase 2: Write the target line. */
   String *newline = string(NEWLINE);
 
   /* Length() safely returns 0 if value is null, bypassing this block. */
@@ -315,7 +324,7 @@ String *Stream_Read(Stream *const inst)
   const llong cursor = Getter(Buffer, Cursor, inst->buffer);
   Array(byte) *const data = Getter(Buffer, Data, inst->buffer);
 
-  char *c_str = Allocate(cursor + 1, sizeof(char));
+  char *c_str = Allocate((cursor + 1) * sizeof(char));
   if (cursor > 0) {
     memmove(c_str, ref(Array(byte), data, 0), cursor);
   }

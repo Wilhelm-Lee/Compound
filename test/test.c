@@ -17,8 +17,17 @@
  * <https://www.gnu.org/licenses/>.
  */
 
-#include <stdio.h>
+/* Required on some systems to expose POSIX features. */
+#define _POSIX_C_SOURCE 199309L
 
+#include <stdio.h>
+#include <time.h>
+#include <unistd.h>
+
+#define __COMPOUND_ORIGIN_PROFILE_ESTABLISHED__
+// #define __COMPOUND_ORIGIN_PROFILE_CLIMB__
+
+#include "../inc/allocator.h"
 #include "../inc/body.h"
 #include "../inc/class.h"
 #include "../inc/constructor.h"
@@ -26,114 +35,68 @@
 #include "../inc/entry.h"
 #include "../inc/field.h"
 #include "../inc/function.h"
+#include "../inc/heap.h"
+#include "../inc/memory_stack.h"
+#include "../inc/memusage.h"
+#include "../inc/origin.h"
 #include "../inc/preprocessor.h"
+#include "../inc/recollector.h"
 #include "../inc/regex.h"
 #include "../inc/stream.h"
 
-#define HEADER  "user/header.h"
-#define SOURCE  "user/source.c"
+#define HEADER  "usr/header.h"
+#define SOURCE  "usr/source.c"
 
 /* This header includes everything generated.
  * Before the generation, it is suppose to be empty, making no difference.
  */
-#include "../user/header.h"
-
-typedef struct Variable Variable;
-
-ARRAY(Variable)
-LITERALISE(Variable)
-
-Variable *Variable_Create(String *const appearance, String *const value);
-Variable *Variable_CopyOf(Variable *const other);
-void Variable_Delete(Variable *const inst);
-boolean Variable_Equals(Variable *const obj1, Variable *const obj2);
-String *Variable_Literalise(Variable *const inst);
-
-struct Variable {
-  String *appearance;
-  String *value;
-};
-
-Variable *Variable_Create(String *const appearance, String *const value)
-{
-  if (!appearance) {
-    return nll;
-  }
-
-  Variable *const inst = Allocate(1, sizeof(Variable));
-  if (!inst) {
-    return nll;
-  }
-
-  inst->appearance = appearance;
-  inst->value = value;
-
-  return inst;
-}
-
-Variable *Variable_CopyOf(Variable *const other)
-{
-  if (!other) {
-    return nll;
-  }
-
-  return Create(Variable, CopyOf(String, other->appearance), CopyOf(String, other->value));
-}
-
-void Variable_Delete(Variable *const inst)
-{
-  if (!inst) {
-    return;
-  }
-
-  Delete(String, inst->value);
-  Delete(String, inst->appearance);
-  Deallocate(inst);
-}
-
-boolean Variable_Equals(Variable *const obj1, Variable *const obj2)
-{
-  if (!obj1 || !obj2) {
-    return false;
-  }
-
-  if (obj1 == obj2) {
-    return true;
-  }
-
-  return Equals(String, obj1->appearance, obj2->appearance)
-      && Equals(String, obj1->value, obj2->value);
-}
-
-String *Variable_Literalise(Variable *const inst)
-{
-  if (!inst) {
-    return nll;
-  }
-
-  return append(inst->appearance, string("  -> "), inst->value);
-}
-
-IMPL_ARRAY(Variable)
-IMPL_ARRAY_LITERALISE(Variable)
+#include "../usr/header.h"
 
 int Main(void)
 {
-  Stream *const stream = stream("mapping", "r");
-  if (!stream) {
-    return 1;
-  }
+  class (public, Variable, {
+    field(private, String *, identifier, nll);
+    field(private, String *, value, nll);
 
-  Open(stream);
+    constructor (params(param(String *const, identifier), param(String *const, value)), {
+      if (!identifier) {
+        return nll;
+      }
 
-  String *line = nll;
-  while ((line = ReadLine(stream, 0))) {
-    Regex *const expr = regex(line, "\$\{(\w*)\}");
-    Array(String) *const found = extract(expr, 1);
-    outln(lit(Array(String), found, nll, string(NL), nll));
-  }
+      this->identifier = CopyOf(String, identifier);
+      this->value = CopyOf(String, value);
 
-  Close(stream);
+      return this;
+    })
+
+    destructor ({
+      Delete(String, this->identifier);
+      Delete(String, this->value);
+    })
+
+    method (public, String *, GetIdentifier, noparam, {
+      return this->identifier;
+    })
+
+    method (public, String *, GetValue, noparam, {
+      return this->value;
+    })
+
+    override (Literalise, {
+      return append(nll, this->identifer, string(" = "), this->value, string(";"));
+    })
+
+    override (Equals, {
+      return Equals(String, this->identifer, other->identifier)
+          && Equals(String, this->value, other->value);
+    })
+  })
+
+  Class *const copyof = CopyOf(Class, c_Variable);
+  ig copyof;
+
+  // DumpHeap("");
+  // DumpHeapOccupations();
 
   return 0;
 }

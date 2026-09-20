@@ -33,9 +33,9 @@ struct Regex {
 
 Regex *Regex_Create(String *const original, String *const expression)
 {
-  Regex *const inst = Allocate(1, sizeof(Regex));
+  Regex *const inst = Allocate(sizeof(Regex));
   if (!inst) {
-    retnll;
+    return nll;
   }
 
   inst->original = CopyOf(String, original);
@@ -54,7 +54,7 @@ Regex *Regex_CopyOf(Regex *const other)
     return nll;
   }
 
-  Regex *const inst = Allocate(1, sizeof(Regex));
+  Regex *const inst = Allocate(sizeof(Regex));
   if (!inst) {
     return nll;
   }
@@ -86,19 +86,19 @@ void Regex_Delete(Regex *const inst)
   Deallocate(inst);
 }
 
-boolean Regex_Equals(Regex *const obj1, Regex *const obj2)
+boolean Regex_Equals(Regex *const inst, Regex *const other)
 {
-  if (!obj1 || !obj2) {
+  if (!inst || !other) {
     return false;
   }
 
-  if (obj1 == obj2) {
+  if (inst == other) {
     return true;
   }
 
-  return Equals(String, obj1->original, obj2->original) &&
-         Equals(String, obj1->expression, obj2->expression) &&
-         Equals(Array(Match), obj1->matches, obj2->matches, Match_Equals);
+  return Equals(String, inst->original, other->original) &&
+         Equals(String, inst->expression, other->expression) &&
+         Equals(Array(Match), inst->matches, other->matches, Match_Equals);
 }
 
 boolean Regex_Compile(Regex *const inst)

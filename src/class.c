@@ -49,15 +49,15 @@ Class *Class_Create(
     return null;
   }
 
-  Class *const inst = Allocate(1, sizeof(Class));
+  Class *const inst = Allocate(sizeof(Class));
   if (!inst) {
     return null;
   }
 
-  String *const CLASS_IDENTIFIER_STR = CopyOf(String, identifier);
+  String *const CLASS_IDENTIFIER_STR = identifier;
 
   inst->access = access;
-  inst->identifier = identifier;
+  inst->identifier = CopyOf(String, identifier);
   inst->super = super;
   inst->this = inst;
   inst->fields = fields ? fields : array(Field, 0);
@@ -75,14 +75,14 @@ Class *Class_Create(
         string("boolean"),
         string("Equals"),
         params_str(
-          param_str(append(inst->identifier, string(" *")), string("this")),
-          params_str(append(inst->identifier, string(" *")), string("other"))
+          param_str(append(nll, inst->identifier, string(" *")), string("this")),
+          params_str(append(nll, inst->identifier, string(" *")), string("other"))
         )
       ),
       Create(
         Body,
         null,
-        append(string("return Equals("), inst->identifier, string(", this, other);"))
+        append(nll, string("return Equals("), inst->identifier, string(", this, other);"))
       )
     )
   );
@@ -97,13 +97,13 @@ Class *Class_Create(
         string("boolean"),
         string("Literalise"),
         params_str(
-          param_str(append(inst->identifier, string(" *")), string("this"))
+          param_str(append(nll, inst->identifier, string(" *")), string("this"))
         )
       ),
       Create(
         Body,
         null,
-        append(string("return lit("), inst->identifier, string(", this);"))
+        append(nll, string("return lit("), inst->identifier, string(", this);"))
       )
     )
   );
@@ -168,20 +168,20 @@ void Class_Delete(Class *const inst)
   Deallocate(inst);
 }
 
-boolean Class_Equals(const Class *const obj1, const Class *const obj2)
+boolean Class_Equals(const Class *const inst, const Class *const other)
 {
-  if (!obj1 || !obj2) {
+  if (!inst || !other) {
     return false;
   }
 
-  if (obj1 == obj2) {
+  if (inst == other) {
     return true;
   }
 
   return
-    Equals(String, obj1->identifier, obj2->identifier) &&
-    obj1->super == obj2->super &&
-    Equals(Array(Method), obj1->methods, obj2->methods, Method_Equals);
+    Equals(String, inst->identifier, other->identifier) &&
+    inst->super == other->super &&
+    Equals(Array(Method), inst->methods, other->methods, Method_Equals);
 }
 
 String *_Class_GenerateTypedef(Class *const inst)
@@ -191,6 +191,7 @@ String *_Class_GenerateTypedef(Class *const inst)
   }
 
   return append(
+    nll,
     string("typedef struct "),
     inst->identifier,
     string(" "),
@@ -202,7 +203,7 @@ String *_Class_GenerateTypedef(Class *const inst)
 
 String *_Class_GenerateArrayDeclarations(Class *const inst)
 {
-  return append(string("ARRAY("), inst->identifier, string(")"NL));
+  return append(nll, string("ARRAY("), inst->identifier, string(")"NL));
 }
 
 String *_Class_GenerateStruct(Class *const inst)
@@ -211,6 +212,7 @@ String *_Class_GenerateStruct(Class *const inst)
   String *const newline = string(NL);
 
   String *lit = append(
+    nll,
     string("struct "),
     inst->identifier,
     string(" {"NL),
@@ -238,10 +240,11 @@ String *_Class_GenerateObjectEssentialDeclarations(Class *const inst)
   String *const newline = string(NL);
 
   String *lit = append(
+    nll,
     inst->identifier, string(" *"), inst->identifier, string("_Create"), lit(Constructor, inst->constructor, no, no, yes, yes, yes, no, no), string(";"NL),
     inst->identifier, string(" *"), inst->identifier, string("_CopyOf("), inst->identifier, string(" *const other);"NL),
     string("void "), inst->identifier, string("_Delete("), inst->identifier, string(" *const this);"NL),
-    string("boolean "), inst->identifier, string("_Equals("), inst->identifier, string(" *const obj1, "), inst->identifier, string(" *const obj2);"NL),
+    string("boolean "), inst->identifier, string("_Equals("), inst->identifier, string(" *const inst, "), inst->identifier, string(" *const other);"NL),
     string("String *"), inst->identifier, string("_Literalise("), inst->identifier, string(" *const inst);"NL),
     newline
   );
@@ -270,9 +273,10 @@ String *_Class_GenerateObjectEssentialImplementations(Class *const inst)
   );
 
   String *lit = append(
+    nll,
     inst->identifier, string(" *"), inst->identifier, string("_Create"), lit(Constructor, inst->constructor, no, no, yes, yes, yes, no, no), newline,
     string("{"NL),
-    string("  "), inst->identifier, string(" *const this = Allocate(1, sizeof("), inst->identifier, string("));"NL),
+    string("  "), inst->identifier, string(" *const this = Allocate(sizeof("), inst->identifier, string("));"NL),
     string("  if (!this) {"NL),
     string("    return nll;"NL),
     string("  }"NL),
@@ -331,7 +335,7 @@ String *_Class_GenerateObjectEssentialImplementations(Class *const inst)
 
 static inline String *_Class_GenerateArrayImplementations(Class *const inst)
 {
-  return append(string("IMPL_ARRAY("), inst->identifier, string(")"), string(NL));
+  return append(nll, string("IMPL_ARRAY("), inst->identifier, string(")"), string(NL));
 }
 
 static inline String *_Class_GenerateMethodDeclarations(Class *const inst)
@@ -364,6 +368,7 @@ String *Class_Literalise(
   }
 
   lit = append(
+    nll,
     _Class_GenerateTypedef(inst),
     _Class_GenerateArrayDeclarations(inst),
     _Class_GenerateStruct(inst),
@@ -529,7 +534,7 @@ Class *Class_AddField(Class *const inst, Field *const field)
 
   inst->fields = call(Array(Field), Insert, inst->fields, -1, field);
   _Field_SetNumericalIdentifier(
-    ref(Array(Field), inst->fields, -1),
+    ref(Array(Field), inst->fields, capacity(Array(Field), inst->fields)),
     Length(Array(Field), inst->fields) - 1
   );
 
@@ -550,7 +555,7 @@ Class *Class_AddMethod(Class *const inst, Method *const method)
 void Class_Inherit(Class *const inst, Class *const super)
 {
   if (!inst || !super) {
-    ret;
+    return;
   }
 
   inst->super = super;
@@ -608,9 +613,9 @@ Method *Class_GetMethodByIdentifier(
     return nll;
   }
 
-  refeach (Method, field, inst->fields, {
-    if (Equals(String, method_identifier, Getter(Method, Identifier, field))) {
-      return field;
+  refeach (Method, method, inst->methods, {
+    if (Equals(String, method_identifier, Getter(Method, Identifier, method))) {
+      return method;
     }
   })
 

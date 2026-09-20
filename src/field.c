@@ -37,7 +37,7 @@ Field *Field_Create(
     return null;
   }
 
-  Field *const inst = Allocate(1, sizeof(Field));
+  Field *const inst = Allocate(sizeof(Field));
   if (!inst) {
     return null;
   }
@@ -75,19 +75,19 @@ void Field_Delete(Field *const inst)
   Deallocate(inst);
 }
 
-boolean Field_Equals(Field *const obj1, Field *const obj2)
+boolean Field_Equals(Field *const inst, Field *const other)
 {
-  if (!obj1 || !obj2) {
+  if (!inst || !other) {
     return false;
   }
 
-  if (obj1 == obj2) {
+  if (inst == other) {
     return true;
   }
 
-  return obj1->access == obj2->access &&
-         Equals(Signature, obj1->signature, obj2->signature) &&
-         Equals(String, obj1->value, obj2->value);
+  return inst->access == other->access &&
+         Equals(Signature, inst->signature, other->signature) &&
+         Equals(String, inst->value, other->value);
 }
 
 String *Field_Literalise(

@@ -68,20 +68,70 @@
       continue;                                                                \
     }                                                                          \
                                                                                \
-    /* Skip inserting a separator for the last element. */                     \
     if (_refeach_idx_elem == arraylen - 1) {                                   \
       continue;                                                                \
     }                                                                          \
                                                                                \
-    rtn = append(rtn, lit_elem, final_separator);                              \
+    String *const elem_str = lit_elem;                                         \
+    rtn = append(rtn, elem_str, final_separator);                              \
+                                                                               \
+    Delete(String, elem_str);                                                  \
   })                                                                           \
                                                                                \
+  String *const last_str = lit_last;                                           \
   rtn = append(                                                                \
     rtn,                                                                       \
-    lit_last,                                                                  \
+    last_str,                                                                  \
     final_suffix                                                               \
   );                                                                           \
                                                                                \
+  Delete(String, last_str);                                                    \
+  Delete(String, str_empty);                                                   \
+                                                                               \
+  return rtn;
+
+# define _IMPL_ARRAY_BASICTYPE_LITERALISE_BODY(elem_type, lit_elem, lit_last)  \
+  if (!inst) {                                                                 \
+    return null;                                                               \
+  }                                                                            \
+                                                                               \
+  String *str_empty = string("");                                              \
+                                                                               \
+  String *const final_prefix = prefix ? prefix : str_empty;                    \
+  String *const final_separator = separator ? separator : str_empty;           \
+  String *const final_suffix = suffix ? suffix : str_empty;                    \
+                                                                               \
+  const llong arraylen = Length(Array(elem_type), inst);                       \
+                                                                               \
+  if (arraylen == 0) {                                                         \
+    String *rtn = Concat(String, CopyOf(String, final_prefix), CopyOf(String, final_suffix)); \
+    Delete(String, str_empty);                                                 \
+    return rtn;                                                                \
+  }                                                                            \
+                                                                               \
+  String *rtn = CopyOf(String, final_prefix);                                  \
+  if (!rtn) {                                                                  \
+    Delete(String, str_empty);                                                 \
+    return null;                                                               \
+  }                                                                            \
+                                                                               \
+  foreach (elem_type, elem, inst, {                                            \
+    if (_foreach_idx_elem == arraylen - 1) {                                   \
+      continue;                                                                \
+    }                                                                          \
+                                                                               \
+    String *const elem_str = lit_elem;                                         \
+    rtn = append(rtn, elem_str, final_separator);                              \
+    Delete(String, elem_str);                                                  \
+  })                                                                           \
+                                                                               \
+  String *const last_str = lit_last;                                           \
+  rtn = append(                                                                \
+    rtn,                                                                       \
+    last_str,                                                                  \
+    final_suffix                                                               \
+  );                                                                           \
+  Delete(String, last_str);                                                    \
   Delete(String, str_empty);                                                   \
                                                                                \
   return rtn;
@@ -89,48 +139,14 @@
 # define FUNC_ARRAY_BASICTYPE_LITERALISE(elem_type)                            \
   String *elem_type##Array_Literalise(_ARRAY_LITERALISE_PARAMS(elem_type));
 
-# define IMPL_ARRAY_BASICTYPE_LITERALISE(elem_type, format_str)                \
+# define IMPL_ARRAY_BASICTYPE_LITERALISE(elem_type)                            \
 String *elem_type##Array_Literalise(_ARRAY_LITERALISE_PARAMS(elem_type))       \
 {                                                                              \
-  if (!inst) {                                                                 \
-    return null;                                                               \
-  }                                                                            \
-                                                                               \
-  String *str_empty = string("");                                              \
-  String *const final_prefix = prefix ? prefix : str_empty;                    \
-  String *const final_separator = separator ? separator : str_empty;           \
-  String *const final_suffix = suffix ? suffix : str_empty;                    \
-                                                                               \
-  const llong arraylen = Length(Array(elem_type), inst);                       \
-  String *rtn = CopyOf(String, final_prefix);                                  \
-  if (!rtn) {                                                                  \
-    return null;                                                               \
-  }                                                                            \
-                                                                               \
-  for (register llong i = 0; i < arraylen; i++) {                              \
-    elem_type *elem = ref(Array(elem_type), inst, i);                          \
-    if (!elem) {                                                               \
-      continue;                                                                \
-    }                                                                          \
-                                                                               \
-    /* format() returns a new string which append() takes ownership of. */     \
-    String *val_str = format(format_str, *elem);                               \
-                                                                               \
-    /* Use CopyOf to avoid double-free during append's erase(). */             \
-    if (i == arraylen - 1) {                                                   \
-      rtn = append(rtn, val_str, CopyOf(String, final_suffix));                \
-    } else {                                                                   \
-      rtn = append(rtn, val_str, CopyOf(String, final_separator));             \
-    }                                                                          \
-  }                                                                            \
-                                                                               \
-  if (arraylen == 0) {                                                         \
-    rtn = append(rtn, CopyOf(String, final_suffix));                           \
-  }                                                                            \
-                                                                               \
-  Delete(String, str_empty);                                                   \
-                                                                               \
-  return rtn;                                                                  \
+  _IMPL_ARRAY_BASICTYPE_LITERALISE_BODY(                                       \
+    elem_type,                                                                 \
+    lit(elem_type, elem),                                                      \
+    lit(elem_type, get(Array(elem_type), inst, -1))                            \
+  )                                                                            \
 }
 
 # define FUNC_ARRAY_LITERALISE(elem_type)                                      \
@@ -154,6 +170,15 @@ String *elem_type##Array_Literalise(_ARRAY_LITERALISE_PARAMS(elem_type))       \
 
 # define IMPL_ARRAY_LITERALISE_CONFIGS(...)                                    \
   CONCAT(IMPL_ARRAY_LITERALISE_CONFIGS_, arglen(__VA_ARGS__))(__VA_ARGS__)
+
+# define FUNC_BASICTYPE_LITERALISE(elem_type)                                  \
+  String *elem_type##_Literalise(const elem_type inst);
+
+# define IMPL_BASICTYPE_LITERALISE(elem_type, format_str)                      \
+inline String *elem_type##_Literalise(const elem_type inst)                    \
+{                                                                              \
+  return format(format_str, inst);                                             \
+}
 
 /* 1 Config Parameter (3 Total Arguments) */
 # define IMPL_ARRAY_LITERALISE_CONFIGS_3(elem_type, var1, ...)                 \

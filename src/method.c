@@ -32,18 +32,18 @@ Method *Method_Create(
   String *const class_identifier,
   Function *const function
 ) {
-  Method *const inst = Allocate(1, sizeof(Method));
-  if (!inst || !class_identifier) {
+  if (!class_identifier || !function) {
+    return null;
+  }
+
+  Method *const inst = Allocate(sizeof(Method));
+  if (!inst) {
     return null;
   }
 
   inst->access = access;
   inst->class_identifier = class_identifier;
   inst->function = function;
-  if (!inst->function) {
-    Deallocate(inst);
-    return null;
-  }
 
   return inst;
 }
@@ -54,12 +54,20 @@ Method *Method_CopyOf(Method *const other)
     return null;
   }
 
-  return Create(
-    Method,
-    other->access,
-    CopyOf(String, other->class_identifier),
-    CopyOf(Function, other->function)
-  );
+  String *const class_identifier = CopyOf(String, other->class_identifier);
+  Function *const function = CopyOf(Function, other->function);
+  if (!class_identifier || !function) {
+    return null;
+  }
+
+  Method *const inst = Create(Method, other->access, class_identifier, function);
+  if (!inst) {
+    Delete(String, class_identifier);
+    Delete(Function, function);
+    return null;
+  }
+
+  return inst;
 }
 
 void Method_Delete(Method *const inst)
@@ -73,18 +81,18 @@ void Method_Delete(Method *const inst)
   Deallocate(inst);
 }
 
-boolean Method_Equals(Method *const obj1, Method *const obj2)
+boolean Method_Equals(Method *const inst, Method *const other)
 {
-  if (!obj1 || !obj2) {
+  if (!inst || !other) {
     return false;
   }
 
-  if (obj1 == obj2) {
+  if (inst == other) {
     return true;
   }
 
-  return obj1->access == obj2->access &&
-         Equals(Function, obj1->function, obj2->function);
+  return inst->access == other->access &&
+         Equals(Function, inst->function, other->function);
 }
 
 String *Method_Literalise(

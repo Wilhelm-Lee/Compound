@@ -39,13 +39,8 @@ typedef struct String String;
 
 ARRAY(String)
 LITERALISE(String)
+
 Array(String) *StringArray_ComposeFromCstr(const llong arglen, ...);
-// String *StringArray_Literalise(
-//   Array(String) *const inst,
-//   String *const prefix,
-//   String *const separator,
-//   String *const suffix
-// );
 
 # define string(char_ptr)                                                      \
   (String_Update(null, char_ptr))
@@ -235,7 +230,7 @@ int String_Compare(const String *const string1, const String *const string2);
  * exactly TWO strings for their concatenation -- this is more performant
  * for exactly two strings.
  */
-String *String_Concat(String *const string1, const String *const string2);
+String *String_Concat(String *const string1, String *const string2);
 
 /**
  *

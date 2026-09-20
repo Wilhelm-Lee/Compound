@@ -24,6 +24,7 @@
 
 # include "language.h"
 # include "memory_stack.h"
+# include "recollector.h"
 # include "string.h"
 
 # ifdef __COMPOUND_FEATURE_STATUS__
@@ -32,8 +33,8 @@ void DeinitialiseStatusStack(Stack(Status) **const instptr);
 # endif
 
 # ifdef __COMPOUND_FEATURE_RECYCLER__
-void InitialiseMemoryStack(MemoryStack *const inst);
-void DeinitialiseMemoryStack(MemoryStack *const inst);
+void InitialiseMemoryStack(void);
+void DeinitialiseMemoryStack(void);
 # endif
 
 int InitialiseMain(

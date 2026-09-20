@@ -52,12 +52,13 @@ LITERALISE_ARGS(
       Create(                                                                  \
         Method,                                                                \
         ACCESS_PUBLIC,                                                         \
+        CLASS_IDENTIFIER_STR,                                                  \
         Create(                                                                \
           Function,                                                            \
           Create(                                                              \
             Signature,                                                         \
-            append(CLASS_IDENTIFIER_STR, string(" *")),                        \
-            append(CLASS_IDENTIFIER_STR, string("_"), string(nameof(Create))), \
+            append(nll, CLASS_IDENTIFIER_STR, string(" *")),        \
+            append(nll, CLASS_IDENTIFIER_STR, string("_"), string(nameof(Create))),\
             param_clusters                                                     \
           ),                                                                   \
           body(__VA_ARGS__)                                                    \
@@ -69,7 +70,7 @@ LITERALISE_ARGS(
 Constructor *Constructor_Create(Constructor *const super, Method *const method);
 Constructor *Constructor_CopyOf(Constructor *const other);
 void Constructor_Delete(Constructor *const inst);
-boolean Constructor_Equals(Constructor *const obj1, Constructor *const obj2);
+boolean Constructor_Equals(Constructor *const inst, Constructor *const other);
 void Constructor_Inherit(Constructor *const inst, Constructor *const super);
 Constructor *Constructor_GetSuper(const Constructor *const inst);
 Method *Constructor_GetMethod(const Constructor *const inst);

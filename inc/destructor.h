@@ -38,9 +38,7 @@ LITERALISE_ARGS(
   boolean need_semicolon
 )
 
-# define destructor(                                                           \
-    ...                                                                        \
-  )                                                                            \
+# define destructor(...)                                                       \
   (call(                                                                       \
     Class,                                                                     \
     SetDestructor,                                                             \
@@ -51,13 +49,14 @@ LITERALISE_ARGS(
       Create(                                                                  \
         Method,                                                                \
         ACCESS_PUBLIC,                                                         \
+        CLASS_IDENTIFIER_STR,                                                  \
         Create(                                                                \
           Function,                                                            \
           Create(                                                              \
             Signature,                                                         \
-            string(nameof(void)),\
-            append(CLASS_IDENTIFIER_STR, string("_"), string(nameof(Destructor))),\
-            params_str(param_str(append(CLASS_IDENTIFIER_STR, string(" *const")), string(nameof(this))))\
+            string(nameof(void)),                                              \
+            append(nll, CLASS_IDENTIFIER_STR, string("_"), string(nameof(Destructor))), \
+            params_str(param_str(append(nll, CLASS_IDENTIFIER_STR, string(" *const")), string(nameof(this)))) \
           ),                                                                   \
           body(__VA_ARGS__)                                                    \
         )                                                                      \
@@ -68,7 +67,7 @@ LITERALISE_ARGS(
 Destructor *Destructor_Create(Destructor *const super, Method *const method);
 Destructor *Destructor_CopyOf(Destructor *const other);
 void Destructor_Delete(Destructor *const inst);
-boolean Destructor_Equals(Destructor *const obj1, Destructor *const obj2);
+boolean Destructor_Equals(Destructor *const inst, Destructor *const other);
 void Destructor_Inherit(Destructor *const inst, Destructor *const super);
 Destructor *Destructor_GetSuper(const Destructor *const inst);
 Method *Destructor_GetMethod(const Destructor *const inst);

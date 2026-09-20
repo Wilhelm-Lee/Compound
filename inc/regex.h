@@ -38,10 +38,15 @@ LITERALISE(Regex)
 # define extract(regex_ptr, ...)\
   Regex_Extract(regex_ptr, Compose(Array(int), __VA_ARGS__))
 
+/* Returns the modified version of the original string content. */
+# define subsitude(regex_ptr, replacement_string_ptr)\
+  (Regex_Subsitude(regex_ptr, replacement_string_ptr))
+
 Regex *Regex_Create(String *const original, String *const expression);
 Regex *Regex_CopyOf(Regex *const other);
 void Regex_Delete(Regex *const inst);
-boolean Regex_Equals(Regex *const obj1, Regex *const obj2);
+boolean Regex_Equals(Regex *const inst, Regex *const other);
 Array(String) *Regex_Extract(Regex *const inst, Array(int) *const indices);
+String *Regex_Subsitude(Regex *const inst, const String *const replacement);
 
 #endif  /* COMPOUND_REGEX_H */

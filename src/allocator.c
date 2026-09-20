@@ -17,24 +17,31 @@
  * <https://www.gnu.org/licenses/>.
  */
 
-/** @file match.h */
+/** @file allocator.c */
 
-#ifndef COMPOUND_MATCH_H
-# define COMPOUND_MATCH_H
+#include "../inc/allocator.h"
+#include "../inc/recollector.h"
 
-# include "arrays_lit.h"
-# include "string.h"
+extern MemoryStack MEMORY_STACK;
 
-typedef struct Match Match;
+/* Returns the address stored in @MEMORY_STACK. */
+inline void *_Allocate(const size_t nmemb, const size_t size)
+{
+  void *const inst = calloc(nmemb, size);
+  if (!inst && (nmemb && size)) {
+    return null;
+  }
 
-ARRAY(Match)
-LITERALISE(Match)
+# ifdef __COMPOUND_FEATURE_RECYCLER__
+  MemoryStack_Push(&MEMORY_STACK, inst);
+# endif
 
-Match *Match_Create(Array(llong) *const bounds);
-Match *Match_CopyOf(Match *const other);
-void Match_Delete(Match *const inst);
-boolean Match_Equals(Match *const inst, Match *const other);
-llong Match_GetStart(const Match *const inst, const llong group_idx);
-llong Match_GetEnd(const Match *const inst, const llong group_idx);
+  return inst;
+}
 
-#endif  /* COMPOUND_MATCH_H */
+void _Deallocate(void *const ptr)
+{
+  if (ptr) {
+    free(ptr);
+  }
+}

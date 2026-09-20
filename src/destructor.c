@@ -32,7 +32,7 @@ Destructor *Destructor_Create(Destructor *const super, Method *const method)
     return null;
   }
 
-  Destructor *const inst = Allocate(1, sizeof(Destructor));
+  Destructor *const inst = Allocate(sizeof(Destructor));
   if (!inst) {
     return null;
   }
@@ -66,45 +66,47 @@ void Destructor_Delete(Destructor *const inst)
   Deallocate(inst);
 }
 
-boolean Destructor_Equals(Destructor *const obj1, Destructor *const obj2)
+boolean Destructor_Equals(Destructor *const inst, Destructor *const other)
 {
-  if (!obj1 || !obj2) {
+  if (!inst || !other) {
     return false;
   }
 
-  if (obj1 == obj2) {
+  if (inst == other) {
     return true;
   }
 
-  return obj1->super == obj2->super &&
-         Equals(Method, obj1->method, obj2->method);
+  return inst->super == other->super &&
+         Equals(Method, inst->method, other->method);
 }
 
 void Destructor_Inherit(Destructor *const inst, Destructor *const super)
 {
   if (!inst || !super) {
-    ret;
+    return;
   }
 
   inst->super = super;
-  Setter(
-      Body, Text,
-      Getter(
-          Function, Body,
-          Getter(Method, Function, Getter(Destructor, Method, super))),
-      append(
-          Getter(
-              Body, Text,
-              Getter(
-                  Function, Body,
-                  Getter(
-                      Method, Function, Getter(Destructor, Method, super)))),
-          Getter(
-              Body, Text,
-              Getter(
-                  Function, Body,
-                  Getter(
-                      Method, Function, Getter(Destructor, Method, inst))))));
+
+  Body *const inst_body = Getter(
+    Function, Body,
+    Getter(Method, Function, Getter(Destructor, Method, inst))
+  );
+  Body *const super_body = Getter(
+    Function, Body,
+    Getter(Method, Function, Getter(Destructor, Method, super))
+  );
+
+  if (!inst_body || !super_body) {
+    return;
+  }
+
+  String *const super_text = Getter(Body, Text, super_body);
+  String *const inst_text = Getter(Body, Text, inst_body);
+
+  String *const combined = append(nll, inst_text, super_text);
+
+  Setter(Body, Text, inst_body, combined);
 }
 
 Destructor *Destructor_GetSuper(const Destructor *const inst)
@@ -128,7 +130,7 @@ Method *Destructor_GetMethod(const Destructor *const inst)
 void Destructor_SetSuper(Destructor *const inst, Destructor *const super)
 {
   if (!inst) {
-    ret;
+    return;
   }
 
   inst->super = super;

@@ -36,7 +36,7 @@ Signature *Signature_Create(
     return null;
   }
 
-  Signature *const inst = Allocate(1, sizeof(Signature));
+  Signature *const inst = Allocate(sizeof(Signature));
   if (!inst) {
     return null;
   }
@@ -54,12 +54,32 @@ Signature *Signature_CopyOf(const Signature *const other)
     return null;
   }
 
-  return Create(
-    Signature,
-    CopyOf(String, other->returning),
-    CopyOf(String, other->identifier),
-    CopyOf(Array(Parameter), other->parameters)
-  );
+  String *const returning = other->returning ? CopyOf(String, other->returning) : null;
+  String *const identifier = other->identifier ? CopyOf(String, other->identifier) : null;
+  Array(Parameter) *const parameters = other->parameters ? Clone(Array(Parameter), other->parameters) : null;
+
+  if (!identifier || (other->returning && !returning) || (other->parameters && !parameters)) {
+    Delete(String, returning);
+    Delete(String, identifier);
+    if (parameters) {
+      erase(Array(Parameter), parameters);
+      Delete(Array(Parameter), parameters);
+    }
+    return null;
+  }
+
+  Signature *const inst = Create(Signature, returning, identifier, parameters);
+  if (!inst) {
+    Delete(String, returning);
+    Delete(String, identifier);
+    if (parameters) {
+      erase(Array(Parameter), parameters);
+      Delete(Array(Parameter), parameters);
+    }
+    return null;
+  }
+
+  return inst;
 }
 
 void Signature_Delete(Signature *const inst)
@@ -76,20 +96,25 @@ void Signature_Delete(Signature *const inst)
 }
 
 boolean Signature_Equals(
-  Signature *const obj1,
-  Signature *const obj2
+  Signature *const inst,
+  Signature *const other
 ) {
-  if (!obj1 || !obj2) {
+  if (!inst || !other) {
     return false;
   }
 
-  if (obj1 == obj2) {
+  if (inst == other) {
     return true;
   }
 
-  return Equals(String, obj1->returning, obj2->returning) &&
-         Equals(String, obj1->identifier, obj2->identifier) &&
-         Equals(Array(Parameter), obj1->parameters, obj2->parameters, null);
+  if (inst->returning || other->returning) {
+    if (!inst->returning || !other->returning || !Equals(String, inst->returning, other->returning)) {
+      return false;
+    }
+  }
+
+  return Equals(String, inst->identifier, other->identifier) &&
+         Equals(Array(Parameter), inst->parameters, other->parameters, Parameter_Equals);
 }
 
 String *Signature_Literalise(
@@ -104,43 +129,56 @@ String *Signature_Literalise(
     return null;
   }
 
+  String *const str_space = string(" ");
+  String *const str_comma_space = string(", ");
+  String *const str_open = string("(");
+  String *const str_close = string(")");
+  String *const str_void = string("(void)");
+  String *const str_asterisk = string("*");
+  String *const str_asterisk_space = string("* ");
+
   String *lit = null;
 
-  if (need_returning) {
-    lit = append(inst->returning, string(" "));
+  if (need_returning && inst->returning) {
+    lit = append(lit, inst->returning, str_space);
   }
 
-  if (need_identifier) {
+  if (need_identifier && inst->identifier) {
     lit = append(lit, inst->identifier);
   }
 
-  if (need_parameters && inst->parameters) {
-    lit = append(
-      lit,
-      string("("),
-      lit(
+  if (need_parameters) {
+    const llong param_count = inst->parameters ? Length(Array(Parameter), inst->parameters) : 0;
+    if (param_count > 0) {
+      String *const params_str = lit(
         Array(Parameter),
         inst->parameters,
         null,
-        string(", "),
+        str_comma_space,
         null,
         need_param_types,
         need_param_identifiers
-      )
-    );
-
-    lit = Concat(String, lit, string(")"));
-    // lit = replace(lit, string(", )"), string(")"), 0);
+      );
+      lit = append(lit, str_open, params_str, str_close);
+      Delete(String, params_str);
+    } else {
+      lit = append(lit, str_void);
+    }
   }
 
-  if (!inst->parameters) {
-    lit = append(lit, string("(void)"));
+  if (lit) {
+    lit = replace(lit, str_asterisk_space, str_asterisk, 0);
   }
 
-  lit = replace(lit, string("* "), string("*"), 0);
-  lit = replace(lit, string("()"), string("(void)"), 0);
+  Delete(String, str_asterisk_space);
+  Delete(String, str_asterisk);
+  Delete(String, str_void);
+  Delete(String, str_close);
+  Delete(String, str_open);
+  Delete(String, str_comma_space);
+  Delete(String, str_space);
 
-  return lit;
+  return lit ? lit : string("");
 }
 
 String *Signature_GetReturning(const Signature *const inst)

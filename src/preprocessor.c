@@ -34,7 +34,7 @@ Preprocessor *Preprocessor_Create(
     return null;
   }
 
-  Preprocessor *const inst = Allocate(1, sizeof(Preprocessor));
+  Preprocessor *const inst = Allocate(sizeof(Preprocessor));
   if (!inst) {
     return null;
   }
@@ -65,18 +65,18 @@ void Preprocessor_Delete(Preprocessor *const inst)
   Delete(String, inst->identifier);
 }
 
-boolean Preprocessor_Equals(Preprocessor *const obj1, Preprocessor *const obj2)
+boolean Preprocessor_Equals(Preprocessor *const inst, Preprocessor *const other)
 {
-  if (!obj1 || !obj2) {
+  if (!inst || !other) {
     return false;
   }
 
-  if (obj1 == obj2) {
+  if (inst == other) {
     return true;
   }
 
-  return Equals(String, obj1->identifier, obj2->identifier) &&
-         Equals(Array(String), obj1->args, obj2->args, String_Equals);
+  return Equals(String, inst->identifier, other->identifier) &&
+         Equals(Array(String), inst->args, other->args, String_Equals);
 }
 
 String *Preprocessor_Literalise(Preprocessor *const inst)

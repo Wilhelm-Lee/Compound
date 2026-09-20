@@ -57,10 +57,10 @@ LITERALISE(Stream)
 # define ReadLine(stream_ptr, lines_to_skip)\
   Stream_ReadLine(stream_ptr, lines_to_skip)
 
-Stream *Stream_Create(const String *const filepath, const String *const mode);
+Stream *Stream_Create(String *const filepath, String *const mode);
 Stream *Stream_CopyOf(const Stream *const other);
 void Stream_Delete(Stream *const inst);
-boolean Stream_Equals(const Stream *const obj1, const Stream *const obj2);
+boolean Stream_Equals(const Stream *const inst, const Stream *const other);
 
 boolean Stream_Open(Stream *const inst);
 boolean Stream_Close(Stream *const inst);

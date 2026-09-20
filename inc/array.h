@@ -25,8 +25,10 @@
 # include <string.h>
 # include <stdarg.h>
 
+# include "allocator.h"
 # include "common.h"
 # include "memory_stack.h"
+# include "origin.h"
 # include "types.h"
 
 # define isinbound(type, array_ptr, index)                                     \
@@ -183,7 +185,7 @@
 # define TYPEDEF_ARRAY(elem_type)                                              \
   typedef struct elem_type##Array elem_type##Array;
 
-/* In order to preserve the consistency of calling convension,
+/* In order to preserve the consistency of calling convention,
  * the @elem_type is left unused intentionally. */
 # define TYPEDEF_ARRAY_NICKNAME(elem_type, nickname)                           \
   typedef struct nickname##Array nickname##Array;
@@ -257,8 +259,8 @@
     Array(class_name) *const arr1,                                             \
     Array(class_name) *const arr2,                                             \
     boolean (*const IsEqual)(                                                  \
-      class_name *const obj1,                                                  \
-      class_name *const obj2                                                   \
+      class_name *const inst,                                                  \
+      class_name *const other                                                  \
     )                                                                          \
   ) {                                                                          \
     return call(                                                               \
@@ -354,8 +356,8 @@
     Array(elem_type) *const arr1,                                              \
     Array(elem_type) *const arr2,                                              \
     boolean (*const IsEqual)(                                                  \
-      elem_type *const obj1,                                                   \
-      elem_type *const obj2                                                    \
+      elem_type *const inst,                                                   \
+      elem_type *const other                                                   \
     )                                                                          \
   );                                                                           \
   Array(elem_type) *elem_type##Array_Concat(                                   \
@@ -400,8 +402,8 @@
     Array(nickname) *const arr1,                                               \
     Array(nickname) *const arr2,                                               \
     boolean (*const IsEqual)(                                                  \
-      elem_type *const obj1,                                                   \
-      elem_type *const obj2                                                    \
+      elem_type *const inst,                                                   \
+      elem_type *const other                                                   \
     )                                                                          \
   );                                                                           \
   nickname *nickname##Array_GetData(const Array(nickname) *const inst);        \
@@ -619,15 +621,19 @@ Array(elem_type) *elem_type##Array_Create(const llong capacity)                \
     return null;                                                               \
   }                                                                            \
                                                                                \
-  Array(elem_type) *inst = Allocate(1, sizeof(Array(elem_type)));              \
+  Array(elem_type) *inst = Allocate(sizeof(Array(elem_type)));              \
   if (!inst) {                                                                 \
     return null;                                                               \
   }                                                                            \
                                                                                \
-  inst->data = Allocate(capacity, sizeof(elem_type *));                        \
-  if (!inst->data) {                                                           \
-    Deallocate(inst);                                                          \
-    return null;                                                               \
+  if (capacity > 0) {                                                          \
+    inst->data = Allocate(capacity * (sizeof(elem_type *)));                   \
+    if (!inst->data) {                                                         \
+      Deallocate(inst);                                                        \
+      return null;                                                             \
+    }                                                                          \
+  } else {                                                                     \
+    inst->data = nll;                                                          \
   }                                                                            \
                                                                                \
   inst->capacity = capacity;                                                   \
@@ -643,18 +649,22 @@ Array(elem_type) *elem_type##Array_CopyOf(const Array(elem_type) *const other) \
     return null;                                                               \
   }                                                                            \
                                                                                \
-  Array(elem_type) *inst = Allocate(1, sizeof(Array(elem_type)));              \
+  Array(elem_type) *inst = Allocate(sizeof(Array(elem_type)));              \
   if (!inst) {                                                                 \
     return null;                                                               \
   }                                                                            \
                                                                                \
-  inst->data = Allocate(other->capacity, sizeof(elem_type *));                 \
-  if (!inst->data) {                                                           \
-    Deallocate(inst);                                                          \
-    return null;                                                               \
-  }                                                                            \
+  if (other->capacity > 0) {                                                   \
+    inst->data = Allocate(other->capacity * (sizeof(elem_type *)));            \
+    if (!inst->data) {                                                         \
+      Deallocate(inst);                                                        \
+      return null;                                                             \
+    }                                                                          \
                                                                                \
-  memcpy(inst->data, other->data, sizeof(elem_type *) * other->capacity);      \
+    memcpy(inst->data, other->data, sizeof(elem_type *) * other->capacity);    \
+  } else {                                                                     \
+    inst->data = nll;                                                          \
+  }                                                                            \
                                                                                \
   inst->capacity = other->capacity;                                            \
   inst->reserved = other->reserved;                                            \
@@ -708,8 +718,8 @@ inline boolean elem_type##Array_Equals(                                        \
   Array(elem_type) *const arr1,                                                \
   Array(elem_type) *const arr2,                                                \
   boolean (*const IsEqual)(                                                    \
-    elem_type *const obj1,                                                     \
-    elem_type *const obj2                                                      \
+    elem_type *const inst,                                                     \
+    elem_type *const other                                                     \
   )                                                                            \
 ) {                                                                            \
   if (                                                                         \
@@ -985,15 +995,19 @@ Array(nickname) *nickname##Array_Create(const llong capacity)                  \
     return null;                                                               \
   }                                                                            \
                                                                                \
-  Array(nickname) *inst = Allocate(1, sizeof(Array(nickname)));                \
+  Array(nickname) *inst = Allocate(sizeof(Array(nickname)));                \
   if (!inst) {                                                                 \
     return null;                                                               \
   }                                                                            \
                                                                                \
-  inst->data = Allocate(capacity, sizeof(elem_type));                          \
-  if (!inst->data) {                                                           \
-    Deallocate(inst);                                                          \
-    return null;                                                               \
+  if (capacity > 0) {                                                          \
+    inst->data = Allocate((capacity) * (sizeof(elem_type)));                        \
+    if (!inst->data) {                                                         \
+      Deallocate(inst);                                                        \
+      return null;                                                             \
+    }                                                                          \
+  } else {                                                                     \
+    inst->data = nll;                                                          \
   }                                                                            \
                                                                                \
   inst->capacity = capacity;                                                   \
@@ -1009,18 +1023,23 @@ Array(nickname) *nickname##Array_CopyOf(const Array(nickname) *const other)    \
     return null;                                                               \
   }                                                                            \
                                                                                \
-  Array(nickname) *inst = Allocate(1, sizeof(Array(nickname)));                \
+  Array(nickname) *inst = Allocate(sizeof(Array(nickname)));                   \
   if (!inst) {                                                                 \
     return null;                                                               \
   }                                                                            \
                                                                                \
-  inst->data = Allocate(other->capacity, sizeof(elem_type));                   \
-  if (!inst->data) {                                                           \
-    Deallocate(inst);                                                          \
-    return null;                                                               \
+  if (other->capacity > 0) {                                                   \
+    inst->data = Allocate((other->capacity) * (sizeof(nickname)));             \
+    if (!inst->data) {                                                         \
+      Deallocate(inst);                                                        \
+      return null;                                                             \
+    }                                                                          \
+                                                                               \
+    memcpy(inst->data, other->data, sizeof(elem_type) * other->capacity);      \
+  } else {                                                                     \
+    inst->data = nll;                                                          \
   }                                                                            \
                                                                                \
-  memcpy(inst->data, other->data, sizeof(elem_type) * other->capacity);        \
   inst->capacity = other->capacity;                                            \
   inst->reserved = other->reserved;                                            \
   inst->reversed = other->reversed;                                            \
@@ -1061,8 +1080,8 @@ inline boolean nickname##Array_Equals(                                         \
   Array(nickname) *const arr1,                                                 \
   Array(nickname) *const arr2,                                                 \
   boolean (*const IsEqual)(                                                    \
-    elem_type *const obj1,                                                     \
-    elem_type *const obj2                                                      \
+    elem_type *const inst,                                                     \
+    elem_type *const other                                                     \
   )                                                                            \
 ) {                                                                            \
   ignore IsEqual;                                                              \
@@ -1192,17 +1211,23 @@ inline llong nickname##Array_Offsetting(                                       \
   const Array(nickname) *const inst,                                           \
   const llong index                                                            \
 ) {                                                                            \
-  if (!inst) {                                                                 \
+  /* @index can be equal to @inst->capacity for Insert and Remove etc.. */     \
+  if (!inst || index > inst->capacity) {                                       \
     return index;                                                              \
   }                                                                            \
                                                                                \
-  llong final_index = index;                                                   \
-  if (index < 0) {                                                             \
-    final_index = index + inst->capacity;                                      \
+  llong decernere = index;                                                     \
+                                                                               \
+  if (decernere < 0) {                                                         \
+    decernere = inst->capacity - decernere;                                    \
   }                                                                            \
                                                                                \
-  /* Formula:  f(R,I,C) = I + R * (C - 1 - 2I) */                              \
-  return ((final_index) + inst->reversed * (inst->capacity - 1-2*final_index));\
+  /* Necessary to separate the procedures to minus by @inst->capacity. */      \
+  if (inst->reversed) {                                                        \
+    decernere = inst->capacity - decernere;                                    \
+  }                                                                            \
+                                                                               \
+  return decernere;                                                            \
 }                                                                              \
                                                                                \
 Array(nickname) *nickname##Array_Resize(                                       \
@@ -1225,7 +1250,9 @@ Array(nickname) *nickname##Array_Resize(                                       \
   const llong delta = capacity - inst->capacity;                               \
   const llong final_capacity = delta > 0 ? inst->capacity : capacity;          \
                                                                                \
-  memcpy(array->data, inst->data, final_capacity * sizeof(inst->data[0]));     \
+  if (final_capacity > 0) {                                                    \
+    memcpy(array->data, inst->data, final_capacity * sizeof(inst->data[0]));   \
+  }                                                                            \
                                                                                \
   Delete(Array(nickname), inst);                                               \
                                                                                \
@@ -1396,5 +1423,10 @@ Array(elem_type) *elem_type##Array_Compose(const llong arglen, ...)            \
                                                                                \
   return inst;                                                                 \
 }
+
+// REPRESENT(Array(byte), {
+//   byte *data;
+//   llong length;
+// })
 
 #endif  /* COMPOUND_ARRAY_H */

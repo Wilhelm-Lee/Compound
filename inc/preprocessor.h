@@ -48,6 +48,6 @@ Preprocessor *Preprocessor_Create(
 );
 Preprocessor *Preprocessor_CopyOf(Preprocessor *const other);
 void Preprocessor_Delete(Preprocessor *const inst);
-boolean Preprocessor_Equals(Preprocessor *const obj1, Preprocessor *const obj2);
+boolean Preprocessor_Equals(Preprocessor *const inst, Preprocessor *const other);
 
 #endif  /* COMPOUND_PREPROCESSOR_H */
