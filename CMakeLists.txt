@@ -44,7 +44,6 @@ set(
   src/origin.c
   src/parameter.c
   src/preprocessor.c
-  src/recollector.c
   src/regex.c
   src/signature.c
   src/stream.c
@@ -75,7 +74,7 @@ endif()
 
 
 # Dependencies.  (git submodule-ed)
-add_subdirectory(dep/pcre2)
+add_subdirectory("${DEP_DIRECTORY}"/pcre2)
 
 
 # Rename the executable to avoid conflict with the library 'compound' On
