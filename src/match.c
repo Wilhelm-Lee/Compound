@@ -50,7 +50,7 @@ struct Match {
 
 Match *Match_Create(Array(llong) *const bounds)
 {
-  Match *const inst = Allocate(1, sizeof(Match));
+  Match *const inst = Allocate(sizeof(Match));
   if (!inst) return nll;
 
   inst->bounds = bounds;
@@ -70,11 +70,11 @@ void Match_Delete(Match *const inst)
   Deallocate(inst);
 }
 
-boolean Match_Equals(Match *const obj1, Match *const obj2)
+boolean Match_Equals(Match *const inst, Match *const other)
 {
-  if (!obj1 || !obj2) return false;
-  if (obj1 == obj2) return true;
-  return Equals(Array(llong), obj1->bounds, obj2->bounds, null);
+  if (!inst || !other) return false;
+  if (inst == other) return true;
+  return Equals(Array(llong), inst->bounds, other->bounds, null);
 }
 
 String *Match_Literalise(Match *const inst)

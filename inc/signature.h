@@ -44,8 +44,8 @@ Signature *Signature_Create(
 Signature *Signature_CopyOf(const Signature *const other);
 void Signature_Delete(Signature *const inst);
 boolean Signature_Equals(
-  Signature *const obj1,
-  Signature *const obj2
+  Signature *const inst,
+  Signature *const other
 );
 String *Signature_GetReturning(const Signature *const inst);
 String *Signature_GetIdentifier(const Signature *const inst);

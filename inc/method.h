@@ -49,7 +49,7 @@ LITERALISE_ARGS(
     Create(                                                                    \
       Method,                                                                  \
       ACCESS_##access_literal,                                                 \
-      CLASS_IDENTIFIER_STR,                                                    \
+      CopyOf(String, CLASS_IDENTIFIER_STR),                                    \
       function(                                                                \
         string(nameof(returning_type_literal)),                                \
         string(nameof(identifier_literal)),                                    \
@@ -58,10 +58,7 @@ LITERALISE_ARGS(
           Concat,                                                              \
           params_str(                                                          \
             param_str(                                                         \
-              append(                                                          \
-                CLASS_IDENTIFIER_STR,                                          \
-                string(" *const")                                              \
-              ),                                                               \
+              append(nll, CLASS_IDENTIFIER_STR, string(" *const")), \
               string(nameof(this))                                             \
             )                                                                  \
           ),                                                                   \
@@ -92,7 +89,7 @@ Method *Method_Create(
 );
 Method *Method_CopyOf(Method *const other);
 void Method_Delete(Method *const inst);
-boolean Method_Equals(Method *const obj1, Method *const obj2);
+boolean Method_Equals(Method *const inst, Method *const other);
 Access Method_GetAccess(const Method *const inst);
 Function *Method_GetFunction(const Method *const inst);
 String *Method_GetIdentifier(Method *const inst);

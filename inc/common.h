@@ -26,22 +26,36 @@
 
 # include "types.h"
 
+# define KiB  * 1024LL
+# define MiB  * 1024 KiB
+# define GiB  * 1024 MiB
+# define TiB  * 1024 GiB
+
 # define EMPTY  {0}
+# define Empty  EMPTY
 
 # define ignore  (void)
 # define ig  ignore
 
 # define null  NULL
 # define nll  null
-
-# define ret  return
-# define retnll  ret nll
-
-# define reg  register
+# define nil  nll
 
 # define nop  ((void)0)
 
 # define elif  else if
+
+#define out(string_ptr)\
+   fout(stdout, string_ptr)
+
+#define outln(string_ptr)\
+   fout(stdout, append(string_ptr, string(NL)))
+
+#define foutln(file_ptr, string_ptr)\
+   fout(file_ptr, append(string_ptr, string(NL)))
+
+#define fout(file_ptr, string_ptr)\
+   fprintf(file_ptr, "%s", flatten(char, string_ptr));
 
 # define _CONCAT(a, b)                                                         \
   a##b
@@ -180,17 +194,5 @@
       35, 34, 33, 32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18,  \
       17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)
 #endif
-
-#define out(string_ptr)\
-   fout(stdout, string_ptr)
-
-#define outln(string_ptr)\
-   fout(stdout, append(string_ptr, string(NL)))
-
-#define foutln(file_ptr, string_ptr)\
-   fout(file_ptr, append(string_ptr, string(NL)))
-
-#define fout(file_ptr, string_ptr)\
-   fprintf(file_ptr, "%s", flatten(char, string_ptr));
 
 #endif /* COMPOUND_COMMON_H */

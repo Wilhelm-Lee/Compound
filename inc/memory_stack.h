@@ -26,40 +26,32 @@
 
 # include "common.h"
 # include "language.h"
-# include "location.h"
+# include "memory_internal.h"
 # include "platform.h"
+# include "types.h"
 
-typedef struct Memory Memory;
+# define MEMORY_STACK_HEIGHT_MAXIMUM  (1024LL)
 
-typedef struct MemoryStack {
-  void **data;
-  llong capacity;  // The total capacity of the instance.
-  llong height;  // The current indexer of the instance.
-} MemoryStack;
+typedef struct MemoryStack MemoryStack;
 
-void *Allocate(const size_t nmemb, const size_t size);
-void _Deallocate(void *const inst);
+void InitialiseMemoryStack(void);
+void DeinitialiseMemoryStack(void);
 
-# ifdef __COMPOUND_FEATURE_RECYCLER__
-#  define Deallocate(inst)
-# else
-#  define Deallocate(inst)                                                     \
-  _Deallocate(inst)
-# endif
-
-/**
- * @return The registered indexer in @MEMORY_STACK if succeeded.
- *         -1 when failed.
- */
+/* Returns the registered indexer in @MEMORY_STACK; -1 for failures. */
 llong MemoryStack_Push(MemoryStack *const inst, void *const addr);
 void MemoryStack_Pop(MemoryStack *const inst);
-void *MemoryStack_Top(MemoryStack *const inst);
+
+/* Acts as a assertive termination to clean up
+ * the data stored previously to start a new session. */
+void MemoryStack_PopAll(MemoryStack *const inst);
+Memory *MemoryStack_Top(MemoryStack *const inst);
+boolean MemoryStack_IsEmpty(MemoryStack *const inst);
+boolean MemoryStack_IsFull(MemoryStack *const inst);
 
 /* Returns -1 either when @inst is null
  * or when @inst the stack is empty. */
 llong MemoryStack_GetHeight(MemoryStack *const inst);
-
-boolean MemoryStack_IsEmpty(MemoryStack *const inst);
-boolean MemoryStack_IsFull(MemoryStack *const inst);
+/* Returns null when out-of-bound or beyond current stack height. */
+void *MemoryStack_GetAddress(MemoryStack *const inst, const llong idx);
 
 #endif /* COMPOUND_MEMORY_STACK_H */

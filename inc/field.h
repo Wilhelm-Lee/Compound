@@ -76,7 +76,7 @@ Field *Field_Create(
 );
 Field *Field_CopyOf(Field *const other);
 void Field_Delete(Field *const inst);
-boolean Field_Equals(Field *const obj1, Field *const obj2);
+boolean Field_Equals(Field *const inst, Field *const other);
 String *Field_GetIdentifier(Field *const inst);
 void _Field_SetNumericalIdentifier(
   Field *const inst,

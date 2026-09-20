@@ -32,7 +32,7 @@ Constructor *Constructor_Create(Constructor *const super, Method *const method)
     return null;
   }
 
-  Constructor *const inst = Allocate(1, sizeof(Constructor));
+  Constructor *const inst = Allocate(sizeof(Constructor));
   if (!inst) {
     return null;
   }
@@ -66,18 +66,18 @@ void Constructor_Delete(Constructor *const inst)
   Deallocate(inst);
 }
 
-boolean Constructor_Equals(Constructor *const obj1, Constructor *const obj2)
+boolean Constructor_Equals(Constructor *const inst, Constructor *const other)
 {
-  if (!obj1 || !obj2) {
+  if (!inst || !other) {
     return false;
   }
 
-  if (obj1 == obj2) {
+  if (inst == other) {
     return true;
   }
 
-  return obj1->super == obj2->super &&
-         Equals(Method, obj1->method, obj2->method);
+  return inst->super == other->super &&
+         Equals(Method, inst->method, other->method);
 }
 
 String *Constructor_Literalise(
@@ -110,32 +110,30 @@ String *Constructor_Literalise(
 void Constructor_Inherit(Constructor *const inst, Constructor *const super)
 {
   if (!inst || !super) {
-    ret;
+    return;
   }
 
   inst->super = super;
-  Setter(
-      Body, Text,
-      Getter(
-          Function, Body,
-          Getter(
-            Method, Function,
-            Getter(Constructor, Method, inst))),
-      append(
-          Getter(
-              Body, Text,
-              Getter(
-                  Function, Body,
-                  Getter(
-                      Method, Function,
-                      Getter(Constructor, Method, super)))),
-          Getter(
-              Body, Text,
-              Getter(
-                  Function, Body,
-                  Getter(
-                      Method, Function,
-                      Getter(Constructor, Method, inst))))));
+
+  Body *const inst_body = Getter(
+    Function, Body,
+    Getter(Method, Function, Getter(Constructor, Method, inst))
+  );
+  Body *const super_body = Getter(
+    Function, Body,
+    Getter(Method, Function, Getter(Constructor, Method, super))
+  );
+
+  if (!inst_body || !super_body) {
+    return;
+  }
+
+  String *const super_text = Getter(Body, Text, super_body);
+  String *const inst_text = Getter(Body, Text, inst_body);
+
+  String *const combined = append(nll, super_text, inst_text);
+
+  Setter(Body, Text, inst_body, combined);
 }
 
 Constructor *Constructor_GetSuper(const Constructor *const inst)
@@ -159,7 +157,7 @@ Method *Constructor_GetMethod(const Constructor *const inst)
 void Constructor_SetSuper(Constructor *const inst, Constructor *const super)
 {
   if (!inst) {
-    ret;
+    return;
   }
 
   inst->super = super;

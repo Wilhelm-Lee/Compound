@@ -34,7 +34,7 @@ Function *Function_Create(
     return null;
   }
 
-  Function *const inst = Allocate(1, sizeof(Function));
+  Function *const inst = Allocate(sizeof(Function));
   if (!inst) {
     return null;
   }
@@ -51,11 +51,22 @@ Function *Function_CopyOf(const Function *const other)
     return null;
   }
 
-  return Create(
-    Function,
-    CopyOf(Signature, other->signature),
-    CopyOf(Body, other->body)
-  );
+  Signature *const signature = CopyOf(Signature, other->signature);
+  Body *const body = CopyOf(Body, other->body);
+  if (!signature || !body) {
+    Delete(Body, body);
+    Delete(Signature, signature);
+    return null;
+  }
+
+  Function *const inst = Create(Function, signature, body);
+  if (!inst) {
+    Delete(Body, body);
+    Delete(Signature, signature);
+    return null;
+  }
+
+  return inst;
 }
 
 void Function_Delete(Function *const inst)
@@ -69,18 +80,18 @@ void Function_Delete(Function *const inst)
   Deallocate(inst);
 }
 
-boolean Function_Equals(Function *const obj1, Function *const obj2)
+boolean Function_Equals(Function *const inst, Function *const other)
 {
-  if (!obj1 || !obj2) {
+  if (!inst || !other) {
     return false;
   }
 
-  if (obj1 == obj2) {
+  if (inst == other) {
     return true;
   }
 
-  return Equals(Signature, obj1->signature, obj2->signature) &&
-         Equals(Body, obj1->body, obj2->body);
+  return Equals(Signature, inst->signature, other->signature) &&
+         Equals(Body, inst->body, other->body);
 }
 
 String *Function_Literalise(
@@ -108,12 +119,18 @@ String *Function_Literalise(
   );
 
   if (need_body) {
-    lit = append(lit, lit(Body, inst->body));
+    String *const body_str = lit(Body, inst->body);
+    lit = append(lit, body_str);
+    Delete(String, body_str);
     return lit;
   }
 
   if (need_semicolon) {
-    lit = append(lit, string(";"), string(NL));
+    String *const str_semicolon = string(";");
+    String *const str_nl = string(NL);
+    lit = append(lit, str_semicolon, str_nl);
+    Delete(String, str_nl);
+    Delete(String, str_semicolon);
   }
 
   return lit;

@@ -19,18 +19,18 @@
 
   Compound supports multiple platforms, and is built using CMake.
 
-  This section delivers **minimum steps** for building Compound on your machine.
+  This section delivers **minimum steps** for building Compound on your machine,
+  as it covers the following platforms:
 
-   * [Microsoft Windows](#microsoft-windows)
-   * [GNU/Linux & Apple MacOS](#gnulinux--apple-macos)
-   * [Other Platforms](#other-platforms)
-
-   The output is managed.  See [Filesystem](#filesystem).
+   > The output is managed.  See [Filesystem](#filesystem).
 
 ### Microsoft Windows
 
   Please make sure to have sufficient prerequisites installed on your
-  Windows machine before starting the building process.
+  Windows machine before starting the building process.  But worry not, you will
+  be guided to install these dependencies along the way.
+
+  ------------------------------------------------------------------------------
 
   It is recommended to have the following software downloaded, and, installed
   on your computer, every one of them:
@@ -44,22 +44,20 @@
 
 #### PowerShell / CMD
 
-  If you have not downloaded the project from GitHub.com <!-- or CodeBurge.com-->,
+  If you have not downloaded the project from GitHub.com <!-- or CodeBerg.org-->,
   use the following command to do so:
   ```pwsh
-    git clone https://github.com/Wilhelm-Lee/Compound.git
+    git clone --recurse-submodules 'https://github.com/Wilhelm-Lee/Compound.git'
     cd Compound
   ```
+
+  ------------------------------------------------------------------------------
 
   Next, build the project using CMake:
   ```pwsh
     cmake .
     make
   ```
-
-  > Please be noticed that due to the uncertainty of the environment for
-  > development on Windows, the result of building processes may vary and may
-  > require installing extra dependencies manually.
 
 ### GNU/Linux & Apple MacOS
 
@@ -68,6 +66,11 @@
   enough knowledge to operate without holding hands.
 
   So here it is.
+  ```bash
+    git clone --recurse-submodules 'https://github.com/Wilhelm-Lee/Compound.git'
+    cd Compound
+  ```
+
   ```bash
     cmake . && make
   ```
@@ -120,9 +123,9 @@
   both the **building** and the <u>source code generation</u>.
 
   * The building changes are highlighted using **bold**.
-  * The source code generation changes are highlighted using <u>underlines</u>.
+  * The source code generation changes are highlighted using _italic_.
 
-  Before **building** + <u>source code generation</u>:
+  Before **building** + _source code generation_:
   * inc
     * \*.h
   * src
@@ -130,7 +133,7 @@
   * test
     * test.c
 
-  After **building** + <u>source code generation</u>:
+  After **building** + _source code generation_:
   * inc
   * src
   * test
@@ -146,12 +149,12 @@
       * **test**
         * **test.c.o**
         * **test.c.o.d**
-    * **Fundation.dir**
+    * **Foundation.dir**
       * **src**
         * **\*.c.o**
         * **\*.c.o.d**
-  * <u>user</u>
-    * <u>header.h</u>
+  * _user_
+    * _header.h_
 
 ## Language Compatibility
 

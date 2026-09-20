@@ -91,7 +91,7 @@ Parameter *Parameter_Create(
 );
 Parameter *Parameter_CopyOf(const Parameter *const other);
 void Parameter_Delete(Parameter *const inst);
-boolean Parameter_Equals(Parameter *const obj1, Parameter *const obj2);
+boolean Parameter_Equals(Parameter *const inst, Parameter *const other);
 Array(Parameter) *Parameter_CreateMultiple(const llong cluster_count, ...);
 String *Parameter_GetType(const Parameter *const inst);
 String *Parameter_GetIdentifier(const Parameter *const inst);

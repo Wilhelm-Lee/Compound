@@ -37,13 +37,13 @@ Body *Body_Create(
     return null;
   }
 
-  Body *const inst = Allocate(1, sizeof(Body));
+  Body *const inst = Allocate(sizeof(Body));
   if (!inst) {
     return null;
   }
 
   inst->Execution = Execution;
-  inst->text = text;
+  inst->text = CopyOf(String, text);
 
   return inst;
 }
@@ -67,18 +67,27 @@ void Body_Delete(Body *const inst)
   Deallocate(inst);
 }
 
-boolean Body_Equals(Body *const obj1, Body *const obj2)
+boolean Body_Equals(Body *const inst, Body *const other)
 {
-  if (!obj1 || !obj2) {
+  if (!inst || !other) {
     return false;
   }
 
-  if (obj1 == obj2) {
+  if (inst == other) {
     return true;
   }
 
-  return obj1->Execution == obj2->Execution ||
-         Equals(String, obj1->text, obj2->text);
+  if (inst->Execution || other->Execution) {
+    return inst->Execution == other->Execution;
+  }
+
+  if (inst->text || other->text) {
+    if (!inst->text || !other->text || !Equals(String, inst->text, other->text)) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 String *Body_Literalise(Body *const inst)
@@ -92,7 +101,7 @@ String *Body_Literalise(Body *const inst)
     return string("");
   }
 
-  return inst->text;
+  return CopyOf(String, inst->text);
 }
 
 String *Body_GetText(const Body *const inst)
@@ -104,13 +113,18 @@ String *Body_GetText(const Body *const inst)
   return inst->text;
 }
 
-void Body_SetText(Body *const inst, const String *const text)
+void Body_SetText(Body *const inst, String *const text)
 {
   if (!inst) {
-    ret;
+    return;
   }
 
-  inst->text = CopyOf(String, text);
+  if (inst->text == text) {
+    return;
+  }
+
+  Delete(String, inst->text);
+  inst->text = text;
 }
 
 IMPL_ARRAY(Body)

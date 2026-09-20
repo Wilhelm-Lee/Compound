@@ -38,7 +38,7 @@ String *String_Create(const llong length, const llong width)
     return null;
   }
 
-  String *inst = Allocate(1, sizeof(String));
+  String *inst = Allocate(sizeof(String));
   if (!inst) {
     return null;
   }
@@ -84,7 +84,7 @@ String *String_CopyOf(const String *const other)
     return null;
   }
 
-  String *inst = Allocate(1, sizeof(String));
+  String *inst = Allocate(sizeof(String));
   if (!inst) {
     return null;
   }
@@ -145,7 +145,6 @@ inline String *String_Transfer(
     return null;
   }
 
-  // *receiver = provider;
   *receiver = *provider;
   *provider = null;
 
@@ -161,14 +160,20 @@ String *String_Update(String *const inst, const char *restrict const cstr)
 
   const llong length = strnlen(cstr, STRING_LENGTH_MAXIMUM);
 
-  String *const string = String_Create(length, sizeof(cstr[0]));
+  String *const string = Create(String, length, sizeof(cstr[0]));
+  if (!string) {
+    return nll;
+  }
 
-  /* Clean resource before re-creating. */
-  if (inst) {
+  if (inst && inst->data) {
+    memmove(Getter(Array(byte), Data, inst->data), cstr, sizeof(char) * length);
+    set(Array(byte), inst->data, -1, 0);  // null-terminator.
+    /* Clean resource before re-creating. */
     Delete(String, inst);
   }
 
-  memmove(Getter(Array(byte), Data, string->data), cstr, sizeof(char) * length);
+  memmove(Getter(Array(byte), Data, string->data), cstr, length);
+  set(Array(byte), string->data, -1, 0);  // null-terminator.
 
   return string;
 }
@@ -196,7 +201,7 @@ int String_Compare(const String *const string1, const String *const string2)
   return 0;
 }
 
-String *String_Concat(String *const string1, const String *const string2)
+String *String_Concat(String *const string1, String *const string2)
 {
   if (!string1 && !string2) {
     return null;
@@ -229,6 +234,7 @@ String *String_Concat(String *const string1, const String *const string2)
     setbyte(concat, i, getbyte(string2, i - string1_len));
   })
 
+  Delete(String, string2);
   Delete(String, string1);
 
   return concat;
@@ -289,7 +295,7 @@ String *String_Substr(
   llong final_length = length;
 
   /* Not giving effective length means the maximum length after offset. */
-  if (length < 0) {
+  if (length <= 0) {
     final_length = sourcelen - offset;
   }
 
@@ -647,7 +653,7 @@ inline llong String_Whence(
   const llong search_limit = sourcelen - targetlen;
 
   /* Traverse the continuous memory block using memcmp. */
-  for (reg llong i = offset; i <= search_limit; i++) {
+  for (register llong i = offset; i <= search_limit; i++) {
     if (memcmp(src_bytes + i, tgt_bytes, targetlen) == 0) {
       return i;
     }
@@ -1068,7 +1074,7 @@ void *String_Flatten(const String *const inst, const llong width)
     /* Default width is the width of a byte.
        There is no need to initialise the terminating byte since @Allocate
        zeros everything out whatsoever. */
-    void *const empty_buffer = Allocate(1, sizeof(byte));
+    void *const empty_buffer = Allocate(sizeof(byte));
     if (!empty_buffer) {
       return null;
     }
@@ -1082,7 +1088,7 @@ void *String_Flatten(const String *const inst, const llong width)
   const llong final_width = (inst->width > width ? inst->width : width);
 
   const llong instlen = Length(String, inst);
-  void *const buffer = Allocate(instlen + 1, final_width);
+  void *const buffer = Allocate((instlen + 1) * final_width);
   memmove(buffer, index0, instlen + 1);
 
   return buffer;
@@ -1173,9 +1179,8 @@ String *String_Append(
     })
   })
 
-  Delete(String, inst);
-  erase(Array(String), contents);
   Delete(Array(String), contents);
+  Delete(String, inst);
 
   return rtn;
 }

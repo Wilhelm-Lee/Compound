@@ -32,7 +32,7 @@ Buffer *Buffer_Create(const llong capacity)
     return null;
   }
 
-  Buffer *const inst = Allocate(1, sizeof(Buffer));
+  Buffer *const inst = Allocate(sizeof(Buffer));
   if (!inst) {
     return null;
   }
@@ -54,7 +54,7 @@ Buffer *Buffer_CopyOf(const Buffer *const other)
     return null;
   }
 
-  Buffer *const inst = Allocate(1, sizeof(Buffer));
+  Buffer *const inst = Allocate(sizeof(Buffer));
   if (!inst) {
     return null;
   }
@@ -75,13 +75,13 @@ void Buffer_Delete(Buffer *const inst)
   Deallocate(inst);
 }
 
-boolean Buffer_Equals(const Buffer *const obj1, const Buffer *const obj2)
+boolean Buffer_Equals(const Buffer *const inst, const Buffer *const other)
 {
-  if (!obj1 || !obj2) return false;
-  if (obj1 == obj2) return true;
+  if (!inst || !other) return false;
+  if (inst == other) return true;
 
-  return obj1->cursor == obj2->cursor &&
-         Equals(Array(byte), obj1->data, obj2->data, null);
+  return inst->cursor == other->cursor &&
+         Equals(Array(byte), inst->data, other->data, null);
 }
 
 boolean Buffer_Sample(Buffer *const inst, const String *const string)

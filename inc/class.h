@@ -37,57 +37,58 @@ typedef struct Class Class;
 ARRAY(Class)
 LITERALISE_ARGS(Class, boolean want_fancy, boolean need_member_definition)
 
-# define class(access_literal, identifier_literal, ...)\
-  Class *c_##identifier_literal = Create(\
-    Class,\
-    ACCESS_##access_literal,\
-    string(nameof(identifier_literal)),\
-    null,\
-    null,\
-    null,\
-    null,\
-    null,\
-    null,\
-    null\
-  );\
-  typedef Class identifier_literal;\
-  ARRAY(identifier_literal)\
-  {\
-    Class *const this = c_##identifier_literal;\
-    Class *super = nll;\
-    ig this;\
-    String *const CLASS_IDENTIFIER_STR = string(\
-      nameof(identifier_literal)\
-    );\
-    ig CLASS_IDENTIFIER_STR;\
-    destructor()  /* The default destructor. */\
-    __VA_ARGS__\
-    Class_Inherit(this, super);\
+# define class(access_literal, identifier_literal, ...)                        \
+  Class *c_##identifier_literal = Create(                                      \
+    Class,                                                                     \
+    ACCESS_##access_literal,                                                   \
+    string(nameof(identifier_literal)),                                        \
+    null,                                                                      \
+    null,                                                                      \
+    null,                                                                      \
+    null,                                                                      \
+    null,                                                                      \
+    null,                                                                      \
+    null                                                                       \
+  );                                                                           \
+  typedef Class identifier_literal;                                            \
+  ARRAY(identifier_literal)                                                    \
+  {                                                                            \
+    Class *const this = c_##identifier_literal;                                \
+    Class *super = nll;                                                        \
+    ig this;                                                                   \
+    String *const CLASS_IDENTIFIER_STR = string(                               \
+      nameof(identifier_literal)                                               \
+    );                                                                         \
+    ig CLASS_IDENTIFIER_STR;                                                   \
+    destructor()  /* The default destructor. */                                \
+    __VA_ARGS__                                                                \
+    Class_Inherit(this, super);                                                \
   }
 
-# define inherit(super_class_name_literal)\
+# define inherit(super_class_name_literal)                                     \
   super = c_##super_class_name_literal;
 
-# define override(method_name_literal, ...)\
-  {\
-    Method *const found = Class_GetMethodByIdentifier(this, string(nameof(method_name_literal)));\
-    if (found) {\
-      Body *const body = Getter(Function, Body, Getter(Method, Function, found));\
-      Delete(String, Getter(Body, Text, body));\
-      Setter(Body, Text, body, string(#__VA_ARGS__));\
-    }\
+# define override(method_name_literal, ...)                                    \
+  {                                                                            \
+    String *const _method_name = string(nameof(method_name_literal));          \
+    Method *const found = Class_GetMethodByIdentifier(this, _method_name);     \
+    Delete(String, _method_name);                                              \
+    if (found) {                                                               \
+      Body *const body =Getter(Function, Body,Getter(Method, Function, found));\
+      Setter(Body, Text, body, string(#__VA_ARGS__));                          \
+    }                                                                          \
   }
 
-# define new(class_name_literal, ...)\
+# define new(class_name_literal, ...)                                          \
   (Create(class_name_literal, __VA_ARGS__))
 
-# define del(class_name_literal, inst)\
+# define del(class_name_literal, inst)                                         \
   Delete(class_name_literal, inst)
 
-# define of(class_name_literal, field_name_literal)\
+# define of(class_name_literal, field_name_literal)                            \
   EMPTY
 
-# define invoke(...)\
+# define invoke(...)                                                           \
   EMPTY
 
 Class *Class_Create(
@@ -103,7 +104,7 @@ Class *Class_Create(
 );
 Class *Class_CopyOf(Class *const other);
 void Class_Delete(Class *const inst);
-boolean Class_Equals(const Class *const obj1, const Class *const obj2);
+boolean Class_Equals(const Class *const inst, const Class *const other);
 boolean Class_Recreate(
   FILE *const header,
   FILE *const source,

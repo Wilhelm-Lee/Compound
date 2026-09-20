@@ -54,7 +54,7 @@ LITERALISE_ARGS(
 Function *Function_Create(Signature *const signature, Body *const body);
 Function *Function_CopyOf(const Function *const other);
 void Function_Delete(Function *const inst);
-boolean Function_Equals(Function *const obj1, Function *const obj2);
+boolean Function_Equals(Function *const inst, Function *const other);
 Signature *Function_GetSignature(const Function *const inst);
 Body *Function_GetBody(const Function *const inst);
 

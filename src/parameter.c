@@ -34,13 +34,13 @@ Parameter *Parameter_Create(
     return null;
   }
 
-  Parameter *inst = Allocate(1, sizeof(Parameter));
+  Parameter *inst = Allocate(sizeof(Parameter));
   if (!inst) {
     return null;
   }
 
-  inst->type = type;
-  inst->identifier = identifier;
+  inst->type = CopyOf(String, type);
+  inst->identifier = CopyOf(String, identifier);
 
   return inst;
 }
@@ -51,11 +51,23 @@ Parameter *Parameter_CopyOf(const Parameter *const other)
     return null;
   }
 
-  return Create(
-    Parameter,
-    CopyOf(String, other->type),
-    CopyOf(String, other->identifier)
-  );
+  String *const type = CopyOf(String, other->type);
+  String *const identifier = other->identifier ? CopyOf(String, other->identifier) : null;
+
+  if (!type || (other->identifier && !identifier)) {
+    Delete(String, type);
+    Delete(String, identifier);
+    return null;
+  }
+
+  Parameter *const inst = Create(Parameter, type, identifier);
+  if (!inst) {
+    Delete(String, type);
+    Delete(String, identifier);
+    return null;
+  }
+
+  return inst;
 }
 
 void Parameter_Delete(Parameter *const inst)
@@ -69,18 +81,23 @@ void Parameter_Delete(Parameter *const inst)
   Deallocate(inst);
 }
 
-boolean Parameter_Equals(Parameter *const obj1, Parameter *const obj2)
+boolean Parameter_Equals(Parameter *const inst, Parameter *const other)
 {
-  if (!obj1 || !obj2) {
+  if (!inst || !other) {
     return false;
   }
 
-  if (obj1 == obj2) {
+  if (inst == other) {
     return true;
   }
 
-  return Equals(String, obj1->identifier, obj2->identifier) &&
-         Equals(String, obj1->type, obj2->type);
+  if (inst->identifier || other->identifier) {
+    if (!inst->identifier || !other->identifier || !Equals(String, inst->identifier, other->identifier)) {
+      return false;
+    }
+  }
+
+  return Equals(String, inst->type, other->type);
 }
 
 Array(Parameter) *Parameter_CreateMultiple(const llong cluster_count, ...)
@@ -116,17 +133,24 @@ String *Parameter_Literalise(
     return null;
   }
 
-  String *lit = string("");
+  String *const str_space = string(" ");
+  String *lit = null;
 
-  if (need_type) {
+  if (need_type && inst->type) {
     lit = append(lit, inst->type);
   }
 
-  if (need_identifier) {
-    lit = append(lit, string(" "), inst->identifier);
+  if (need_identifier && inst->identifier) {
+    if (lit) {
+      lit = append(lit, str_space, inst->identifier);
+    } else {
+      lit = append(lit, inst->identifier);
+    }
   }
 
-  return lit;
+  Delete(String, str_space);
+
+  return lit ? lit : string("");
 }
 
 String *Parameter_GetType(const Parameter *const inst)
