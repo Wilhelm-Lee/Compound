@@ -26,7 +26,7 @@ extern MemoryStack *MEMORY_STACK;
 struct Origin {
   struct {
     /* allocation_metadata_slots. */
-    Memory data[__COMPOUND_ORIGIN_MEMORY_METADATA_SLOT_MAXIMUM__];
+    Memory data[__COMPOUND_ORIGIN_META_SLOT_MAXIMUM__];
 
     /* Even population_distribution_descriptors. */
     /*    1    2    3    4    5    6    7    8    9    0    1    2    3    ... */
@@ -302,7 +302,7 @@ void *Origin_Allocate(const llong requirement)
   }
 
   llong heap_offset = GetFirstFitOffset(origin->heap.occupations, __COMPOUND_ORIGIN_HEAP_OCCUPATION_COUNT_MAXIMUM__, requirement);
-  if (heap_offset < 0 || heap_offset >= __COMPOUND_ORIGIN_HEAP_CHUNK_COUNT__) {
+  if (heap_offset < 0 || heap_offset >= __COMPOUND_ORIGIN_HEAP_SIZE_MAXIMUM__) {
     return nll;
   }
 
@@ -379,21 +379,46 @@ void Origin_Deallocate(void *address_on_heap)
   SetOccupation(origin->meta.occupations, __COMPOUND_ORIGIN_META_OCCUPATION_COUNT_MAXIMUM__, meta_offset, false);
 }
 
-llong Origin_GetAvailableMetaCount(void)
+static inline uint32_t swar_popcount(uint32_t n)
 {
-  Memory *it = origin->meta.data;
-  register llong count = 0;
-  repeat (__COMPOUND_ORIGIN_MEMORY_METADATA_SLOT_MAXIMUM__) {
-    count += !!it;
-    it ++;
+    // Step 1: Count bits in each 2-bit field
+    n = n - ((n >> 1) & 0x55555555);
+
+    // Step 2: Count bits in each 4-bit field
+    n = (n & 0x33333333) + ((n >> 2) & 0x33333333);
+
+    // Step 3: Count bits in each 8-bit field, sum them up, and shift down
+    return (((n + (n >> 4)) & 0x0F0F0F0F) * 0x01010101) >> 24;
+}
+
+llong Origin_GetUsedMetaCount(void)
+{
+  register llong sum = 0;
+  loop (i, __COMPOUND_ORIGIN_META_OCCUPATION_COUNT_MAXIMUM__) {
+    sum += swar_popcount(origin->meta.occupations[i]);
   }
 
-  return count;
+  return sum;
+}
+
+llong Origin_GetUsedHeapSize(void)
+{
+  register llong sum = 0;
+  loop (i, __COMPOUND_ORIGIN_HEAP_OCCUPATION_COUNT_MAXIMUM__) {
+    sum += swar_popcount(origin->heap.occupations[i]);
+  }
+
+  return sum;
+}
+
+inline llong Origin_GetAvailableMetaCount(void)
+{
+  return __COMPOUND_ORIGIN_META_SLOT_MAXIMUM__ - Origin_GetUsedMetaCount();
 }
 
 inline llong Origin_GetAvailableHeapSize(void)
 {
-  return Origin_GetAvailableMetaCount() * sizeof(origin->meta.data[0]);
+  return __COMPOUND_ORIGIN_HEAP_SIZE_MAXIMUM__ - Origin_GetUsedHeapSize();
 }
 
 void InitialiseOrigin(void)
@@ -478,7 +503,7 @@ void VisualiseMemoryByMemoryOccupation(const char *const title)
 
 void DumpHeap(const char *const title)
 {
-  register const llong cap = 3 * (2 * 8 * 4 * 8);
+  register const llong cap = (__COMPOUND_ORIGIN_HEAP_SIZE_MAXIMUM__ - Origin_GetAvailableHeapSize()) + (64);
   register llong usage = 0;
 
   printf("=== Heap Occupation Summary (%s) ===\n", title ? title : "");
@@ -495,13 +520,14 @@ void DumpHeap(const char *const title)
       printf("0x%08llX  ", (ullong)origin->heap.data + i);
     }
 
-    if (i % 16 == 0) {
+    /* Because the usage of "uint32_t". */
+    if (i % 32 == 0) {
       printf(" ");
     }
 
-    if (i % 8 == 0) {
-      printf(" ");
-    }
+    // if (i % 8 == 0) {
+    //   printf(" ");
+    // }
 
     /* This @ref will always be valid because the address it takes is
      * from the compile-time-allocate memory.
@@ -516,11 +542,6 @@ void DumpHeap(const char *const title)
 
     printf(".");
   }
-
-  printf(NL);
-
-  printf("Total usage: %lld"NL, usage);
-  printf("Available remaining: %lld"NL, (cap - usage));
 
   printf(NL);
 }
