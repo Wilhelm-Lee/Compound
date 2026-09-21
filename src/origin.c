@@ -504,7 +504,6 @@ void VisualiseMemoryByMemoryOccupation(const char *const title)
 void DumpHeap(const char *const title)
 {
   register const llong cap = (__COMPOUND_ORIGIN_HEAP_SIZE_MAXIMUM__ - Origin_GetAvailableHeapSize()) + (64);
-  register llong usage = 0;
 
   printf("=== Heap Occupation Summary (%s) ===\n", title ? title : "");
   printf("Capacity: 0x%llX"NL, (ullong)__COMPOUND_ORIGIN_HEAP_SIZE_MAXIMUM__);
@@ -536,7 +535,6 @@ void DumpHeap(const char *const title)
 
     if (isalpha(*ref) || isdigit(*ref) || ispunct(*ref)) {
       printf("%c", *ref);
-      usage ++;
       continue;
     }
 
