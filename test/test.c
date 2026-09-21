@@ -24,9 +24,6 @@
 #include <time.h>
 #include <unistd.h>
 
-#define __COMPOUND_ORIGIN_PROFILE_ESTABLISHED__
-// #define __COMPOUND_ORIGIN_PROFILE_CLIMB__
-
 #include "../inc/allocator.h"
 #include "../inc/body.h"
 #include "../inc/class.h"
