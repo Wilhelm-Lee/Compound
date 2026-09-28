@@ -96,10 +96,11 @@ target_compile_options(
   -O0
   -fPIC
   # -fno-omit-frame-pointer  # __builtin_frame_address(1) for feature Backtracing.
-  # -D__COMPOUND_FEATURE_HEAP__
-  # -D__COMPOUND_FEATURE_ARGUMENT__
-  -D__COMPOUND_FEATURE_RECYCLER__
+  -D__COMPOUND_FEATURE_ARGUMENT__
   -D__COMPOUND_FEATURE_BOOLEAN__
+  -D__COMPOUND_FEATURE_CLASS__
+  -D__COMPOUND_FEATURE_HEAP__
+  -D__COMPOUND_FEATURE_RECYCLER__
   # -D__COMPOUND_FEATURE_RECOLLECTOR__
 )
 

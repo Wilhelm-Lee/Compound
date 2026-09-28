@@ -32,7 +32,7 @@
 /*  ******************************** Hint ***  */
 
 # ifdef __COMPOUND_FEATURE_HEAP__
-#  define Allocate(requirement)  _Allocate(requirement, 1)
+#  define Allocate(requirement)  _Allocate(requirement)
 #  ifdef __COMPOUND_FEATURE_RECYCLER__
 #   define Deallocate(address_on_heap)
 #  else
@@ -48,7 +48,7 @@ extern void *Origin_Allocate(const llong requirement);
 extern void Origin_Deallocate(void *address_on_heap);
 
 /* Operating System provided heap. */
-void *_Allocate(const size_t nmemb, const size_t size);
+void *_Allocate(const llong requirement);
 void _Deallocate(void *const ptr);
 
 #endif  /* COMPOUND_ALLOCATOR_H */

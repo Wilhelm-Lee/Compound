@@ -30,7 +30,7 @@
 # include "platform.h"
 # include "types.h"
 
-# define MEMORY_STACK_HEIGHT_MAXIMUM  (1024LL)
+# define MEMORY_STACK_HEIGHT_MAXIMUM  (4 KiB)
 
 typedef struct MemoryStack MemoryStack;
 

@@ -40,7 +40,7 @@ typedef struct String String;
 ARRAY(String)
 LITERALISE(String)
 
-Array(String) *StringArray_ComposeFromCstr(const llong arglen, ...);
+Array(String) *StringArray_ComposeFromCstr(const int arglen, ...);
 
 # define string(char_ptr)                                                      \
   (String_Update(null, char_ptr))
@@ -63,17 +63,17 @@ Array(String) *StringArray_ComposeFromCstr(const llong arglen, ...);
 # define substr(string_ptr, offset, length)                                    \
   (String_Substr((string_ptr), (offset), (length)))
 
-# define firstat(string_ptr, target_byte, offset)                              \
-  (String_FirstAt(string_ptr, target_byte, offset))
+# define firstoccur(string_ptr, target_byte, offset)                           \
+  (String_FirstOccurrence(string_ptr, target_byte, offset))
 
-# define lastat(string_ptr, target_byte, offset)                               \
-  (String_LastAt(string_ptr, target_byte, offset))
+# define lastoccur(string_ptr, target_byte, offset)                            \
+  (String_LastOccurrence(string_ptr, target_byte, offset))
 
-# define firstof(string_ptr)                                                   \
+# define firstbyte(string_ptr)                                                 \
   getbyte(string_ptr, 0)
 
-# define lastof(string_ptr)                                                    \
-  getbyte(string_ptr, length(string_ptr) - 1)
+# define lastbyte(string_ptr)                                                  \
+  getbyte(string_ptr, Length(String, string_ptr) - 1)
 
 # define tokens(string_ptr, delim_cstr)                                        \
   (String_Tokens(string_ptr, delim_cstr))
@@ -168,16 +168,16 @@ Array(String) *StringArray_ComposeFromCstr(const llong arglen, ...);
 
 # define iteratebyte(it, string_ptr, block)                                    \
   do {                                                                         \
-    const llong CONCAT(it, len) = Length(String, string_ptr);                  \
-    for (register llong it = 0; i < CONCAT(it, len); i++) {                    \
+    const int CONCAT(it, len) = Length(String, string_ptr);                  \
+    for (register int it = 0; i < CONCAT(it, len); i++) {                    \
       block                                                                    \
     }                                                                          \
   } while (0);
 
 # define foreachbyte(it, string_ptr, block)                                    \
   do {                                                                         \
-    const llong CONCAT(it, len) = Length(String, string_ptr);                  \
-    for (register llong i = 0; i < CONCAT(it, len); i++) {                     \
+    const int CONCAT(it, len) = Length(String, string_ptr);                  \
+    for (register int i = 0; i < CONCAT(it, len); i++) {                     \
       const byte it = getbyte(string_ptr, i);                                  \
       block                                                                    \
     }                                                                          \
@@ -185,8 +185,8 @@ Array(String) *StringArray_ComposeFromCstr(const llong arglen, ...);
 
 # define refeachbyte(it, string_ptr, block)                                    \
   do {                                                                         \
-    const llong CONCAT(it, len) = Length(String, string_ptr);                  \
-    for (register llong i = 0; i < CONCAT(it, len); i++) {                     \
+    const int CONCAT(it, len) = Length(String, string_ptr);                  \
+    for (register int i = 0; i < CONCAT(it, len); i++) {                     \
       byte *const it = refbyte(string_ptr, i);                                 \
       block                                                                    \
     }                                                                          \
@@ -195,7 +195,7 @@ Array(String) *StringArray_ComposeFromCstr(const llong arglen, ...);
 # define ComposeFromCstr(type, ...)                                            \
   (call(type, ComposeFromCstr, arglen(__VA_ARGS__), __VA_ARGS__))
 
-String *String_Create(const llong length, const llong width);
+String *String_Create(const int length, const int width);
 
 String *String_CopyOf(const String *const other);
 
@@ -244,49 +244,49 @@ String *String_Concat(String *const string1, String *const string2);
  */
 String *String_Substr(
   const String *const source,
-  const llong offset,
-  const llong length
+  const int offset,
+  const int length
 );
 
 /* @return The total count for tokens by @delim. */
-llong String_CountTokens(const String *const inst);
+int String_CountTokens(const String *const inst);
 
 /* @return The total count for tokens by @delim. */
-llong String_Tokens(String *const inst, const char *restrict const delim_cstr);
+int String_Tokens(String *const inst, const char *restrict const delim_cstr);
 
 /* @return The piece of substring broken from @source. */
-String *String_Breaks(const String *const source, const llong tokenth);
+String *String_Breaks(const String *const source, const int tokenth);
 
 /* @return An array that holds the collection of
  * the references of all pieces by @breaks. */
 Array(String) *String_Gather(const String *const inst);
 
-llong String_CountFragments(const String *const inst);
-llong String_Fragmentise(String *const inst, const char *restrict const delim_cstr);
-String *String_Pieces(const String *const source, const llong fragth);
+int String_CountFragments(const String *const inst);
+int String_Fragmentise(String *const inst, const char *restrict const delim_cstr);
+String *String_Pieces(const String *const source, const int fragth);
 Array(String) *String_Collect(const String *const inst);
 
 /* @return The indexer of the first occurrence of @target in @source
            by @offset. */
-llong String_FirstAt(
+int String_FirstOccurrence(
   const String *const source,
   const byte target,
-  const llong offset
+  const int offset
 );
 
 /* @return The indexer of the last occurrence of @target in @source
            by @offset. */
-llong String_LastAt(
+int String_LastOccurrence(
   String *const source,
   const byte target,
-  const llong offset
+  const int offset
 );
 
 /* @return The starting indexer of found @target in @source by @offset. */
-llong String_Whence(
+int String_Whence(
   const String *const source,
   const String *const target,
-  const llong offset
+  const int offset
 );
 
 /* @return The new string formatted by @format with @.... */
@@ -315,36 +315,36 @@ boolean String_MatchesAny(const byte target, const char *const group);
  */
 String *String_Strcut(
   String **const source,
-  const llong index
+  const int index
 );
 
 /* @return The calculated length for the given instance of String @inst. */
-llong String_Length(const String *const string);
+int String_Length(const String *const string);
 
 /* Insert @source at @index in @inst. */
 String *String_Insert(
   String *const inst,
   const String *const source,
-  const llong index
+  const int index
 );
 
 /* Remove a substring ranged from @inst. */
 String *String_Remove(
   String **const inst,
-  const llong offset,
-  const llong length
+  const int offset,
+  const int length
 );
 
-llong String_CountOccurrences(
+int String_CountOccurrences(
   const String *const content,
   const String *const target,
-  const llong offset
+  const int offset
 );
 
-Array(llong) *String_Occurrences(
+Array(int) *String_Occurrences(
   const String *const content,
   const String *const target,
-  const llong offset
+  const int offset
 );
 
 /* Replace the first occurrence of @target with @replacement
@@ -353,7 +353,7 @@ String *String_ReplaceFirst(
   String *const inst,
   const String *target,
   const String *replacement,
-  const llong offset
+  const int offset
 );
 
 /* Replace all the occurrences of @target with @replacement
@@ -362,11 +362,11 @@ String *String_ReplaceAll(
   String *const inst,
   const String *target,
   const String *replacement,
-  const llong offset
+  const int offset
 );
 
 /* Flatten to a contiguous chunk of memory about the byte data. */
-void *String_Flatten(const String *const inst, const llong width);
+void *String_Flatten(const String *const inst, const int width);
 
 boolean String_Contains(const String *const inst, const String *const target);
 
@@ -381,8 +381,8 @@ String *String_Append(String *const inst, Array(String) *const contents);
 
 Array(byte) *String_GetData(const String *const inst);
 
-llong String_GetWidth(const String *const inst);
+int String_GetWidth(const String *const inst);
 
-Array(llong) *String_GetBreaks(const String *const inst);
+Array(int) *String_GetBreaks(const String *const inst);
 
 #endif  /* COMPOUND_STRING_H */

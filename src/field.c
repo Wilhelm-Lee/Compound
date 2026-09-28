@@ -22,14 +22,14 @@
 #include "../inc/field.h"
 
 struct Field {
-  Access access;
+  AccessVisibility visibility;
   Signature *signature;
   String *value;  // The initial value; can be null as when not given.
-  llong numerical_identifier;
+  int numerical_identifier;
 };
 
 Field *Field_Create(
-  const Access access,
+  const AccessVisibility visibility,
   Signature *const signature,
   String *const value
 ) {
@@ -42,7 +42,7 @@ Field *Field_Create(
     return null;
   }
 
-  inst->access = access;
+  inst->visibility = visibility;
   inst->signature = signature;
   inst->value = value;
   inst->numerical_identifier = -1;
@@ -58,7 +58,7 @@ Field *Field_CopyOf(Field *const other)
 
   return Create(
     Field,
-    other->access,
+    other->visibility,
     CopyOf(Signature, other->signature),
     CopyOf(String, other->value)
   );
@@ -85,9 +85,9 @@ boolean Field_Equals(Field *const inst, Field *const other)
     return true;
   }
 
-  return inst->access == other->access &&
-         Equals(Signature, inst->signature, other->signature) &&
-         Equals(String, inst->value, other->value);
+  return inst->visibility == other->visibility
+      && Equals(Signature, inst->signature, other->signature)
+      && Equals(String, inst->value, other->value);
 }
 
 String *Field_Literalise(
@@ -114,7 +114,7 @@ String *Field_Literalise(
 
 inline void _Field_SetNumericalIdentifier(
   Field *const inst,
-  const llong numerical_identifier
+  const int numerical_identifier
 ) {
   if (!inst) {
     return;

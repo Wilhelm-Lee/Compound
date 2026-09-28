@@ -51,21 +51,13 @@ Parameter *Parameter_CopyOf(const Parameter *const other)
     return null;
   }
 
-  String *const type = CopyOf(String, other->type);
-  String *const identifier = other->identifier ? CopyOf(String, other->identifier) : null;
-
-  if (!type || (other->identifier && !identifier)) {
-    Delete(String, type);
-    Delete(String, identifier);
-    return null;
-  }
-
-  Parameter *const inst = Create(Parameter, type, identifier);
+  Parameter *const inst = Allocate(sizeof(Parameter));
   if (!inst) {
-    Delete(String, type);
-    Delete(String, identifier);
     return null;
   }
+
+  inst->type = CopyOf(String, other->type);
+  inst->identifier = CopyOf(String, other->identifier);
 
   return inst;
 }
@@ -91,16 +83,11 @@ boolean Parameter_Equals(Parameter *const inst, Parameter *const other)
     return true;
   }
 
-  if (inst->identifier || other->identifier) {
-    if (!inst->identifier || !other->identifier || !Equals(String, inst->identifier, other->identifier)) {
-      return false;
-    }
-  }
-
-  return Equals(String, inst->type, other->type);
+  return Equals(String, inst->identifier, other->identifier)
+      && Equals(String, inst->type, other->type);
 }
 
-Array(Parameter) *Parameter_CreateMultiple(const llong cluster_count, ...)
+Array(Parameter) *Parameter_CreateMultiple(const int cluster_count, ...)
 {
   if (!cluster_count) {
     return array(Parameter, 0);
@@ -109,7 +96,7 @@ Array(Parameter) *Parameter_CreateMultiple(const llong cluster_count, ...)
   va_list ap;
   va_start(ap, cluster_count);
   Array(Parameter) *const inst = array(Parameter, cluster_count);
-  register llong actual_offset = 0;
+  register int actual_offset = 0;
   loop (i, cluster_count) {
     Parameter *const cluster = va_arg(ap, Parameter *);
     if (!cluster) {
@@ -124,6 +111,43 @@ Array(Parameter) *Parameter_CreateMultiple(const llong cluster_count, ...)
   return inst;
 }
 
+Array(Parameter) *Parameter_CreateLazyMultiple(
+  const char *restrict const parameter_clusters_cstr
+) {
+  String *const parameter_clusters_str = string(parameter_clusters_cstr);
+  if (!parameter_clusters_str) {
+    return nll;
+  }
+
+  /* Lazy parameters require tokenisation to separate each one by commas. */
+  Array(String) *const tokens = tokenise(parameter_clusters_str, ",");
+  if (!tokens) {
+    Delete(String, parameter_clusters_str);
+    return nll;
+  }
+
+  Array(Parameter) *const parameters = array(Parameter, Length(Array(String), tokens));
+  register int i = 0;
+  refrefeach (Parameter, param, parameters, {
+    String *token = trim(CopyOf(String, ref(Array(String), tokens, i)));
+
+    register const int space_cutidx = lastoccur(token, ' ', 0);
+    register const int asterisk_cutidx = lastoccur(token, '*', 0) + 1;
+    /* Skip the asterisk
+     * -- @strcut includes the byte on @index, which is the asterisk. */
+    register const int cutidx = max(space_cutidx, asterisk_cutidx);
+
+    if (cutidx >= 0) {
+      String *const identifier = strcut(&token, cutidx);
+      *param = Create(Parameter, token, identifier);
+    }
+
+    i ++;
+  })
+
+  return parameters;
+}
+
 String *Parameter_Literalise(
   Parameter *const inst,
   boolean need_type,
@@ -136,21 +160,26 @@ String *Parameter_Literalise(
   String *const str_space = string(" ");
   String *lit = null;
 
-  if (need_type && inst->type) {
-    lit = append(lit, inst->type);
+  if (need_type) {
+    lit = CopyOf(String, inst->type);
   }
 
-  if (need_identifier && inst->identifier) {
-    if (lit) {
-      lit = append(lit, str_space, inst->identifier);
-    } else {
-      lit = append(lit, inst->identifier);
-    }
+  if (lit) {
+    lit = Concat(String, lit, str_space);
+  }
+
+  /* No @identifier needed -- @type already includes all information given. */
+  /* { .type = "int argc", .identifier = nll }
+   * instead of
+   * { .type = "int", .identifier = "argc" }
+   */
+  if (need_identifier) {
+    lit = Concat(String, lit, inst->identifier);
   }
 
   Delete(String, str_space);
 
-  return lit ? lit : string("");
+  return lit;
 }
 
 String *Parameter_GetType(const Parameter *const inst)

@@ -75,8 +75,8 @@ boolean Preprocessor_Equals(Preprocessor *const inst, Preprocessor *const other)
     return true;
   }
 
-  return Equals(String, inst->identifier, other->identifier) &&
-         Equals(Array(String), inst->args, other->args, String_Equals);
+  return Equals(String, inst->identifier, other->identifier)
+      && Equals(Array(String), inst->args, other->args, String_Equals);
 }
 
 String *Preprocessor_Literalise(Preprocessor *const inst)
@@ -89,6 +89,7 @@ String *Preprocessor_Literalise(Preprocessor *const inst)
 
   /* Preprocessors require a NEWLINE at the end. */
   String *result = append(
+    nll,
     string("#"),
     inst->identifier,
     str_space,
@@ -100,7 +101,7 @@ String *Preprocessor_Literalise(Preprocessor *const inst)
       null
     ),
     string(NEWLINE)
-);
+  );
 
   Delete(String, str_space);
 

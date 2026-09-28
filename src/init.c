@@ -87,7 +87,7 @@ int InitialiseMain(
 
 # ifdef __COMPOUND_FEATURE_ENVIRONMENT__
   /* Count for envp length. */
-  register llong envp_len = 0;
+  register int envp_len = 0;
   while (envp[envp_len]) {
     envp_len++;
   }

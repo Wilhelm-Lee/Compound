@@ -39,7 +39,7 @@ LITERALISE_ARGS(
 )
 
 # define constructor(                                                          \
-    param_clusters,                                                            \
+    lazy_param_clusters,                                                       \
     ...                                                                        \
   )                                                                            \
   (call(                                                                       \
@@ -51,15 +51,15 @@ LITERALISE_ARGS(
       null,                                                                    \
       Create(                                                                  \
         Method,                                                                \
-        ACCESS_PUBLIC,                                                         \
+        ACCESS_VISIBILITY_PUBLIC,                                                         \
         CLASS_IDENTIFIER_STR,                                                  \
         Create(                                                                \
           Function,                                                            \
           Create(                                                              \
             Signature,                                                         \
-            append(nll, CLASS_IDENTIFIER_STR, string(" *")),        \
+            append(nll, CLASS_IDENTIFIER_STR, string(" *")),                   \
             append(nll, CLASS_IDENTIFIER_STR, string("_"), string(nameof(Create))),\
-            param_clusters                                                     \
+            lazy_params lazy_param_clusters                                    \
           ),                                                                   \
           body(__VA_ARGS__)                                                    \
         )                                                                      \

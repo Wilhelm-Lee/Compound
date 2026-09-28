@@ -45,10 +45,10 @@
 #include "../inc/match.h"
 
 struct Match {
-  Array(llong) *bounds;  /* Even index = start, Odd index = end */
+  Array(int) *bounds;  /* Even index = start, Odd index = end */
 };
 
-Match *Match_Create(Array(llong) *const bounds)
+Match *Match_Create(Array(int) *const bounds)
 {
   Match *const inst = Allocate(sizeof(Match));
   if (!inst) return nll;
@@ -60,21 +60,27 @@ Match *Match_Create(Array(llong) *const bounds)
 Match *Match_CopyOf(Match *const other)
 {
   if (!other) return nll;
-  return Create(Match, CopyOf(Array(llong), other->bounds));
+  return Create(Match, CopyOf(Array(int), other->bounds));
 }
 
 void Match_Delete(Match *const inst)
 {
   if (!inst) return;
-  Delete(Array(llong), inst->bounds);
+  Delete(Array(int), inst->bounds);
   Deallocate(inst);
 }
 
 boolean Match_Equals(Match *const inst, Match *const other)
 {
-  if (!inst || !other) return false;
-  if (inst == other) return true;
-  return Equals(Array(llong), inst->bounds, other->bounds, null);
+  if (!inst || !other) {
+    return false;
+  }
+
+  if (inst == other) {
+    return true;
+  }
+  
+  return Equals(Array(int), inst->bounds, other->bounds, null);
 }
 
 String *Match_Literalise(Match *const inst)
@@ -83,33 +89,41 @@ String *Match_Literalise(Match *const inst)
     return nll;
   }
 
-  return lit(Array(llong), inst->bounds, nll, string(NL), nll);
+  return lit(Array(int), inst->bounds, nll, string(NL), nll);
 }
 
-llong Match_GetStart(const Match *const inst, const llong group_idx)
+int Match_GetStart(const Match *const inst, const int group_idx)
 {
-  if (!inst || !inst->bounds) return -1;
+  if (!inst || !inst->bounds) {
+    return -1;
+  }
 
   /* Every group takes 2 elements (start and end) */
-  const llong total_groups = capacity(Array(llong), inst->bounds) / 2;
+  const int total_groups = capacity(Array(int), inst->bounds) / 2;
 
-  const llong norm_idx = group_idx < 0 ? group_idx + total_groups : group_idx;
+  const int norm_idx = group_idx < 0 ? group_idx + total_groups : group_idx;
 
-  if (norm_idx < 0 || norm_idx >= total_groups) return -1;
+  if (norm_idx < 0 || norm_idx >= total_groups) {
+    return -1;
+  }
 
-  return get(Array(llong), inst->bounds, norm_idx * 2);
+  return get(Array(int), inst->bounds, norm_idx * 2);
 }
 
-llong Match_GetEnd(const Match *const inst, const llong group_idx)
+int Match_GetEnd(const Match *const inst, const int group_idx)
 {
-  if (!inst || !inst->bounds) return -1;
+  if (!inst || !inst->bounds) {
+    return -1;
+  }
 
-  const llong total_groups = capacity(Array(llong), inst->bounds) / 2;
-  const llong norm_idx = group_idx < 0 ? group_idx + total_groups : group_idx;
+  const int total_groups = capacity(Array(int), inst->bounds) / 2;
+  const int norm_idx = group_idx < 0 ? group_idx + total_groups : group_idx;
 
-  if (norm_idx < 0 || norm_idx >= total_groups) return -1;
+  if (norm_idx < 0 || norm_idx >= total_groups) {
+    return -1;
+  }
 
-  return get(Array(llong), inst->bounds, norm_idx * 2 + 1);
+  return get(Array(int), inst->bounds, norm_idx * 2 + 1);
 }
 
 IMPL_ARRAY(Match)

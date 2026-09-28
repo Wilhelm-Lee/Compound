@@ -162,8 +162,8 @@ boolean Stream_Equals(const Stream *const inst, const Stream *const other)
   if (!inst || !other) return false;
   if (inst == other) return true;
 
-  return Equals(String, inst->filepath, other->filepath) &&
-         Equals(String, inst->mode, other->mode);
+  return Equals(String, inst->filepath, other->filepath)
+      && Equals(String, inst->mode, other->mode);
 }
 
 boolean Stream_Open(Stream *const inst)

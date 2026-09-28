@@ -30,11 +30,11 @@ typedef struct Match Match;
 ARRAY(Match)
 LITERALISE(Match)
 
-Match *Match_Create(Array(llong) *const bounds);
+Match *Match_Create(Array(int) *const bounds);
 Match *Match_CopyOf(Match *const other);
 void Match_Delete(Match *const inst);
 boolean Match_Equals(Match *const inst, Match *const other);
-llong Match_GetStart(const Match *const inst, const llong group_idx);
-llong Match_GetEnd(const Match *const inst, const llong group_idx);
+int Match_GetStart(const Match *const inst, const int group_idx);
+int Match_GetEnd(const Match *const inst, const int group_idx);
 
 #endif  /* COMPOUND_MATCH_H */

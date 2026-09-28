@@ -33,14 +33,14 @@ LITERALISE_ARGS(Field, boolean need_init_value, boolean need_semicolon)
 
 # define create_field(                                                         \
     class_identifier_str,                                                      \
-    access_literal,                                                            \
+    access_visibility_literal,                                                 \
     returning_type_literal,                                                    \
     identifier_literal,                                                        \
     value_literal                                                              \
   )                                                                            \
   Create(                                                                      \
     Field,                                                                     \
-    ACCESS_##access_literal,                                                   \
+    ACCESS_VISIBILITY_##access_visibility_literal,                             \
     Create(                                                                    \
       Signature,                                                               \
       string(nameof(returning_type_literal)),                                  \
@@ -51,7 +51,7 @@ LITERALISE_ARGS(Field, boolean need_init_value, boolean need_semicolon)
   )
 
 # define field(                                                                \
-    access_literal,                                                            \
+    access_visibility_literal,                                                 \
     returning_type_literal,                                                    \
     identifier_literal,                                                        \
     value_literal                                                              \
@@ -62,7 +62,7 @@ LITERALISE_ARGS(Field, boolean need_init_value, boolean need_semicolon)
     this,                                                                      \
     create_field(                                                              \
       CLASS_IDENTIFIER_STR,                                                    \
-      access_literal,                                                          \
+      access_visibility_literal,                                               \
       returning_type_literal,                                                  \
       identifier_literal,                                                      \
       value_literal                                                            \
@@ -70,7 +70,7 @@ LITERALISE_ARGS(Field, boolean need_init_value, boolean need_semicolon)
   ))
 
 Field *Field_Create(
-  const Access access,
+  const AccessVisibility visibility,
   Signature *const signature,
   String *const value
 );
@@ -80,7 +80,7 @@ boolean Field_Equals(Field *const inst, Field *const other);
 String *Field_GetIdentifier(Field *const inst);
 void _Field_SetNumericalIdentifier(
   Field *const inst,
-  const llong numerical_identifier
+  const int numerical_identifier
 );
 
 #endif  /* COMPOUND_FIELD_H */

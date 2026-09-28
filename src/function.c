@@ -90,8 +90,8 @@ boolean Function_Equals(Function *const inst, Function *const other)
     return true;
   }
 
-  return Equals(Signature, inst->signature, other->signature) &&
-         Equals(Body, inst->body, other->body);
+  return Equals(Signature, inst->signature, other->signature)
+      && Equals(Body, inst->body, other->body);
 }
 
 String *Function_Literalise(

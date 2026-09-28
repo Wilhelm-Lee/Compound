@@ -47,13 +47,15 @@
  */
 #include "../usr/header.h"
 
-int Main(void)
+int Context(Array(String) *const args)
 {
+  ig args;
+
   class (public, Variable, {
     field(private, String *, identifier, nll);
     field(private, String *, value, nll);
 
-    constructor (params(param(String *const, identifier), param(String *const, value)), {
+    constructor ((String *const identifier, String *const value), {
       if (!identifier) {
         return nll;
       }
@@ -69,29 +71,34 @@ int Main(void)
       Delete(String, this->value);
     })
 
-    method (public, String *, GetIdentifier, noparam, {
+    method (public, String *, GetIdentifier, (void), {
       return this->identifier;
     })
 
-    method (public, String *, GetValue, noparam, {
+    method (public, String *, GetValue, (void), {
       return this->value;
     })
 
-    override (Literalise, {
-      return append(nll, this->identifer, string(" = "), this->value, string(";"));
+    override (String, Literalise, (void), {
+      return append(nll, this->identifier, string(" = "), this->value, string(";"));
     })
 
-    override (Equals, {
-      return Equals(String, this->identifer, other->identifier)
+    override (boolean, Equals, (Variable *const other), {
+      return Equals(String, this->identifier, other->identifier)
           && Equals(String, this->value, other->value);
     })
   })
 
-  Class *const copyof = CopyOf(Class, c_Variable);
-  ig copyof;
+  outln(lit(Class, c_Variable, no, yes));
 
-  // DumpHeap("");
-  // DumpHeapOccupations();
+  return 0;
+}
+
+int Main(Array(String) *const args)
+{
+  ig args;
+
+
 
   return 0;
 }
