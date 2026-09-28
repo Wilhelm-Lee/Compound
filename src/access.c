@@ -32,21 +32,21 @@ struct Access {
   AccessVisibility visibility;
 };
 
-static inline byte GetPermissionRead(const AccessPermission permission)
-{
-  return permission & 0700;
-}
+// static inline byte GetPermissionRead(const AccessPermission permission)
+// {
+//   return permission & 0700;
+// }
 
-static inline byte GetPermissionWrite(const AccessPermission permission)
-{
-  return permission & 0070;
-}
+// static inline byte GetPermissionWrite(const AccessPermission permission)
+// {
+//   return permission & 0070;
+// }
 
-static inline byte GetPermissionExecute(const AccessPermission permission)
-{
-  /* Double-O Seven?!  No wonder it's called "Execute". */
-  return permission & 0007;
-}
+// static inline byte GetPermissionExecute(const AccessPermission permission)
+// {
+//   /* Double-O Seven?!  No wonder it's called "Execute". */
+//   return permission & 0007;
+// }
 
 static boolean IsValidPermission(const AccessPermission permission)
 {
