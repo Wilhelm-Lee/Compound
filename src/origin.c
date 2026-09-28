@@ -61,7 +61,7 @@ static void print_long_long_binary(
   register const long long num,
   char *restrict const user_buff
 ) {
-  register llong written = 0;
+  register int written = 0;
   char buff[32 + ((32 / 4) - 1) /* Spacing */ + 1 /* Null-Terminator */] = Empty;
 
   loop (i, 32) {
@@ -230,7 +230,7 @@ llong CountZerosFromOffsetInOccupations(
   }
 
   /* Count the subsequential elements' zeros. */
-  for (register llong i = index_start + 1; i < occupations_array_length; i++) {
+  for (register int i = index_start + 1; i < occupations_array_length; i++) {
     uint32_t current_val = occupations[i];
 
     if (current_val) {
@@ -257,13 +257,13 @@ static inline llong GetFirstFitOffset(
   }
 
   const llong total_bits = occupations_array_length * 32;
-  for (register llong i = 0; i < occupations_array_length; i++) {
+  for (register int i = 0; i < occupations_array_length; i++) {
     if (i < 8) {
       char buff[40] = Empty;
       print_long_long_binary(occupations[i], buff);
     }
 
-    register llong bit_offset = i * 32;
+    register int bit_offset = i * 32;
     if (bit_offset + requirement > total_bits) {
       return -1;
     }
@@ -351,7 +351,7 @@ void Origin_Deallocate(void *address_on_heap)
   }
 
   Memory *accommodation = nll;
-  for (register llong i = 0; i < __COMPOUND_ORIGIN_META_OCCUPATION_COUNT_MAXIMUM__; i ++) {
+  for (register int i = 0; i < __COMPOUND_ORIGIN_META_OCCUPATION_COUNT_MAXIMUM__; i ++) {
     if (origin->meta.data[i].header.actual == address_on_heap) {
       accommodation = &origin->meta.data[i];
       break;
@@ -393,7 +393,7 @@ static inline uint32_t swar_popcount(uint32_t n)
 
 llong Origin_GetUsedMetaCount(void)
 {
-  register llong sum = 0;
+  register int sum = 0;
   loop (i, __COMPOUND_ORIGIN_META_OCCUPATION_COUNT_MAXIMUM__) {
     sum += swar_popcount(origin->meta.occupations[i]);
   }
@@ -403,7 +403,7 @@ llong Origin_GetUsedMetaCount(void)
 
 llong Origin_GetUsedHeapSize(void)
 {
-  register llong sum = 0;
+  register int sum = 0;
   loop (i, __COMPOUND_ORIGIN_HEAP_OCCUPATION_COUNT_MAXIMUM__) {
     sum += swar_popcount(origin->heap.occupations[i]);
   }
@@ -440,7 +440,7 @@ void VisualiseMemoryByHeaderOccupation(const char *const title)
 
   printf("=== Header Occupation (%s) ===\n", title ? title : "Global");
 
-  for (register llong i = 0; i < meta_capacity; i++) {
+  for (register int i = 0; i < meta_capacity; i++) {
     /* Query the bitfield registry instead of physical memory */
     if (origin->meta.data[i].header.actual) {
       printf("@ ");
@@ -465,7 +465,7 @@ void VisualiseMemoryByMemoryOccupation(const char *const title)
   printf("Capacity: 0x%llX"NL, meta_capacity);
 
   llong total_used = 0;
-  for (register llong i = 0; i < meta_capacity; i++) {
+  for (register int i = 0; i < meta_capacity; i++) {
     if (i % (64 * 8) == 0) {
       printf(NL);
     }
@@ -473,7 +473,7 @@ void VisualiseMemoryByMemoryOccupation(const char *const title)
     if (i % 64 == 0) {
       printf(NL);
       /* Print index. */
-      printf("0x%04llX  ", i);
+      printf("0x%04X  ", i);
     }
 
     if (i % 16 == 0) {
@@ -508,7 +508,7 @@ void DumpHeap(const char *const title)
   printf("=== Heap Occupation Summary (%s) ===\n", title ? title : "");
   printf("Capacity: 0x%llX"NL, (ullong)__COMPOUND_ORIGIN_HEAP_SIZE_MAXIMUM__);
 
-  for (register llong i = 0; i < cap; i++) {
+  for (register int i = 0; i < cap; i++) {
     if (i % (64 * 8) == 0) {
       printf(NL);
     }

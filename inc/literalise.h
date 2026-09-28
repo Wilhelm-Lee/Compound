@@ -56,7 +56,7 @@
   String *const final_separator = separator ? separator : str_empty;           \
   String *const final_suffix = suffix ? suffix : str_empty;                    \
                                                                                \
-  const llong arraylen = Length(Array(elem_type), inst);                       \
+  const int arraylen = Length(Array(elem_type), inst);                       \
                                                                                \
   String *rtn = CopyOf(String, final_prefix);                                  \
   if (!rtn) {                                                                  \
@@ -101,7 +101,7 @@
   String *const final_separator = separator ? separator : str_empty;           \
   String *const final_suffix = suffix ? suffix : str_empty;                    \
                                                                                \
-  const llong arraylen = Length(Array(elem_type), inst);                       \
+  const int arraylen = Length(Array(elem_type), inst);                         \
                                                                                \
   if (arraylen == 0) {                                                         \
     String *rtn = Concat(String, CopyOf(String, final_prefix), CopyOf(String, final_suffix)); \

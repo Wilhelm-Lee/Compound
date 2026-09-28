@@ -39,16 +39,33 @@ LITERALISE_ARGS(
   boolean need_semicolon
 )
 
-# define function(returning_type_str, identifier_str, param_clusters, ...)     \
+/* function(int, Fibonacci, (int n)) */
+# define function(returning_type_str, identifier_str, lazy_param_clusters, ...)\
   Create(                                                                      \
     Function,                                                                  \
     Create(                                                                    \
       Signature,                                                               \
       returning_type_str,                                                      \
       identifier_str,                                                          \
-      param_clusters                                                           \
+      lazy_params lazy_param_clusters                                          \
     ),                                                                         \
     body(__VA_ARGS__)                                                          \
+  )
+
+/* Using lazy_params here is not just for aesthetics,
+ * it is also beneficial for performance since the duplication of evaluation
+ * of "lazy_params lazy_param_clusters".
+ */
+# define lambda(retn_literal, lazy_param_clusters, body_text_literal)          \
+  function(                                                                    \
+    string(nameof(retn_literal)),                                              \
+    append(                                                                    \
+      nll,                                                                     \
+      string(nameof(retn_literal)),                                            \
+      lit(Array(Parameter), lazy_params lazy_param_clusters, nll, nll, nll, yes, no)\
+    ),                                                                         \
+    lazy_params lazy_param_clusters,                                           \
+    body_text_literal                                                          \
   )
 
 Function *Function_Create(Signature *const signature, Body *const body);

@@ -32,6 +32,7 @@
 #  define __COMPOUND_FEATURECLASS_COMMANDLINE__
 #  define __COMPOUND_FEATURECLASS_DEBUGGING__
 #  define __COMPOUND_FEATURECLASS_ERROR_HANDLING__
+#  define __COMPOUND_FEATURECLASS_OOP__
 #  define __COMPOUND_FEATURECLASS_RESOURCE_MANAGEMENT__
 #  define __COMPOUND_FEATURECLASS_TYPE__
 # endif
@@ -66,6 +67,10 @@
 #  define __COMPOUND_FEATURE_STATUS__
 # endif
 
+# ifdef __COMPOUND_FEATURECLASS_OOP__
+#  define __COMPOUND_FEATURE_CLASS__
+# endif
+
 /* FEATURES. */
 # ifdef __COMPOUND_FEATURE_ALL__
 #  define __COMPOUND_FEATURE_ARGUMENT__
@@ -75,6 +80,7 @@
 #  define __COMPOUND_FEATURE_HEAP__
 #  define __COMPOUND_FEATURE_RECYCLER__
 #  define __COMPOUND_FEATURE_STATUS__
+#  define __COMPOUND_FEATURE_CLASS__
 # endif
 
 # ifdef __COMPOUND_FEATURECLASS_ERROR_HANDLING__
@@ -113,26 +119,23 @@ static const char *restrict const ENABLED_PROFILE =
 
 /* Multiple selections. */
 static const char *restrict const ENABLED_FEATURECLASSES[] = {
-# if defined(__COMPOUND_FEATURECLASS_ARGUMENT__)
-  "ARGUMENT",
+# if defined(__COMPOUND_FEATURECLASS_COMMANDLINE__)
+  "COMMANDLINE",
 # endif
-# if defined(__COMPOUND_FEATURECLASS_BACKTRACING__)
-  "BACKTRACING",
+# if defined(__COMPOUND_FEATURECLASS_DEBUGGING__)
+  "DEBUGGING",
 # endif
-# if defined(__COMPOUND_FEATURECLASS_BOOLEAN__)
-  "BOOLEAN",
+# if defined(__COMPOUND_FEATURECLASS_ERROR_HANDLING__)
+  "ERROR_HANDLING",
 # endif
-# if defined(__COMPOUND_FEATURECLASS_ENVIRONMENT__)
-  "ENVIRONMENT",
+# if defined(__COMPOUND_FEATURECLASS_OOP__)
+  "OOP",
 # endif
-# if defined(__COMPOUND_FEATURECLASS_HEAP__)
-  "HEAP",
+# if defined(__COMPOUND_FEATURECLASS_RESOURCE_MANAGEMENT__)
+  "RESOURCE_MANAGEMENT",
 # endif
-# if defined(__COMPOUND_FEATURECLASS_RECYCLER__)
-  "RECYCLER",
-# endif
-# if defined(__COMPOUND_FEATURECLASS_STATUS__)
-  "STATUS",
+# if defined(__COMPOUND_FEATURECLASS_TYPE__)
+  "TYPE",
 # endif
   null
 };
@@ -159,6 +162,9 @@ static const char *restrict const ENABLED_FEATURES[] = {
 # endif
 # if defined(__COMPOUND_FEATURE_STATUS__)
   "STATUS",
+# endif
+# if defined(__COMPOUND_FEATURE_CLASS__)
+  "CLASS",
 # endif
   null
 };

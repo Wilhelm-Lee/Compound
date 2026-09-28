@@ -33,23 +33,21 @@
 # include "memory_stack.h"
 # include "types.h"
 
-# define __COMPOUND_ORIGIN_PROFILE_ESTABLISHED__
-
 # if defined (__COMPOUND_ORIGIN_PROFILE_DELICATE__)
-#  define __COMPOUND_ORIGIN_HEAP_CHUNK_COUNT__              128        //  4 KiB
-#  define __COMPOUND_ORIGIN_META_SLOT_MAXIMUM__    4
+#  define __COMPOUND_ORIGIN_HEAP_CHUNK_COUNT__           (128    )  //   4 KiB
+#  define __COMPOUND_ORIGIN_META_SLOT_MAXIMUM__          (  4    )
 # elif defined (__COMPOUND_ORIGIN_PROFILE_ESTABLISHED__)
-#  define __COMPOUND_ORIGIN_HEAP_CHUNK_COUNT__              ( 16 KiB)  //512 KiB
-#  define __COMPOUND_ORIGIN_META_SLOT_MAXIMUM__             (  8 KiB)
+#  define __COMPOUND_ORIGIN_HEAP_CHUNK_COUNT__           ( 16 KiB)  // 512 KiB
+#  define __COMPOUND_ORIGIN_META_SLOT_MAXIMUM__          (  8 KiB)
 # elif defined (__COMPOUND_ORIGIN_PROFILE_CLIMB__)
-#  define __COMPOUND_ORIGIN_HEAP_CHUNK_COUNT__              (  1 MiB)  // 32 MiB
-#  define __COMPOUND_ORIGIN_META_SLOT_MAXIMUM__             ( 64 KiB)
+#  define __COMPOUND_ORIGIN_HEAP_CHUNK_COUNT__           (  1 MiB)  //  32 MiB
+#  define __COMPOUND_ORIGIN_META_SLOT_MAXIMUM__          ( 64 KiB)
 # elif defined (__COMPOUND_ORIGIN_PROFILE_COMPETENT__)
-#  define __COMPOUND_ORIGIN_HEAP_CHUNK_COUNT__              ( 32 MiB)  //  1 GiB
-#  define __COMPOUND_ORIGIN_META_SLOT_MAXIMUM__             (512 KiB)
+#  define __COMPOUND_ORIGIN_HEAP_CHUNK_COUNT__           ( 32 MiB)  //   1 GiB
+#  define __COMPOUND_ORIGIN_META_SLOT_MAXIMUM__          (512 KiB)
 # else
-#  define __COMPOUND_ORIGIN_HEAP_CHUNK_COUNT__              (  1 KiB)  // 32 KiB
-#  define __COMPOUND_ORIGIN_META_SLOT_MAXIMUM__             (  1 KiB)
+#  define __COMPOUND_ORIGIN_HEAP_CHUNK_COUNT__           (  1 KiB)  //  32 KiB
+#  define __COMPOUND_ORIGIN_META_SLOT_MAXIMUM__          (  1 KiB)
 # endif
 
 
@@ -59,13 +57,13 @@
 # define __COMPOUND_ORIGIN_HEAP_PER_CHUNK_SIZE__  32
 
 /* Must be a multiple of 32; uint32_t is used for representing bytes on heap. */
-# define __COMPOUND_ORIGIN_HEAP_SIZE_MAXIMUM__\
+# define __COMPOUND_ORIGIN_HEAP_SIZE_MAXIMUM__                                 \
   (__COMPOUND_ORIGIN_HEAP_PER_CHUNK_SIZE__*__COMPOUND_ORIGIN_HEAP_CHUNK_COUNT__)
 
-# define __COMPOUND_ORIGIN_META_OCCUPATION_COUNT_MAXIMUM__\
+# define __COMPOUND_ORIGIN_META_OCCUPATION_COUNT_MAXIMUM__                     \
   ((__COMPOUND_ORIGIN_META_SLOT_MAXIMUM__ + 31) / 32)
 
-# define __COMPOUND_ORIGIN_HEAP_OCCUPATION_COUNT_MAXIMUM__\
+# define __COMPOUND_ORIGIN_HEAP_OCCUPATION_COUNT_MAXIMUM__                     \
   ((__COMPOUND_ORIGIN_HEAP_SIZE_MAXIMUM__ + 31) / 32)
 
 typedef struct Origin Origin;

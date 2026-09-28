@@ -22,13 +22,13 @@
 #include "../inc/method.h"
 
 struct Method {
-  Access access;
+  AccessVisibility visibility;
   String *class_identifier;
   Function *function;
 };
 
 Method *Method_Create(
-  const Access access,
+  const AccessVisibility visibility,
   String *const class_identifier,
   Function *const function
 ) {
@@ -41,7 +41,12 @@ Method *Method_Create(
     return null;
   }
 
-  inst->access = access;
+  inst->visibility = visibility;
+  if (!inst->visibility) {
+    Deallocate(inst);
+    return nll;
+  }
+
   inst->class_identifier = class_identifier;
   inst->function = function;
 
@@ -60,7 +65,7 @@ Method *Method_CopyOf(Method *const other)
     return null;
   }
 
-  Method *const inst = Create(Method, other->access, class_identifier, function);
+  Method *const inst = Create(Method, other->visibility, class_identifier, function);
   if (!inst) {
     Delete(String, class_identifier);
     Delete(Function, function);
@@ -91,8 +96,8 @@ boolean Method_Equals(Method *const inst, Method *const other)
     return true;
   }
 
-  return inst->access == other->access &&
-         Equals(Function, inst->function, other->function);
+  return inst->visibility == other->visibility
+      && Equals(Function, inst->function, other->function);
 }
 
 String *Method_Literalise(
@@ -122,13 +127,13 @@ String *Method_Literalise(
   );
 }
 
-inline Access Method_GetAccess(const Method *const inst)
+inline AccessVisibility Method_GetVisibility(const Method *const inst)
 {
   if (!inst) {
-    return ACCESS_PRIVATE;
+    return ACCESS_VISIBILITY_PRIVATE;
   }
 
-  return inst->access;
+  return inst->visibility;
 }
 
 inline Function *Method_GetFunction(const Method *const inst)

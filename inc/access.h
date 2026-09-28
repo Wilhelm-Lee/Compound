@@ -25,28 +25,49 @@
 # include "string.h"
 # include "literalise.h"
 
+# define ACCESS_VISIBILITY_MAXIMUM  (INT32_MAX)
+# define ACCESS_VISIBILITY_MINIMUM  (0)
+
+typedef uint16_t AccessPermission;
 /* Defines access permissions for both ingress and egress
  * the privilege of a class to access others or be accessed by them. */
 typedef enum {
   /* Unrestricted: Can access and be accessed by any class. */
-  ACCESS_PUBLIC = INT32_MAX,  ACCESS_public = INT32_MAX,
+  ACCESS_VISIBILITY_PUBLIC = ACCESS_VISIBILITY_MAXIMUM,
+  ACCESS_VISIBILITY_public = ACCESS_VISIBILITY_MAXIMUM,
 
   /* Restricted: Can only access and be accessed by classes with the
    * exact same access level.
    *
    * Note: Protected access is not limited strictly to the value 1.
-   * Any value greater than ACCESS_PRIVATE and less than ACCESS_PUBLIC
+   * Any value greater than ACCESS_VISIBILITY_PRIVATE and less than ACCESS_VISIBILITY_PUBLIC
    * acts as a unique protected tier. This provides a broad range of
    * custom, user-defined access levels.
    */
-  ACCESS_PROTECTED = 1,        ACCESS_protected = 1,
+  ACCESS_VISIBILITY_PROTECTED = 1,
+  ACCESS_VISIBILITY_protected = 1,
 
   /* Isolated: Cannot access other classes and cannot be accessed by them. */
-  ACCESS_PRIVATE = 0,          ACCESS_private = 0
-} Access;
+  ACCESS_VISIBILITY_PRIVATE = ACCESS_VISIBILITY_MINIMUM,
+  ACCESS_VISIBILITY_private = ACCESS_VISIBILITY_MINIMUM
+} AccessVisibility;
 
+typedef struct Access Access;
+
+ARRAY(Access)
+LITERALISE(Access)
+
+Access *Access_Create(
+  const AccessPermission permission,
+  const AccessVisibility visibility
+);
+Access *Access_CopyOf(Access *const other);
+void Access_Delete(Access *const inst);
+boolean Access_Equals(Access *const inst, Access *const other);
 /* @accesser accesses @accessee. */
-boolean Access_IsAccessible(const Access accessee, const Access accesser);
-String *Access_Literalise(const Access access);
+boolean Access_IsAccessible(
+  Access *const accessee,
+  Access *const accesser
+);
 
 #endif  /* COMPOUND_ACCESS_H */

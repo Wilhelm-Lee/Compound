@@ -45,17 +45,25 @@
 
 # define elif  else if
 
-#define out(string_ptr)\
-   fout(stdout, string_ptr)
+/* Evals the larger value of two variables -- not expressions for eval safety.*/
+# define max(val1_var, val2_var)\
+  ((val1_var > val2_var) ? val1_var : val2_var)
 
-#define outln(string_ptr)\
-   fout(stdout, append(string_ptr, string(NL)))
+/* Evals the lesser values of two variables -- not expressions for eval safety.*/
+# define min(val1_var, val2_var)\
+  ((val1_var < val2_var) ? val1_var : val2_var)
 
-#define foutln(file_ptr, string_ptr)\
-   fout(file_ptr, append(string_ptr, string(NL)))
+# define out(string_ptr)\
+  fout(stdout, string_ptr)
 
-#define fout(file_ptr, string_ptr)\
-   fprintf(file_ptr, "%s", flatten(char, string_ptr));
+# define outln(string_ptr)\
+  fout(stdout, append(nll, string_ptr, string(NL)))
+
+# define foutln(file_ptr, string_ptr)\
+  fout(file_ptr, append(nll, string_ptr, string(NL)))
+
+# define fout(file_ptr, string_ptr)\
+  fprintf(file_ptr, "%s", flatten(char, string_ptr));
 
 # define _CONCAT(a, b)                                                         \
   a##b
@@ -67,10 +75,10 @@
   #__VA_ARGS__
 
 # define loop(it, times)                                                       \
-  for (register llong it = 0; it < (times); it++)
+  for (register int it = 0; it < (times); it++)
 
 # define rloop(it, times)                                                      \
-  for (register llong it = times - 1; it >= 0; it--)
+  for (register int it = times - 1; it >= 0; it--)
 
 # define repeat(times)                                                         \
   loop(CONCAT(_repeat_, __LINE__), times)
@@ -120,6 +128,12 @@
 
 # define Length(type, inst)                                                    \
   (call(type, Length, inst))
+
+# define Insert(type, inst_obj_ptr, ...)\
+  (call(type, Insert, inst_obj_ptr, __VA_ARGS__))
+
+# define Remove(type, inst_obj_ptr, ...)\
+  (call(type, Remove, inst_obj_ptr, __VA_ARGS__))
 
 /* Contributed by "[halalaluyafail3](https://gist.github.com/Halalaluyafail3)"
    on discord at 01:42, 17th July, 2025 CST. */

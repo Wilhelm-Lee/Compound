@@ -38,7 +38,9 @@ LITERALISE_ARGS(
   boolean need_semicolon
 )
 
-# define destructor(...)                                                       \
+# define destructor(                                                           \
+    ...                                                                        \
+  )                                                                            \
   (call(                                                                       \
     Class,                                                                     \
     SetDestructor,                                                             \
@@ -48,15 +50,15 @@ LITERALISE_ARGS(
       null,                                                                    \
       Create(                                                                  \
         Method,                                                                \
-        ACCESS_PUBLIC,                                                         \
+        ACCESS_VISIBILITY_PUBLIC,                                                         \
         CLASS_IDENTIFIER_STR,                                                  \
         Create(                                                                \
           Function,                                                            \
           Create(                                                              \
             Signature,                                                         \
-            string(nameof(void)),                                              \
-            append(nll, CLASS_IDENTIFIER_STR, string("_"), string(nameof(Destructor))), \
-            params_str(param_str(append(nll, CLASS_IDENTIFIER_STR, string(" *const")), string(nameof(this)))) \
+            append(nll, CLASS_IDENTIFIER_STR, string(" *")),                   \
+            append(nll, CLASS_IDENTIFIER_STR, string("_"), string(nameof(Create))),\
+            params_str(param_str(append(nll, CLASS_IDENTIFIER_STR, string(" *const")), string(nameof(this))))\
           ),                                                                   \
           body(__VA_ARGS__)                                                    \
         )                                                                      \

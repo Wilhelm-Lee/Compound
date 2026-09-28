@@ -31,7 +31,11 @@ ARRAY(Parameter)
 LITERALISE_ARGS(Parameter, boolean need_type, boolean need_identifier)
 
 # define noparam                                                               \
-  Parameter_CreateMultiple(0)
+  (param(void))
+
+/* no distinguishes between the type and the identifier. */
+# define lazy_params(...)                                                      \
+  (Parameter_CreateLazyMultiple(#__VA_ARGS__))
 
 # define p(...)                                                                \
   (param(__VA_ARGS__))
@@ -92,7 +96,11 @@ Parameter *Parameter_Create(
 Parameter *Parameter_CopyOf(const Parameter *const other);
 void Parameter_Delete(Parameter *const inst);
 boolean Parameter_Equals(Parameter *const inst, Parameter *const other);
-Array(Parameter) *Parameter_CreateMultiple(const llong cluster_count, ...);
+Array(Parameter) *Parameter_CreateMultiple(const int cluster_count, ...);
+/* Create parameters only for @type without @identifier directly from strings.*/
+Array(Parameter) *Parameter_CreateLazyMultiple(
+  const char *restrict const parameter_clusters_cstr
+);
 String *Parameter_GetType(const Parameter *const inst);
 String *Parameter_GetIdentifier(const Parameter *const inst);
 

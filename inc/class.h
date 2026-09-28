@@ -30,6 +30,7 @@
 # include "literalise.h"
 # include "memory_stack.h"
 # include "method.h"
+# include "stream.h"
 
 typedef struct Class Class;
 
@@ -37,10 +38,11 @@ typedef struct Class Class;
 ARRAY(Class)
 LITERALISE_ARGS(Class, boolean want_fancy, boolean need_member_definition)
 
-# define class(access_literal, identifier_literal, ...)                        \
-  Class *c_##identifier_literal = Create(                                      \
+# define class(access_visibility_literal, identifier_literal, ...)             \
+  typedef Class identifier_literal;                                            \
+  identifier_literal *c_##identifier_literal = Create(                         \
     Class,                                                                     \
-    ACCESS_##access_literal,                                                   \
+    ACCESS_VISIBILITY_##access_visibility_literal,                             \
     string(nameof(identifier_literal)),                                        \
     null,                                                                      \
     null,                                                                      \
@@ -50,11 +52,10 @@ LITERALISE_ARGS(Class, boolean want_fancy, boolean need_member_definition)
     null,                                                                      \
     null                                                                       \
   );                                                                           \
-  typedef Class identifier_literal;                                            \
   ARRAY(identifier_literal)                                                    \
   {                                                                            \
-    Class *const this = c_##identifier_literal;                                \
-    Class *super = nll;                                                        \
+    identifier_literal *const this = c_##identifier_literal;                   \
+    identifier_literal *super = nll;                                           \
     ig this;                                                                   \
     String *const CLASS_IDENTIFIER_STR = string(                               \
       nameof(identifier_literal)                                               \
@@ -68,13 +69,13 @@ LITERALISE_ARGS(Class, boolean want_fancy, boolean need_member_definition)
 # define inherit(super_class_name_literal)                                     \
   super = c_##super_class_name_literal;
 
-# define override(method_name_literal, ...)                                    \
+# define override(return_type_literal, method_name_literal, ...)               \
   {                                                                            \
     String *const _method_name = string(nameof(method_name_literal));          \
     Method *const found = Class_GetMethodByIdentifier(this, _method_name);     \
     Delete(String, _method_name);                                              \
     if (found) {                                                               \
-      Body *const body =Getter(Function, Body,Getter(Method, Function, found));\
+      Body *const body = Getter(Function, Body, Getter(Method,Function,found));\
       Setter(Body, Text, body, string(#__VA_ARGS__));                          \
     }                                                                          \
   }
@@ -92,7 +93,7 @@ LITERALISE_ARGS(Class, boolean want_fancy, boolean need_member_definition)
   EMPTY
 
 Class *Class_Create(
-  const Access access,
+  const AccessVisibility visibility,
   String *const identifier,
   Class *const super,
   Array(Field) *const fields,
@@ -106,8 +107,8 @@ Class *Class_CopyOf(Class *const other);
 void Class_Delete(Class *const inst);
 boolean Class_Equals(const Class *const inst, const Class *const other);
 boolean Class_Recreate(
-  FILE *const header,
-  FILE *const source,
+  Stream *const header,
+  Stream *const source,
   Class *const inst
 );
 Class *Class_AddField(Class *const inst, Field *const field);

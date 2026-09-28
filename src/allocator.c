@@ -26,10 +26,10 @@
 extern MemoryStack MEMORY_STACK;
 
 /* Returns the address stored in @MEMORY_STACK. */
-inline void *_Allocate(const size_t nmemb, const size_t size)
+inline void *_Allocate(const llong requirement)
 {
-  void *const inst = calloc(nmemb, size);
-  if (!inst && (nmemb && size)) {
+  void *const inst = calloc(requirement, 1);
+  if (!inst && requirement) {
     return null;
   }
 

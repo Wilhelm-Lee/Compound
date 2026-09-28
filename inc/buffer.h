@@ -30,7 +30,7 @@ typedef struct Buffer Buffer;
 ARRAY(Buffer)
 LITERALISE(Buffer)
 
-Buffer *Buffer_Create(const llong capacity);
+Buffer *Buffer_Create(const int capacity);
 Buffer *Buffer_CopyOf(const Buffer *const other);
 void Buffer_Delete(Buffer *const inst);
 boolean Buffer_Equals(const Buffer *const inst, const Buffer *const other);
@@ -44,6 +44,6 @@ boolean Buffer_Append(Buffer *const inst, const byte value);
 boolean Buffer_Write(Buffer *const inst, const String *const value);
 
 Array(byte) *Buffer_GetData(const Buffer *const inst);
-llong Buffer_GetCursor(const Buffer *const inst);
+int Buffer_GetCursor(const Buffer *const inst);
 
 #endif /* COMPOUND_BUFFER_H */

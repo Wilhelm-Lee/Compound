@@ -40,7 +40,7 @@ LITERALISE_ARGS(
 )
 
 # define _create_method(                                                       \
-    access_literal,                                                            \
+    access_visibility_literal,                                                 \
     returning_type_literal,                                                    \
     identifier_literal,                                                        \
     param_clusters,                                                            \
@@ -48,7 +48,7 @@ LITERALISE_ARGS(
   )                                                                            \
     Create(                                                                    \
       Method,                                                                  \
-      ACCESS_##access_literal,                                                 \
+      ACCESS_VISIBILITY_##access_visibility_literal,                           \
       CopyOf(String, CLASS_IDENTIFIER_STR),                                    \
       function(                                                                \
         string(nameof(returning_type_literal)),                                \
@@ -58,7 +58,7 @@ LITERALISE_ARGS(
           Concat,                                                              \
           params_str(                                                          \
             param_str(                                                         \
-              append(nll, CLASS_IDENTIFIER_STR, string(" *const")), \
+              append(nll, CLASS_IDENTIFIER_STR, string(" *const")),            \
               string(nameof(this))                                             \
             )                                                                  \
           ),                                                                   \
@@ -69,28 +69,34 @@ LITERALISE_ARGS(
     )
 
 # define method(                                                               \
-    access_literal,                                                            \
+    access_visibility_literal,                                                 \
     returning_type_literal,                                                    \
     identifier_literal,                                                        \
-    param_clusters,                                                            \
+    lazy_param_clusters,                                                       \
     ...                                                                        \
   )                                                                            \
   (call(                                                                       \
     Class,                                                                     \
     AddMethod,                                                                 \
     this,                                                                      \
-    _create_method(access_literal, returning_type_literal, identifier_literal, param_clusters, __VA_ARGS__)\
+    _create_method(                                                            \
+      access_visibility_literal,                                               \
+      returning_type_literal,                                                  \
+      identifier_literal,                                                      \
+      lazy_params lazy_param_clusters,                                         \
+      __VA_ARGS__                                                              \
+    )                                                                          \
   ));
 
 Method *Method_Create(
-  const Access access,
+  const AccessVisibility visibility,
   String *const class_identifier,
   Function *const function
 );
 Method *Method_CopyOf(Method *const other);
 void Method_Delete(Method *const inst);
 boolean Method_Equals(Method *const inst, Method *const other);
-Access Method_GetAccess(const Method *const inst);
+AccessVisibility Method_GetVisibility(const Method *const inst);
 Function *Method_GetFunction(const Method *const inst);
 String *Method_GetIdentifier(Method *const inst);
 

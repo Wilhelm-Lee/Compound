@@ -43,7 +43,7 @@ Signature *Signature_Create(
 
   inst->returning = returning;
   inst->identifier = identifier;
-  inst->parameters = parameters ? parameters : noparam;
+  inst->parameters = parameters ? parameters : params(param(void));
 
   return inst;
 }
@@ -113,8 +113,8 @@ boolean Signature_Equals(
     }
   }
 
-  return Equals(String, inst->identifier, other->identifier) &&
-         Equals(Array(Parameter), inst->parameters, other->parameters, Parameter_Equals);
+  return Equals(String, inst->identifier, other->identifier)
+      && Equals(Array(Parameter), inst->parameters, other->parameters, Parameter_Equals);
 }
 
 String *Signature_Literalise(
@@ -148,7 +148,7 @@ String *Signature_Literalise(
   }
 
   if (need_parameters) {
-    const llong param_count = inst->parameters ? Length(Array(Parameter), inst->parameters) : 0;
+    const int param_count = inst->parameters ? Length(Array(Parameter), inst->parameters) : 0;
     if (param_count > 0) {
       String *const params_str = lit(
         Array(Parameter),

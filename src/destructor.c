@@ -76,8 +76,8 @@ boolean Destructor_Equals(Destructor *const inst, Destructor *const other)
     return true;
   }
 
-  return inst->super == other->super &&
-         Equals(Method, inst->method, other->method);
+  return inst->super == other->super
+      && Equals(Method, inst->method, other->method);
 }
 
 void Destructor_Inherit(Destructor *const inst, Destructor *const super)

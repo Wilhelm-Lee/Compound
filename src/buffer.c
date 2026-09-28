@@ -23,10 +23,10 @@
 
 struct Buffer {
   Array(byte) *data;
-  llong cursor;
+  int cursor;
 };
 
-Buffer *Buffer_Create(const llong capacity)
+Buffer *Buffer_Create(const int capacity)
 {
   if (capacity < 0) {
     return null;
@@ -80,8 +80,8 @@ boolean Buffer_Equals(const Buffer *const inst, const Buffer *const other)
   if (!inst || !other) return false;
   if (inst == other) return true;
 
-  return inst->cursor == other->cursor &&
-         Equals(Array(byte), inst->data, other->data, null);
+  return inst->cursor == other->cursor
+      && Equals(Array(byte), inst->data, other->data, null);
 }
 
 boolean Buffer_Sample(Buffer *const inst, const String *const string)
@@ -92,7 +92,7 @@ boolean Buffer_Sample(Buffer *const inst, const String *const string)
 
   Delete(Array(byte), inst->data);
 
-  const llong string_len = Length(String, string);
+  const int string_len = Length(String, string);
   if (string_len) {
     inst->data = CopyOf(Array(byte), Getter(String, Data, string));
   } else {
@@ -149,7 +149,7 @@ boolean Buffer_Write(Buffer *const inst, const String *const value)
     return false;
   }
 
-  const llong value_len = Length(String, value);
+  const int value_len = Length(String, value);
   if (!value_len) {
     return false;
   }
@@ -185,7 +185,7 @@ inline Array(byte) *Buffer_GetData(const Buffer *const inst)
   return inst->data;
 }
 
-inline llong Buffer_GetCursor(const Buffer *const inst)
+inline int Buffer_GetCursor(const Buffer *const inst)
 {
   if (!inst) return 0;
   return inst->cursor;

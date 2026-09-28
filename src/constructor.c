@@ -76,8 +76,8 @@ boolean Constructor_Equals(Constructor *const inst, Constructor *const other)
     return true;
   }
 
-  return inst->super == other->super &&
-         Equals(Method, inst->method, other->method);
+  return inst->super == other->super
+      && Equals(Method, inst->method, other->method);
 }
 
 String *Constructor_Literalise(
