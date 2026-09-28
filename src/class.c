@@ -139,6 +139,50 @@ static String *GenerateObjectEssentialDeclarations(Class *const inst)
   return result;
 }
 
+static char *restrict const GENERATE_OBJECT_ESSENTIAL_IMPLEMENTATIONS =
+  "%s *%s_Create%s" NL
+  "{" NL
+  "  %s *const this = Allocate(sizeof(%s));" NL
+  "  if (!this) {" NL
+  "    return nll;" NL
+  "  }" NL
+  NL
+  "  %s" NL
+  "}" NL
+  NL
+  "void %s_Delete(%s *const this)" NL
+  "{" NL
+  "  if (!this) {" NL
+  "    return;" NL
+  "  }" NL
+  "  %s" NL
+  NL
+  "  Deallocate(this);" NL
+  "}" NL
+  NL
+  "boolean %s_Equals(%s *const this, %s *const other)" NL
+  "{" NL
+  "  if (!this || !other) {" NL
+  "    return false;" NL
+  "  }" NL
+  NL
+  "  if (this == other) {" NL
+  "    return true;" NL
+  "  }" NL
+  NL
+  "  %s" NL
+  "}" NL
+  NL
+  "String *%s_Literalise(%s *const this)" NL
+  "{" NL
+  "  if (!this) {" NL
+  "    return nll;" NL
+  "  }" NL
+  NL
+  "  %s" NL
+  "}" NL
+;
+
 static String *GenerateObjectEssentialImplementations(Class *const inst)
 {
   if (!inst) {
@@ -191,47 +235,7 @@ static String *GenerateObjectEssentialImplementations(Class *const inst)
     lit_lit_body ? flatten(char, lit_lit_body) : "";
 
   String *const lit_result = format(
-    "%s *%s_Create%s" NL
-    "{" NL
-    "  %s *const this = Allocate(sizeof(%s));" NL
-    "  if (!this) {" NL
-    "    return nll;" NL
-    "  }" NL
-    NL
-    "  %s" NL
-    "}" NL
-    NL
-    "void %s_Delete(%s *const this)" NL
-    "{" NL
-    "  if (!this) {" NL
-    "    return;" NL
-    "  }" NL
-    "  %s" NL
-    NL
-    "  Deallocate(this);" NL
-    "}" NL
-    NL
-    "boolean %s_Equals(%s *const this, %s *const other)" NL
-    "{" NL
-    "  if (!this || !other) {" NL
-    "    return false;" NL
-    "  }" NL
-    NL
-    "  if (this == other) {" NL
-    "    return true;" NL
-    "  }" NL
-    NL
-    "  %s" NL
-    "}" NL
-    NL
-    "String *%s_Literalise(%s *const this)" NL
-    "{" NL
-    "  if (!this) {" NL
-    "    return nll;" NL
-    "  }" NL
-    NL
-    "  %s" NL
-    "}" NL,
+    GENERATE_OBJECT_ESSENTIAL_IMPLEMENTATIONS,
     /* _Create */
     identifier_cstr, identifier_cstr, create_sig_cstr,
     identifier_cstr, identifier_cstr,
