@@ -45,28 +45,9 @@ Function *Function_Create(
   return inst;
 }
 
-Function *Function_CopyOf(const Function *const other)
+inline Function *Function_CopyOf(const Function *const other)
 {
-  if (!other) {
-    return null;
-  }
-
-  Signature *const signature = CopyOf(Signature, other->signature);
-  Body *const body = CopyOf(Body, other->body);
-  if (!signature || !body) {
-    Delete(Body, body);
-    Delete(Signature, signature);
-    return null;
-  }
-
-  Function *const inst = Create(Function, signature, body);
-  if (!inst) {
-    Delete(Body, body);
-    Delete(Signature, signature);
-    return null;
-  }
-
-  return inst;
+  return Create(Function, other->signature, other->body);
 }
 
 void Function_Delete(Function *const inst)
@@ -75,8 +56,8 @@ void Function_Delete(Function *const inst)
     return;
   }
 
-  Delete(Body, inst->body);
   Delete(Signature, inst->signature);
+  Delete(Body, inst->body);
   Deallocate(inst);
 }
 
@@ -136,6 +117,7 @@ String *Function_Literalise(
   return lit;
 }
 
+/* Inappropriate for encapsulation design.  Suggested action: Removal. */
 Signature *Function_GetSignature(const Function *const inst)
 {
   if (!inst) {
@@ -145,6 +127,7 @@ Signature *Function_GetSignature(const Function *const inst)
   return inst->signature;
 }
 
+/* Inappropriate for encapsulation design.  Suggested action: Removal. */
 Body *Function_GetBody(const Function *const inst)
 {
   if (!inst) {
@@ -155,7 +138,7 @@ Body *Function_GetBody(const Function *const inst)
 }
 
 IMPL_ARRAY(Function)
-IMPL_ARRAY_LITERALISE_CONFIGS(
+IMPL_ARRAY_LITERALISE_ARGS(
   Function,
   need_returning,
   need_identifier,

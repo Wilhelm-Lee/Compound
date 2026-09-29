@@ -164,7 +164,7 @@ String *Destructor_Literalise(
 }
 
 IMPL_ARRAY(Destructor)
-IMPL_ARRAY_LITERALISE_CONFIGS(
+IMPL_ARRAY_LITERALISE_ARGS(
   Destructor,
   need_returning,
   need_identifier,

@@ -30,6 +30,7 @@
 #include "../inc/constructor.h"
 #include "../inc/destructor.h"
 #include "../inc/entry.h"
+#include "../inc/enums.h"
 #include "../inc/field.h"
 #include "../inc/function.h"
 #include "../inc/memory_stack.h"
@@ -52,10 +53,26 @@ int Context(Array(String) *const args)
   ig args;
 
   class (public, Variable, {
-    field(private, String *, identifier, nll);
-    field(private, String *, value, nll);
+    class (public, Inner, {
+      field (private, int, value, 0);
 
-    constructor ((String *const identifier, String *const value), {
+      constructor (public, (int value), {
+        this->value = value;
+      })
+    })
+
+    record (public, OperationCode, (int code), {
+      enums (NOP, 0);
+      enums (ADDITION, 1);
+      enums (SUBTRACTION, 2);
+      enums (MULTIPLICATION, 3);
+      enums (DIVISION, 4);
+    });
+
+    field (private, String *, identifier, nll);
+    field (private, String *, value, nll);
+
+    constructor (public, (String *const identifier, String *const value), {
       if (!identifier) {
         return nll;
       }
@@ -79,17 +96,63 @@ int Context(Array(String) *const args)
       return this->value;
     })
 
-    override (String, Literalise, (void), {
-      return append(nll, this->identifier, string(" = "), this->value, string(";"));
-    })
+    virtual (public, Variable *, Operate, (int operation_code, Variable *const other));
 
-    override (boolean, Equals, (Variable *const other), {
+    override (public, boolean, Equals, (Variable *const other), {
+      if (!other) {
+        return false;
+      }
+
       return Equals(String, this->identifier, other->identifier)
           && Equals(String, this->value, other->value);
     })
+
+    override (public, String *, Literalise, (void), {
+      return append(nll, this->identifier, string(" = "), this->value, string(";"));
+    })
   })
 
-  outln(lit(Class, c_Variable, no, yes));
+  class (public, Integer, {
+    inherit (Variable);
+
+    constructor (public, (int value), {
+      this->identifier = string("Integer");
+      this->value = format("%d", value);
+
+      return this;
+    })
+
+    constructor (public, (Integer *const other), {
+      if (!other) {
+        return nll;
+      }
+
+      this->identifier = string("Integer");
+      this->value = format("%d", other->value);
+
+      return this;
+    })
+
+    override (public, Variable *, Operate, (int operation_code, Variable *const other), {
+      if (!other) {
+        return this;
+      }
+
+      if (operation_code == OperationCode.ADDITION) {
+        this->value = Concat(String, this->value, other->value);
+      }
+
+      return this;
+    })
+
+    override (public, boolean, Equals, (Integer *const other), {
+      if (!other) {
+        return false;
+      }
+
+      return Equals(String, this->value, other->value);
+    })
+  })
 
   return 0;
 }
@@ -98,7 +161,7 @@ int Main(Array(String) *const args)
 {
   ig args;
 
-
+  outln(format("Hello, Compound!"NL"The time is %lld.", time(nll)));
 
   return 0;
 }

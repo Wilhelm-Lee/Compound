@@ -168,8 +168,8 @@ String *elem_type##Array_Literalise(_ARRAY_LITERALISE_PARAMS(elem_type))       \
   )                                                                            \
 }
 
-# define IMPL_ARRAY_LITERALISE_CONFIGS(...)                                    \
-  CONCAT(IMPL_ARRAY_LITERALISE_CONFIGS_, arglen(__VA_ARGS__))(__VA_ARGS__)
+# define IMPL_ARRAY_LITERALISE_ARGS(...)                                    \
+  CONCAT(IMPL_ARRAY_LITERALISE_ARGS_, arglen(__VA_ARGS__))(__VA_ARGS__)
 
 # define FUNC_BASICTYPE_LITERALISE(elem_type)                                  \
   String *elem_type##_Literalise(const elem_type inst);
@@ -181,7 +181,7 @@ inline String *elem_type##_Literalise(const elem_type inst)                    \
 }
 
 /* 1 Config Parameter (3 Total Arguments) */
-# define IMPL_ARRAY_LITERALISE_CONFIGS_3(elem_type, var1, ...)                 \
+# define IMPL_ARRAY_LITERALISE_ARGS_3(elem_type, var1, ...)                 \
 String *elem_type##Array_Literalise(                                           \
   _ARRAY_LITERALISE_PARAMS(elem_type),                                         \
   __VA_ARGS__                                                                  \
@@ -194,7 +194,7 @@ String *elem_type##Array_Literalise(                                           \
 }
 
 /* 2 Config Parameters (5 Total Arguments) */
-# define IMPL_ARRAY_LITERALISE_CONFIGS_5(elem_type, var1, var2, ...)           \
+# define IMPL_ARRAY_LITERALISE_ARGS_5(elem_type, var1, var2, ...)           \
 String *elem_type##Array_Literalise(                                           \
   _ARRAY_LITERALISE_PARAMS(elem_type),                                         \
   __VA_ARGS__                                                                  \
@@ -207,7 +207,7 @@ String *elem_type##Array_Literalise(                                           \
 }
 
 /* 3 Config Parameters (7 Total Arguments) */
-# define IMPL_ARRAY_LITERALISE_CONFIGS_7(elem_type, var1, var2, var3, ...)     \
+# define IMPL_ARRAY_LITERALISE_ARGS_7(elem_type, var1, var2, var3, ...)     \
 String *elem_type##Array_Literalise(                                           \
   _ARRAY_LITERALISE_PARAMS(elem_type),                                         \
   __VA_ARGS__                                                                  \
@@ -220,7 +220,7 @@ String *elem_type##Array_Literalise(                                           \
 }
 
 /* 4 Config Parameters (9 Total Arguments) */
-# define IMPL_ARRAY_LITERALISE_CONFIGS_9(elem_type, var1, var2, var3, var4, ...)\
+# define IMPL_ARRAY_LITERALISE_ARGS_9(elem_type, var1, var2, var3, var4, ...)\
 String *elem_type##Array_Literalise(                                           \
   _ARRAY_LITERALISE_PARAMS(elem_type),                                         \
   __VA_ARGS__                                                                  \
@@ -233,7 +233,7 @@ String *elem_type##Array_Literalise(                                           \
 }
 
 /* 5 Config Parameters (11 Total Arguments) */
-# define IMPL_ARRAY_LITERALISE_CONFIGS_11(elem_type, var1, var2, var3, var4, var5, ...)\
+# define IMPL_ARRAY_LITERALISE_ARGS_11(elem_type, var1, var2, var3, var4, var5, ...)\
 String *elem_type##Array_Literalise(                                           \
   _ARRAY_LITERALISE_PARAMS(elem_type),                                         \
   __VA_ARGS__                                                                  \
@@ -246,7 +246,7 @@ String *elem_type##Array_Literalise(                                           \
 }
 
 /* 6 Config Parameters (13 Total Arguments) */
-# define IMPL_ARRAY_LITERALISE_CONFIGS_13(elem_type, var1, var2, var3, var4, var5, var6, ...)\
+# define IMPL_ARRAY_LITERALISE_ARGS_13(elem_type, var1, var2, var3, var4, var5, var6, ...)\
 String *elem_type##Array_Literalise(                                           \
   _ARRAY_LITERALISE_PARAMS(elem_type),                                         \
   __VA_ARGS__                                                                  \
@@ -259,7 +259,7 @@ String *elem_type##Array_Literalise(                                           \
 }
 
 /* 7 Config Parameters (15 Total Arguments) */
-# define IMPL_ARRAY_LITERALISE_CONFIGS_15(elem_type, var1, var2, var3, var4, var5, var6, var7, ...)\
+# define IMPL_ARRAY_LITERALISE_ARGS_15(elem_type, var1, var2, var3, var4, var5, var6, var7, ...)\
 String *elem_type##Array_Literalise(                                           \
   _ARRAY_LITERALISE_PARAMS(elem_type),                                         \
   __VA_ARGS__                                                                  \
@@ -272,7 +272,7 @@ String *elem_type##Array_Literalise(                                           \
 }
 
 /* 8 Config Parameters (17 Total Arguments) */
-# define IMPL_ARRAY_LITERALISE_CONFIGS_17(elem_type, var1, var2, var3, var4, var5, var6, var7, var8, ...)\
+# define IMPL_ARRAY_LITERALISE_ARGS_17(elem_type, var1, var2, var3, var4, var5, var6, var7, var8, ...)\
 String *elem_type##Array_Literalise(                                           \
   _ARRAY_LITERALISE_PARAMS(elem_type),                                         \
   __VA_ARGS__                                                                  \

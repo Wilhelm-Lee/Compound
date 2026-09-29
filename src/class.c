@@ -36,17 +36,49 @@ struct Class {
 
 static inline String *GenerateArrayImplementations(Class *const inst)
 {
-  return append(nll, string("IMPL_ARRAY("), inst->identifier, string(")"), string(NL));
+  return append(
+    nll,
+    string("IMPL_ARRAY("),
+    inst->identifier,
+    string(")"),
+    string(NL)
+  );
 }
 
 static inline String *GenerateMethodDeclarations(Class *const inst)
 {
-  return lit(Array(Method), inst->methods, nll, string(NL), nll, yes, yes, yes, yes, yes, no, yes);
+  return lit(
+    Array(Method),
+    inst->methods,
+    nll,
+    nll,
+    string(NL),
+    yes,
+    yes,
+    yes,
+    yes,
+    yes,
+    no,
+    yes
+  );
 }
 
 static inline String *GenerateMethodImplementations(Class *const inst)
 {
-  return lit(Array(Method), inst->methods, nll, string(NL), nll, yes, yes, yes, yes, yes, yes, no);
+  return lit(
+    Array(Method),
+    inst->methods,
+    nll,
+    nll,
+    string(NL),
+    yes,
+    yes,
+    yes,
+    yes,
+    yes,
+    yes,
+    no
+  );
 }
 
 static String *GenerateTypedef(Class *const inst)
@@ -321,10 +353,12 @@ static String *GenerateHeaderContent(Class *const inst)
     "ARRAY(%s)"NL
     ""NL
     "typedef struct class_%s class_%s;"NL
-    ""NL
-    "  %s/* Methods (signature). */"NL
-    "  %s/* Constructor (signature). */"NL
-    "  %s/* Destructor (signature). */"NL
+    "  /* Methods (signature). */"NL
+    "  %s"NL
+    "  /* Constructor (signature). */"NL
+    "  %s"NL
+    "  /* Destructor (signature). */"NL
+    "  %s"NL
     ""NL
     "#endif  /* COMPOUND_CLASS_%s_H */"NL,
     identifier_cstr,
@@ -353,7 +387,20 @@ static String *GenerateSourceContent(Class *const inst)
 
   return Concat(String,
     GenerateLicenseBanner(),
-    lit(Array(Method), inst->methods, null, string(NEWLINE), null, yes, yes, yes, yes, yes, yes, no)
+    lit(
+      Array(Method),
+      inst->methods,
+      null,
+      string(NEWLINE),
+      null,
+      yes,
+      yes,
+      yes,
+      yes,
+      yes,
+      yes,
+      no
+    )
   );
 }
 
@@ -509,8 +556,8 @@ Class *Class_CopyOf(Class *const other)
     other->visibility,
     Concat(String, other->identifier, string(" copy")),
     CopyOf(Class, other->super),
-    Clone(Array(Field), other->fields),
-    Clone(Array(Method), other->methods),
+    CopyOf(Array(Field), other->fields),
+    CopyOf(Array(Method), other->methods),
     CopyOf(Constructor, other->constructor),
     CopyOf(Destructor, other->destructor),
     CopyOf(Method, other->Equals),
@@ -558,15 +605,10 @@ boolean Class_Equals(const Class *const inst, const Class *const other)
 
 String *Class_Literalise(
   Class *const inst,
-  boolean want_fancy,
   boolean need_member_definition
 ) {
   if (!inst) {
     return null;
-  }
-
-  if (want_fancy) {
-    return string("fancy");
   }
 
   String *lit = append(
@@ -623,10 +665,6 @@ Class *Class_AddField(Class *const inst, Field *const field)
   }
 
   inst->fields = call(Array(Field), Insert, inst->fields, -1, field);
-  _Field_SetNumericalIdentifier(
-    ref(Array(Field), inst->fields, capacity(Array(Field), inst->fields)),
-    Length(Array(Field), inst->fields) - 1
-  );
 
   return inst;
 }
@@ -653,6 +691,28 @@ void Class_Inherit(Class *const inst, Class *const super)
   inst->methods = Append(Array(Method), inst->methods, super->methods);
   call(Constructor, Inherit, inst->constructor, super->constructor);
   call(Destructor, Inherit, inst->destructor, super->destructor);
+}
+
+void Class_OverrideMethod(Class *const inst, String *const method_identifier, String *const body_text)
+{
+  if (!inst || !method_identifier) {
+    return;
+  }
+
+  Method *const found = Class_GetMethodByIdentifier(
+    inst, method_identifier
+  );
+  if (!found) {
+    return;
+  }
+
+  Body *const body = Getter(
+    Function,
+    Body,
+    Getter(Method, Function, found)
+  );
+
+  Setter(Body, Text, body, body_text ? body_text : string(""));
 }
 
 void Class_SetConstructor(Class *const inst, Constructor *const constructor)
@@ -711,11 +771,27 @@ Method *Class_GetMethodByIdentifier(
   return nll;
 }
 
+void _Class_EraseFields(Class *const inst)
+{
+  if (!inst) {
+    return;
+  }
+
+  erase(Array(Field), inst->fields);
+}
+
+void _Class_EraseMethods(Class *const inst)
+{
+  if (!inst) {
+    return;
+  }
+
+  erase(Array(Method), inst->methods);
+}
+
 IMPL_ARRAY(Class)
-IMPL_ARRAY_LITERALISE_CONFIGS(
+IMPL_ARRAY_LITERALISE_ARGS(
   Class,
-  want_fancy,
   need_member_definition,
-  boolean want_fancy,
   boolean need_member_definition
 )

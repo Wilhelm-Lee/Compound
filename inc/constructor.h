@@ -39,6 +39,7 @@ LITERALISE_ARGS(
 )
 
 # define constructor(                                                          \
+    access_visibility_literal,                                                 \
     lazy_param_clusters,                                                       \
     ...                                                                        \
   )                                                                            \
@@ -51,14 +52,19 @@ LITERALISE_ARGS(
       null,                                                                    \
       Create(                                                                  \
         Method,                                                                \
-        ACCESS_VISIBILITY_PUBLIC,                                                         \
+        ACCESS_VISIBILITY_PUBLIC,                                              \
         CLASS_IDENTIFIER_STR,                                                  \
         Create(                                                                \
           Function,                                                            \
           Create(                                                              \
             Signature,                                                         \
             append(nll, CLASS_IDENTIFIER_STR, string(" *")),                   \
-            append(nll, CLASS_IDENTIFIER_STR, string("_"), string(nameof(Create))),\
+            append(                                                            \
+              nll,                                                             \
+              CLASS_IDENTIFIER_STR,                                            \
+              string("_"),                                                     \
+              string(nameof(Create))                                           \
+            ),                                                                 \
             lazy_params lazy_param_clusters                                    \
           ),                                                                   \
           body(__VA_ARGS__)                                                    \

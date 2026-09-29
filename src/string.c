@@ -252,19 +252,17 @@ String *String_Format(const char *restrict const format, ...)
   }
 
   /* Let out the actual length. */
-  size_t actual_length = 0;
   va_list ap;
   va_start(ap, format);
-  char fakebuff[1];
-  actual_length = vsnprintf(fakebuff, 0, format, ap);
+  const size_t actual_length = vsnprintf(nll, 0, format, ap) + 1;
   va_end(ap);
 
-  String *accurate = String_Create(actual_length, sizeof(byte));
+  String *const actual = String_Create(actual_length, sizeof(byte));
   va_start(ap, format);
-  actual_length = vsnprintf((char *)refbyte(accurate, 0), actual_length, format, ap);
+  ig vsnprintf((char *)refbyte(actual, 0), actual_length, format, ap);
   va_end(ap);
 
-  return accurate;
+  return actual;
 }
 
 String *String_Substr(

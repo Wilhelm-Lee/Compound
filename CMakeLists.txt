@@ -35,6 +35,7 @@ set(
   src/class.c
   src/constructor.c
   src/destructor.c
+  src/enums.c
   src/field.c
   src/function.c
   src/init.c
