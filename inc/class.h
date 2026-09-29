@@ -36,7 +36,10 @@ typedef struct Class Class;
 
 /* This effectively declares for every future Class types. */
 ARRAY(Class)
-LITERALISE_ARGS(Class, boolean want_fancy, boolean need_member_definition)
+LITERALISE_ARGS(Class, boolean need_member_definition)
+
+extern void _Class_EraseFields(Class *const inst);
+extern void _Class_EraseMethods(Class *const inst);
 
 # define class(access_visibility_literal, identifier_literal, ...)             \
   typedef Class identifier_literal;                                            \
@@ -55,30 +58,70 @@ LITERALISE_ARGS(Class, boolean want_fancy, boolean need_member_definition)
   ARRAY(identifier_literal)                                                    \
   {                                                                            \
     identifier_literal *const this = c_##identifier_literal;                   \
-    identifier_literal *super = nll;                                           \
     ig this;                                                                   \
+    identifier_literal *super = nll;                                           \
+    ig super;  /* Kept for user to modify themselves. */                       \
     String *const CLASS_IDENTIFIER_STR = string(                               \
       nameof(identifier_literal)                                               \
     );                                                                         \
     ig CLASS_IDENTIFIER_STR;                                                   \
-    destructor()  /* The default destructor. */                                \
+    constructor (private, (void), {})  /* The default constructor. */          \
+    destructor ()  /* The default destructor. */                               \
     __VA_ARGS__                                                                \
     Class_Inherit(this, super);                                                \
   }
 
+/* record (public, ExitCodes, (int code)) */
+/* record (protected, User, (String *name, int id)) */
+/* record (private, RGBChannel, (int red_value, int green_value, int blue_value)) */
+/* It's translated to a struct anyway; no performance loss nor design redundancy. */
+# define record(                                                               \
+    access_visibility_literal,                                                 \
+    identifier_literal,                                                        \
+    lazy_param_clusters,                                                       \
+    ...                                                                        \
+  )                                                                            \
+  class (access_visibility_literal, identifier_literal, {                      \
+    constructor (public, lazy_param_clusters, {})                              \
+    Array(Parameter) *const _record_types = lazy_params lazy_param_clusters;   \
+    __VA_ARGS__                                                                \
+    /* Records are forbidden inheriting. */                                    \
+    super = nll;                                                               \
+  })
+
+# define enums(identifier_literal, ...)                                        \
+  (Create(Enums, _record_types, string(nameof(identifier_literal)), string(#__VA_ARGS__)))
+
 # define inherit(super_class_name_literal)                                     \
   super = c_##super_class_name_literal;
 
-# define override(return_type_literal, method_name_literal, ...)               \
-  {                                                                            \
-    String *const _method_name = string(nameof(method_name_literal));          \
-    Method *const found = Class_GetMethodByIdentifier(this, _method_name);     \
-    Delete(String, _method_name);                                              \
-    if (found) {                                                               \
-      Body *const body = Getter(Function, Body, Getter(Method,Function,found));\
-      Setter(Body, Text, body, string(#__VA_ARGS__));                          \
-    }                                                                          \
-  }
+# define override(                                                             \
+    access_visibility_literal,                                                 \
+    return_type_literal,                                                       \
+    method_name_literal,                                                       \
+    lazy_param_clusters,                                                       \
+    ...                                                                        \
+  )                                                                            \
+  (                                                                            \
+    Class_OverrideMethod(                                                      \
+      this,                                                                    \
+      string(nameof(method_name_literal)),                                     \
+      string(#__VA_ARGS__))                                                    \
+  );
+
+# define virtual(                                                              \
+    access_visibility_literal,                                                 \
+    return_type_literal,                                                       \
+    identifier_literal,                                                        \
+    lazy_param_clusters                                                        \
+  )                                                                            \
+  method(                                                                      \
+    access_visibility_literal,                                                 \
+    return_type_literal,                                                       \
+    identifier_literal,                                                        \
+    lazy_param_clusters,                                                       \
+    ;                                                                          \
+  )
 
 # define new(class_name_literal, ...)                                          \
   (Create(class_name_literal, __VA_ARGS__))
@@ -114,6 +157,7 @@ boolean Class_Recreate(
 Class *Class_AddField(Class *const inst, Field *const field);
 Class *Class_AddMethod(Class *const inst, Method *const method);
 void Class_Inherit(Class *const inst, Class *const super);
+void Class_OverrideMethod(Class *const inst, String *const method_identifier, String *const body_text);
 void Class_SetConstructor(Class *const inst, Constructor *const constructor);
 void Class_SetDestructor(Class *const inst, Destructor *const destructor);
 

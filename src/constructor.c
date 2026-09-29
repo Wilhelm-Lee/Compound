@@ -164,7 +164,7 @@ void Constructor_SetSuper(Constructor *const inst, Constructor *const super)
 }
 
 IMPL_ARRAY(Constructor)
-IMPL_ARRAY_LITERALISE_CONFIGS(
+IMPL_ARRAY_LITERALISE_ARGS(
   Constructor,
   need_returning,
   need_identifier,
