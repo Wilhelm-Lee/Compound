@@ -159,7 +159,7 @@ inline String *Method_GetIdentifier(Method *const inst)
 }
 
 IMPL_ARRAY(Method)
-IMPL_ARRAY_LITERALISE_CONFIGS(
+IMPL_ARRAY_LITERALISE_ARGS(
   Method,
   need_returning,
   need_identifier,

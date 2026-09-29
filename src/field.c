@@ -133,7 +133,7 @@ inline String *Field_GetIdentifier(Field *const inst)
 }
 
 IMPL_ARRAY(Field)
-IMPL_ARRAY_LITERALISE_CONFIGS(
+IMPL_ARRAY_LITERALISE_ARGS(
   Field,
   need_init_value,
   need_semicolon,

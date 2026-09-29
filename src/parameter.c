@@ -157,6 +157,10 @@ String *Parameter_Literalise(
     return null;
   }
 
+  if (Equals(String, inst->type, string("void"))) {
+    return string("");
+  }
+
   String *const str_space = string(" ");
   String *lit = null;
 
@@ -201,4 +205,4 @@ String *Parameter_GetIdentifier(const Parameter *const inst)
 }
 
 IMPL_ARRAY(Parameter)
-IMPL_ARRAY_LITERALISE_CONFIGS(Parameter, need_type, need_identifier, boolean need_type, boolean need_identifier)
+IMPL_ARRAY_LITERALISE_ARGS(Parameter, need_type, need_identifier, boolean need_type, boolean need_identifier)

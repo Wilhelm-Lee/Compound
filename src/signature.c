@@ -209,7 +209,7 @@ Array(Parameter) *Signature_GetParameters(Signature *const inst)
 }
 
 IMPL_ARRAY(Signature)
-IMPL_ARRAY_LITERALISE_CONFIGS(
+IMPL_ARRAY_LITERALISE_ARGS(
   Signature,
   need_returning,
   need_identifier,

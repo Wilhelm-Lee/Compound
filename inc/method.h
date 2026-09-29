@@ -41,7 +41,7 @@ LITERALISE_ARGS(
 
 # define _create_method(                                                       \
     access_visibility_literal,                                                 \
-    returning_type_literal,                                                    \
+    return_type_literal,                                                       \
     identifier_literal,                                                        \
     param_clusters,                                                            \
     ...                                                                        \
@@ -50,8 +50,8 @@ LITERALISE_ARGS(
       Method,                                                                  \
       ACCESS_VISIBILITY_##access_visibility_literal,                           \
       CopyOf(String, CLASS_IDENTIFIER_STR),                                    \
-      function(                                                                \
-        string(nameof(returning_type_literal)),                                \
+      _function_param(                                                         \
+        string(nameof(return_type_literal)),                                   \
         string(nameof(identifier_literal)),                                    \
         call(                                                                  \
           Array(Parameter),                                                    \
@@ -70,7 +70,7 @@ LITERALISE_ARGS(
 
 # define method(                                                               \
     access_visibility_literal,                                                 \
-    returning_type_literal,                                                    \
+    return_type_literal,                                                       \
     identifier_literal,                                                        \
     lazy_param_clusters,                                                       \
     ...                                                                        \
@@ -81,7 +81,7 @@ LITERALISE_ARGS(
     this,                                                                      \
     _create_method(                                                            \
       access_visibility_literal,                                               \
-      returning_type_literal,                                                  \
+      return_type_literal,                                                     \
       identifier_literal,                                                      \
       lazy_params lazy_param_clusters,                                         \
       __VA_ARGS__                                                              \

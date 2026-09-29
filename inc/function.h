@@ -39,6 +39,19 @@ LITERALISE_ARGS(
   boolean need_semicolon
 )
 
+# define _function_param(returning_type_str, identifier_str, param_clusters, ...)\
+  Create(                                                                      \
+    Function,                                                                  \
+    Create(                                                                    \
+      Signature,                                                               \
+      returning_type_str,                                                      \
+      identifier_str,                                                          \
+      param_clusters                                                           \
+    ),                                                                         \
+    body(__VA_ARGS__)                                                          \
+  )
+
+
 /* function(int, Fibonacci, (int n)) */
 # define function(returning_type_str, identifier_str, lazy_param_clusters, ...)\
   Create(                                                                      \
