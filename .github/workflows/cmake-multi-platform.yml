@@ -56,6 +56,8 @@ jobs:
             EXTRA_ARGS="-DCMAKE_TOOLCHAIN_FILE=$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-mingw-dynamic"
           fi
 
+          cmake .
+
           cmake -B "${{ steps.strings.outputs.build-output-dir }}" \
             -G Ninja \
             -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
