@@ -358,7 +358,7 @@ String *Stream_Read(Stream *const inst)
 
   while (true) {
     read = fread(chunk, sizeof(byte), STREAM_INITIAL_BUFFER_SIZE,inst->fileptr);
-    if (read <= 0) {
+    if (!read) {
       break;
     }
 

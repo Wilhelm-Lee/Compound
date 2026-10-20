@@ -635,10 +635,7 @@ boolean Class_Recreate(
     return false;
   }
 
-  return inst
-      && header
-      && source
-      && RecreateHeader(header, inst)
+  return RecreateHeader(header, inst)
       && RecreateSource(source, inst);
 }
 
