@@ -27,7 +27,7 @@
 typedef struct Enums Enums;
 
 ARRAY(Enums)
-LITERALISE_ARGS(Enums, int index_from_values_to_literalise)
+LITERALISE(Enums)
 
 Enums *Enums_Create(
   Array(Parameter) *const param,

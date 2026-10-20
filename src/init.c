@@ -1,6 +1,6 @@
 #include "../inc/init.h"
 
-extern MemoryStack *MEMORY_STACK;
+extern MemoryStack MEMORY_STACK;
 
 # ifdef __COMPOUND_FEATURE_STATUS__
 void InitialiseStatusStack(Stack(Status) **const instptr)
@@ -72,6 +72,8 @@ int InitialiseMain(
 # endif
 
   InitialiseOrigin();
+  InitialiseStream();
+  InitialiseRegex();
 
 # ifdef __COMPOUND_FEATURE_ARGUMENT__
   *args = array(String, argc);
@@ -126,19 +128,21 @@ int DeinitialiseMain(
     *args = null;
   }
 
-# ifdef __COMPOUND_FEATURE_STATUS__
-  DeinitialiseStatusStack(&STATUS_STACK);
-# endif
+  DeinitialiseRegex();
+  DeinitialiseStream();
+  DeinitialiseOrigin();
 
 # ifdef __COMPOUND_FEATURE_RECYCLER__
   DeinitialiseMemoryStack();
 # endif
 
+# ifdef __COMPOUND_FEATURE_STATUS__
+  DeinitialiseStatusStack(&STATUS_STACK);
+# endif
+
 # ifdef __COMPOUND_FEATURE_RECOLLECTOR__
   DeinitialiseRecollector();
 # endif
-
-  DeinitialiseOrigin();
 
   return 0;
 }

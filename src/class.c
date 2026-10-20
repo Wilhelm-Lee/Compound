@@ -22,6 +22,7 @@
 #include "../inc/class.h"
 
 struct Class {
+  ClassVariant variant;
   AccessVisibility visibility;
   String *identifier;
   Class *super;
@@ -33,6 +34,12 @@ struct Class {
   Method *Equals;
   Method *Literalise;
 };
+
+static inline boolean IsValidVariant(const ClassVariant variant)
+{
+  return variant >= CLASS_VARIANT_MINIMUM_VALUE
+      && variant <= CLASS_VARIANT_MAXIMUM_VALUE;
+}
 
 static inline String *GenerateArrayImplementations(Class *const inst)
 {
@@ -141,7 +148,7 @@ static String *GenerateObjectEssentialDeclarations(Class *const inst)
     Constructor, inst->constructor, no, no, yes, yes, yes, no, no
   );
 
-  foutln(stderr, inst->identifier);
+  soutln(StdErr, inst->identifier);
   return nll;
 
   char *const identifier_cstr = inst->identifier ? flatten(char, inst->identifier) : nll;
@@ -404,43 +411,28 @@ static String *GenerateSourceContent(Class *const inst)
   );
 }
 
-static boolean RecreateHeader(Stream *const header, Class *const inst)
+static inline boolean RecreateHeader(Stream *const header, Class *const inst)
 {
-  if (!header || !inst) {
-    return false;
-  }
-
-  if (!Open(header)) {
-    return false;
-  }
-
-  if (!Write(header, Concat(String, GenerateLicenseBanner(), GenerateHeaderContent(inst)))) {
-    ig Close(header);
-    return false;
-  }
-
-  return Close(header);
+  return header
+      && inst
+      && Write(
+           header,
+           Concat(String, GenerateLicenseBanner(), GenerateHeaderContent(inst))
+         );
 }
 
-static boolean RecreateSource(Stream *const source, Class *const inst)
+static inline boolean RecreateSource(Stream *const source, Class *const inst)
 {
-  if (!source || !inst) {
-    return false;
-  }
-
-  if (!Open(source)) {
-    return false;
-  }
-
-  if (!Write(source, Concat(String, GenerateLicenseBanner(), GenerateSourceContent(inst)))) {
-    ig Close(source);
-    return false;
-  }
-
-  return Close(source);
+  return source
+      && inst
+      && Write(
+           source,
+           Concat(String, GenerateLicenseBanner(), GenerateSourceContent(inst))
+         );
 }
 
 Class *Class_Create(
+  const ClassVariant variant,
   const AccessVisibility visibility,
   String *const identifier,
   Class *const super,
@@ -451,7 +443,7 @@ Class *Class_Create(
   Method *const Equals,
   Method *const Literalise
 ) {
-  if (!identifier || blank(identifier)) {
+  if (!identifier || blank(identifier) || !IsValidVariant(variant)) {
     return null;
   }
 
@@ -535,7 +527,7 @@ Class *Class_Create(
 
 Class *Class_CopyOf(Class *const other)
 {
-  if (!other) {
+  if (!other || !IsValidVariant(other->variant)) {
     return null;
   }
 
@@ -553,6 +545,7 @@ Class *Class_CopyOf(Class *const other)
    */
   Class *const inst = Create(
     Class,
+    other->variant,
     other->visibility,
     Concat(String, other->identifier, string(" copy")),
     CopyOf(Class, other->super),
@@ -598,7 +591,8 @@ boolean Class_Equals(const Class *const inst, const Class *const other)
     return true;
   }
 
-  return Equals(String, inst->identifier, other->identifier)
+  return inst->variant == other->variant
+      && Equals(String, inst->identifier, other->identifier)
       && inst->super == other->super
       && Equals(Array(Method), inst->methods, other->methods, Method_Equals);
 }
@@ -641,21 +635,8 @@ boolean Class_Recreate(
     return false;
   }
 
-  if (!Open(header)) {
-    return false;
-  }
-
-  if (!Open(source)) {
-    Close(header);
-    return false;
-  }
-
-  boolean ret = RecreateHeader(header, inst) && RecreateSource(source, inst);
-
-  ig Close(source);
-  ig Close(header);
-
-  return ret;
+  return RecreateHeader(header, inst)
+      && RecreateSource(source, inst);
 }
 
 Class *Class_AddField(Class *const inst, Field *const field)

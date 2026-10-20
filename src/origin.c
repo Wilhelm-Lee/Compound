@@ -21,7 +21,7 @@
 
 #include "../inc/origin.h"
 
-extern MemoryStack *MEMORY_STACK;
+extern MemoryStack MEMORY_STACK;
 
 struct Origin {
   struct {

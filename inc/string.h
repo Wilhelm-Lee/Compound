@@ -33,17 +33,19 @@
 # include "literalise.h"
 
 # define STRING_LENGTH_MAXIMUM  INT32_MAX
-# define STRING_FORMAT_BUFFER_INITIAL_LENGTH  256LL
+# define STRING_FORMAT_BUFFER_INITIAL_LENGTH  4096LL
 
 typedef struct String String;
 
 ARRAY(String)
-LITERALISE(String)
-
 Array(String) *StringArray_ComposeFromCstr(const int arglen, ...);
+LITERALISE(String)
 
 # define string(char_ptr)                                                      \
   (String_Update(null, char_ptr))
+
+# define raw(...)                                                              \
+  (String_FromRaw(#__VA_ARGS__))
 
 # define update(string_ptr, char_ptr)                                          \
   (String_Update(string_ptr, char_ptr))
@@ -81,7 +83,6 @@ Array(String) *StringArray_ComposeFromCstr(const int arglen, ...);
 # define breaks(string_ptr, tokenth)                                           \
   (String_Breaks(string_ptr, tokenth))
 
-/* WARNING: Large amount of data might be allocated unnoticed. */
 # define gather(string_ptr)                                                    \
   (String_Gather(string_ptr))
 
@@ -116,8 +117,24 @@ Array(String) *StringArray_ComposeFromCstr(const int arglen, ...);
 # define strcut(string_ptr, index)                                             \
   (String_Strcut(string_ptr, index))
 
-# define format(format_cstr, ...)                                              \
+# define format(...)                                                           \
+  (_format(__VA_ARGS__, nll))
+
+# define _format(format_cstr, ...)                                             \
   (String_Format(format_cstr, __VA_ARGS__))
+
+# define reformat(                                                             \
+    prefix_string_ptr,                                                         \
+    separator_string_ptr,                                                      \
+    suffix_string_ptr,                                                         \
+    ...                                                                        \
+  )                                                                            \
+  (String_Reformat(                                                            \
+     Compose(Array(String), __VA_ARGS__),                                     \
+     prefix_string_ptr,                                                        \
+     separator_string_ptr,                                                     \
+     suffix_string_ptr                                                         \
+  ))
 
 # define insert(string_ptr, string_source_ptr, index)                          \
   (String_Insert(string_ptr, string_source_ptr, index))
@@ -168,26 +185,29 @@ Array(String) *StringArray_ComposeFromCstr(const int arglen, ...);
 
 # define iteratebyte(it, string_ptr, block)                                    \
   do {                                                                         \
-    const int CONCAT(it, len) = Length(String, string_ptr);                  \
-    for (register int it = 0; i < CONCAT(it, len); i++) {                    \
+    String *const _iteratebyte_string_ptr##it = (string_ptr);                  \
+    const int CONCAT(it, len) = Length(String, _iteratebyte_string_ptr##it);   \
+    for (register int it = 0; i < CONCAT(it, len); i++) {                      \
       block                                                                    \
     }                                                                          \
   } while (0);
 
 # define foreachbyte(it, string_ptr, block)                                    \
   do {                                                                         \
-    const int CONCAT(it, len) = Length(String, string_ptr);                  \
-    for (register int i = 0; i < CONCAT(it, len); i++) {                     \
-      const byte it = getbyte(string_ptr, i);                                  \
+    String *const _foreachbyte_string_ptr##it = (string_ptr);                  \
+    const int CONCAT(it, len) = Length(String, _foreachbyte_string_ptr##it);   \
+    for (register int i = 0; i < CONCAT(it, len); i++) {                       \
+      const byte it = getbyte(_foreachbyte_string_ptr##it, i);                 \
       block                                                                    \
     }                                                                          \
   } while (0);
 
 # define refeachbyte(it, string_ptr, block)                                    \
   do {                                                                         \
-    const int CONCAT(it, len) = Length(String, string_ptr);                  \
-    for (register int i = 0; i < CONCAT(it, len); i++) {                     \
-      byte *const it = refbyte(string_ptr, i);                                 \
+    String *const _refeachbyte_string_ptr##it = (string_ptr);                  \
+    const int CONCAT(it, len) = Length(String, _refeachbyte_string_ptr##it);   \
+    for (register int i = 0; i < CONCAT(it, len); i++) {                       \
+      byte *const it = refbyte(_refeachbyte_string_ptr##it, i);                \
       block                                                                    \
     }                                                                          \
   } while (0);
@@ -217,6 +237,8 @@ String *String_Transfer(String **const receiver, String **const provider);
  */
 String *String_Update(String *const inst, const char *restrict const cstr);
 
+String *String_FromRaw(const char *restrict const charseq);
+
 /* @return The value under a given indexer from @string1
            minus to the one from @string2.
 
@@ -224,6 +246,9 @@ String *String_Update(String *const inst, const char *restrict const cstr);
            are the same as in values, the result for
            comparing should be 0. */
 int String_Compare(const String *const string1, const String *const string2);
+
+/* Resize @inst to @length bytes. */
+String *String_Resize(String *const inst, const int length);
 
 /* @return The new string concatenates the two of given strings.
  * Compare to String_Append, this function is specialised to treat
@@ -291,6 +316,13 @@ int String_Whence(
 
 /* @return The new string formatted by @format with @.... */
 String *String_Format(const char *restrict const format, ...);
+
+String *String_Reformat(
+  Array(String) *const items,
+  String *const prefix,
+  String *const separator,
+  String *const suffix
+);
 
 boolean String_Empty(const String *const source);
 
@@ -384,5 +416,7 @@ Array(byte) *String_GetData(const String *const inst);
 int String_GetWidth(const String *const inst);
 
 Array(int) *String_GetBreaks(const String *const inst);
+
+int String_GetCapacity(const String *const inst);
 
 #endif  /* COMPOUND_STRING_H */

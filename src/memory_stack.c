@@ -8,7 +8,7 @@ struct MemoryStack {
   llong height;  // The current indexer of the instance.
 };
 
-Memory _MEMORY_STACK_DATA[MEMORY_STACK_HEIGHT_MAXIMUM] = Empty;
+Memory _MEMORY_STACK_DATA[MEMORY_STACK_HEIGHT_MAXIMUM];
 MemoryStack MEMORY_STACK = Empty;
 
 void InitialiseMemoryStack(void)
@@ -32,9 +32,9 @@ llong MemoryStack_Push(MemoryStack *const inst, void *const addr)
   if (MemoryStack_IsFull(inst)) {
     fprintf(
       stderr,
-      "Memory stack is full (cur: %lld pointers out of cap: %lld pointers)"
-      NEWLINE,
-      inst->height + 1, inst->capacity
+      "Memory stack is full (cur: %lld pointers out of cap: %lld pointers)"NL,
+      inst->height + 1,
+      inst->capacity
     );
 
     /* Clean up before leave. */

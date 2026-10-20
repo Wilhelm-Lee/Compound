@@ -26,6 +26,8 @@
 # include "memory_stack.h"
 // # include "recollector.h"
 # include "string.h"
+# include "stream.h"
+# include "regex.h"
 
 # ifdef __COMPOUND_FEATURE_STATUS__
 void InitialiseStatusStack(Stack(Status) **const instptr);

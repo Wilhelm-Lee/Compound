@@ -28,6 +28,25 @@ struct String {
   Array(int) *frags;  // Fragment descriptors.
 };
 
+void RemoveQuotePair(String **const expression)
+{
+  if (!expression || !*expression) {
+    return;
+  }
+
+  if (blank(*expression)) {
+    return;
+  }
+
+  const int length = Length(String, *expression);
+  if (length < 2) {
+    return;
+  }
+
+  *expression = substr(*expression, 1, length - 2);
+  setbyte(*expression, length - 2, 0);
+}
+
 String *String_Create(const int length, const int width)
 {
   if (width <= 0) {
@@ -178,6 +197,22 @@ String *String_Update(String *const inst, const char *restrict const cstr)
   return string;
 }
 
+String *String_FromRaw(const char *restrict const charseq)
+{
+  if (!charseq) {
+    return nll;
+  }
+
+  String *inst = string(charseq);
+  if (!inst) {
+    return nll;
+  }
+
+  RemoveQuotePair(&inst);
+
+  return inst;
+}
+
 int String_Compare(const String *const string1, const String *const string2)
 {
   if (!string1 || !string2) {
@@ -199,6 +234,40 @@ int String_Compare(const String *const string1, const String *const string2)
   }
 
   return 0;
+}
+
+String *String_Resize(String *const inst, const int length)
+{
+  if (!inst || length < 0 || length > STRING_LENGTH_MAXIMUM) {
+    return null;
+  }
+
+  const int instlen = Length(String, inst);
+  if (length == instlen) {
+    return inst;
+  }
+
+  String *const resized = Create(String, length, inst->width);
+  if (!resized) {
+    return inst;
+  }
+
+  const int delta = length - instlen;
+  const int final_length = delta > 0 ? instlen : length;
+
+  if (final_length > 0) {
+    memmove(
+      refbyte(resized, 0),
+      refbyte(inst, 0),
+      final_length * inst->width
+    );
+  }
+
+  setbyte(resized, length, 0);
+
+  Delete(String, inst);
+
+  return resized;
 }
 
 String *String_Concat(String *const string1, String *const string2)
@@ -246,23 +315,38 @@ String *String_Format(const char *restrict const format, ...)
     return null;
   }
 
-  const int formatlen = strnlen(format, STRING_LENGTH_MAXIMUM);
-  if (!formatlen) {
+  const int format_length = strnlen(format, STRING_LENGTH_MAXIMUM);
+  if (!format_length) {
     return string("");
   }
 
-  /* Let out the actual length. */
+  /* Let out the actual length (excluding the null-terminator). */
   va_list ap;
   va_start(ap, format);
-  const size_t actual_length = vsnprintf(nll, 0, format, ap) + 1;
+  const size_t accurate_length = vsnprintf(nll, 0, format, ap);
   va_end(ap);
 
-  String *const actual = String_Create(actual_length, sizeof(byte));
+  /* String_Create accounts the null-terminator -- accurate_length + 1. */
+  String *const accurate = String_Create(accurate_length, sizeof(byte));
+  if (!accurate) {
+    return nll;
+  }
+
   va_start(ap, format);
-  ig vsnprintf((char *)refbyte(actual, 0), actual_length, format, ap);
+  /* vsnprintf does not account for the null-terminator, offset it. */
+  ig vsnprintf((char *)refbyte(accurate, 0), accurate_length + 1, format, ap);
   va_end(ap);
 
-  return actual;
+  return accurate;
+}
+
+inline String *String_Reformat(
+  Array(String) *const items,
+  String *const prefix,
+  String *const separator,
+  String *const suffix
+) {
+  return lit(Array(String), items, prefix, separator, suffix);
 }
 
 String *String_Substr(
@@ -339,7 +423,7 @@ String *String_RemoveLeadingWhitespace(String *const inst)
 
   /* Iterate forward and break on the first valid character */
   loop (i, len) {
-    if (!String_MatchesAny(getbyte(inst, i), WHITESPACE)) {
+    if (!String_MatchesAny(getbyte(inst, i), WHITESPACE TERMINATOR)) {
       first_non_whitespace_byte = i;
       break;
     }
@@ -368,7 +452,7 @@ String *String_RemoveTrailingWhitespace(String *const inst)
 
   /* Iterate backwards efficiently using rloop */
   rloop (i, len) {
-    if (!String_MatchesAny(getbyte(inst, i), WHITESPACE)) {
+    if (!String_MatchesAny(getbyte(inst, i), WHITESPACE TERMINATOR)) {
       last_non_whitespace_byte = i;
       break;
     }
@@ -761,7 +845,8 @@ inline int String_Length(const String *const string)
     return 0;
   }
 
-  return capacity(Array(byte), string->data) - 1;
+  /* Discard the null-terminator. */
+  return Length(Array(byte), string->data) - 1;
 }
 
 String *String_Insert(
@@ -1185,6 +1270,7 @@ inline Array(byte) *String_GetData(const String *const inst)
 
   return inst->data;
 }
+
 inline int String_GetWidth(const String *const inst)
 {
   if (!inst) {
@@ -1193,6 +1279,7 @@ inline int String_GetWidth(const String *const inst)
 
   return inst->width;
 }
+
 inline Array(int) *String_GetBreaks(const String *const inst)
 {
   if (!inst) {
@@ -1200,6 +1287,11 @@ inline Array(int) *String_GetBreaks(const String *const inst)
   }
 
   return inst->breaks;
+}
+
+inline int String_GetCapacity(const String *const inst)
+{
+  return capacity(Array(byte), inst->data);
 }
 
 IMPL_ARRAY(String)

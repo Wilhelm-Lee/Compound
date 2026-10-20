@@ -119,27 +119,40 @@ boolean Enums_Equals(Enums *const inst, Enums *const other)
       && Equals(Array(String), inst->values, other->values, String_Equals);
 }
 
-String *Enums_Literalise(Enums *const inst, int index_from_values_to_literalise)
+String *Enums_Literalise(Enums *const inst)
 {
   if (!inst) {
     return nll;
   }
 
-  return append(
-    nll,
-    string("    "),
-    ref(Array(Parameter), inst->params, index_from_values_to_literalise),
-    string(" "),
-    inst->identifier,
-    string(" = "),
-    ref(Array(String), inst->values, index_from_values_to_literalise),
-    string(";"NL)
-  );
+  /* Compose enum items. */
+  /* <type> <identifier> = <value>; */
+  const int paramlen = Length(Array(Parameter), inst->params);
+  Array(String) *const composition = array(String, paramlen);
+  loop (i, paramlen) {
+    String *const paramlit = lit(Parameter, ref(Array(Parameter), inst->params, i), yes, yes);
+    String *const valuelit = lit(String, ref(Array(String), inst->values, i));
+    set(Array(String), composition, i, append(nll, paramlit, string(" = "), valuelit, string(";")));
+  }
+
+  /* typedef struct {
+   *     <enum1>
+   *     <enum2>
+   *     <enum3>
+   *     ...
+   *     <enumN>
+   * } */
+  return
+    lit(Array(String), composition,
+      append(
+        string("typedef struct "), string("{"NL)
+      ),
+      string(NL),
+      append(
+        string("}"), CopyOf(String, inst->identifier)
+      )
+    );
 }
 
 IMPL_ARRAY(Enums)
-IMPL_ARRAY_LITERALISE_ARGS(
-  Enums,
-  index_from_values_to_literalise,
-  int index_from_values_to_literalise
-)
+IMPL_ARRAY_LITERALISE(Enums)

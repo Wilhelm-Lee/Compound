@@ -22,6 +22,10 @@
 /* Ensure PCRE2 unit width is defined BEFORE the header */
 #include "../inc/regex.h"
 
+extern void RemoveQuotePair(String **const expression);
+
+pcre2_general_context *gcontext = nll;
+
 struct Regex {
   String *original;
   String *expression;
@@ -31,23 +35,280 @@ struct Regex {
   int execute_return_code;
 };
 
-static void _Regex_RemoveQuotePair(String **const expression)
+static Array(int) *GetGroups(Array(int) *const indices)
 {
-  if (!expression || !*expression) {
+  const int group_count = indices ? Length(Array(int), indices) : 0;
+
+  /* Default to fetching group 0 (full match) if no arguments provided */
+  const int actual_count = group_count > 0 ? group_count : 1;
+  Array(int) *groups = array(int, actual_count);
+  if (!groups) {
+    return nll;
+  }
+
+  if (!group_count) {
+    set(Array(int), groups, 0, 0);
+    return groups;
+  }
+
+  loop (i, group_count) {
+    /* C varargs promote standard integer literals to 'int' */
+    set(Array(int), groups, i, get(Array(int), indices, i));
+  }
+
+  return groups;
+}
+
+static String *ExtractSingular(
+  Array(int) *const groups,
+  Match *const match,
+  String *const original
+) {
+  if (!groups || !match || !original) {
+    return nll;
+  }
+
+  refeach (int, group, groups, {
+    const int start = Match_GetStart(match, *group);
+    const int end = Match_GetEnd(match, *group);
+
+    if (start >= 0 && end >= 0 && end >= start) {
+      /* Early return replaces variable mutation + break */
+      return substr(original, start, end - start);
+    }
+  })
+
+  return nll;
+}
+
+static boolean CompileCore(Regex *const inst)
+{
+  char *expr_cstr = flatten(char, inst->expression);
+  if (!expr_cstr) {
+    return false;
+  }
+
+  if (inst->compiled_expression_pointer) {
+    pcre2_code_free(inst->compiled_expression_pointer);
+    inst->compiled_expression_pointer = null;
+  }
+
+  int errornumber;
+  PCRE2_SIZE erroroffset;
+
+  inst->compiled_expression_pointer = pcre2_compile(
+    (PCRE2_SPTR)expr_cstr,
+    PCRE2_ZERO_TERMINATED,
+    0,
+    &errornumber,
+    &erroroffset,
+    NULL
+  );
+
+  Deallocate(expr_cstr);
+
+  if (!inst->compiled_expression_pointer) {
+    inst->compile_return_code = -1;
+    return false;
+  }
+
+  inst->compile_return_code = 0;
+  return true;
+}
+
+static int CountOccurrences(
+  Regex *const inst,
+  const char *const orig_cstr,
+  const int orig_len
+) {
+  pcre2_match_data *match_data = pcre2_match_data_create_from_pattern(
+    inst->compiled_expression_pointer,
+    null
+  );
+
+  if (!match_data) {
+    return 0;
+  }
+
+  int count = 0;
+  PCRE2_SIZE offset = 0;
+
+  while (pcre2_match(
+           inst->compiled_expression_pointer,
+           (PCRE2_SPTR)orig_cstr,
+           orig_len,
+           offset,
+           0,
+           match_data,
+           NULL) > 0)
+  {
+    count++;
+    PCRE2_SIZE *ovector = pcre2_get_ovector_pointer(match_data);
+    PCRE2_SIZE step = ovector[1];
+
+    /* Zero-length match guardrail */
+    if (ovector[0] == ovector[1]) {
+      step++;
+    }
+
+    offset = step;
+    if (offset >= (PCRE2_SIZE)orig_len) {
+      break;
+    }
+  }
+
+  pcre2_match_data_free(match_data);
+  return count;
+}
+
+static void ExtractMatches(
+  Regex *const inst,
+  const char *const orig_cstr,
+  const int orig_len
+) {
+  pcre2_match_data *match_data = pcre2_match_data_create_from_pattern(
+    inst->compiled_expression_pointer,
+    null
+  );
+
+  if (!match_data) {
     return;
   }
 
-  if (blank(*expression)) {
-    return;
+  PCRE2_SIZE offset = 0;
+
+  while ((inst->execute_return_code = pcre2_match(
+             inst->compiled_expression_pointer,
+             (PCRE2_SPTR)orig_cstr,
+             orig_len,
+             offset,
+             0,
+             match_data,
+             NULL)) > 0)
+  {
+    PCRE2_SIZE *ovector = pcre2_get_ovector_pointer(match_data);
+
+    Array(int) *bounds = array(int, inst->execute_return_code * 2);
+    for (register int i = 0; i < inst->execute_return_code; i++) {
+      set(Array(int), bounds, i * 2, (int)ovector[i * 2]);
+      set(Array(int), bounds, i * 2 + 1, (int)ovector[i * 2 + 1]);
+    }
+
+    Match *const match = Create(Match, bounds);
+    inst->matches = call(Array(Match), Insert, inst->matches, -1, match);
+
+    PCRE2_SIZE step = ovector[1];
+    if (ovector[0] == ovector[1]) {
+      step++;
+    }
+
+    offset = step;
+    if (offset >= (PCRE2_SIZE)orig_len) {
+      break;
+    }
   }
 
-  const int length = Length(String, *expression);
-  if (length < 2) {
-    return;
+  pcre2_match_data_free(match_data);
+}
+
+static String *SubstituteCore(
+  Regex *const inst,
+  const char *const subject_cstr,
+  const int subject_len,
+  const char *const replace_cstr,
+  const int replace_len
+) {
+  pcre2_match_data *match_data = pcre2_match_data_create_from_pattern(
+    inst->compiled_expression_pointer,
+    null
+  );
+
+  if (!match_data) {
+    return nll;
   }
 
-  *expression = substr(*expression, 1, length - 1);
-  setbyte(*expression, length - 2, 0);
+  /* Heuristic initial buffer size: Subject length + replacement length margin */
+  PCRE2_SIZE out_len = subject_len + (replace_len * 2) + 128;
+  PCRE2_UCHAR *out_buffer = Allocate(out_len * sizeof(PCRE2_UCHAR));
+
+  int rc = PCRE2_ERROR_NOMEMORY;
+
+  /* Loop cleanly handles the OVERFLOW_LENGTH reallocation pass */
+  while (rc == PCRE2_ERROR_NOMEMORY) {
+    if (!out_buffer) {
+      break;
+    }
+
+    rc = pcre2_substitute(
+      inst->compiled_expression_pointer,
+      (PCRE2_SPTR)subject_cstr, subject_len,
+      0,
+      PCRE2_SUBSTITUTE_GLOBAL | PCRE2_SUBSTITUTE_OVERFLOW_LENGTH,
+      match_data,
+      null,
+      (PCRE2_SPTR)replace_cstr, replace_len,
+      out_buffer, &out_len
+    );
+
+    /* Handle buffer overflow gracefully by reallocating to the exact required size */
+    if (rc == PCRE2_ERROR_NOMEMORY) {
+      Deallocate(out_buffer);
+      out_buffer = Allocate(out_len * sizeof(PCRE2_UCHAR));
+    }
+  }
+
+  String *result = nll;
+  if (rc >= 0 && out_buffer) {
+    out_buffer[out_len] = '\0';
+    result = string((char *)out_buffer);
+  }
+
+  if (out_buffer) {
+    Deallocate(out_buffer);
+  }
+
+  pcre2_match_data_free(match_data);
+
+  return result;
+}
+
+static void *PCRE2PrivateAllocator(size_t size, void *userdata)
+{
+  ig userdata;
+
+  return Allocate(size);
+}
+
+static void PCRE2PrivateDeallocator(void *const addr, void *userdata)
+{
+  ig addr;
+  ig userdata;
+
+  Deallocate(addr);
+}
+
+void InitialiseRegex(void)
+{
+  gcontext = pcre2_general_context_create(
+    PCRE2PrivateAllocator,
+    PCRE2PrivateDeallocator,
+    nll
+  );
+
+  if (!gcontext) {
+    fprintf(
+      stderr,
+      "Failed to initialise Regex."NL
+      "  pcre2_general_context_create returned NULL."NL
+    );
+
+    exit(1);
+  }
+}
+
+void DeinitialiseRegex(void)
+{
+  pcre2_general_context_free(gcontext);
 }
 
 Regex *Regex_Create(String *const original, String *const expression)
@@ -68,7 +329,7 @@ Regex *Regex_Create(String *const original, String *const expression)
    * we used quoting in C Preprocessor that quotes the literal; rendering
    * the result requires removal for those additional characters.
    */
-  _Regex_RemoveQuotePair(&inst->expression);
+  RemoveQuotePair(&inst->expression);
 
   return inst;
 }
@@ -132,39 +393,12 @@ boolean Regex_Compile(Regex *const inst)
     return false;
   }
 
-  char *expr_cstr = flatten(char, inst->expression);
-  if (!expr_cstr) {
+  if (!CompileCore(inst)) {
     return false;
   }
-
-  if (inst->compiled_expression_pointer) {
-    pcre2_code_free(inst->compiled_expression_pointer);
-    inst->compiled_expression_pointer = null;
-  }
-
-  int errornumber;
-  PCRE2_SIZE erroroffset;
-
-  inst->compiled_expression_pointer = pcre2_compile(
-    (PCRE2_SPTR)expr_cstr,
-    PCRE2_ZERO_TERMINATED,
-    0, /* Default options */
-    &errornumber,
-    &erroroffset,
-    NULL
-  );
-
-  Deallocate(expr_cstr);
-
-  if (!inst->compiled_expression_pointer) {
-    inst->compile_return_code = -1;
-    return false;
-  }
-
-  inst->compile_return_code = 0;
 
   if (!inst->original) {
-    /* Prevent the exit memory leak identified earlier */
+    /* Prevent memory leak on early exit */
     pcre2_code_free(inst->compiled_expression_pointer);
     inst->compiled_expression_pointer = null;
     inst->compile_return_code = -1;
@@ -173,117 +407,125 @@ boolean Regex_Compile(Regex *const inst)
 
   char *orig_cstr = flatten(char, inst->original);
   if (!orig_cstr) {
+    pcre2_code_free(inst->compiled_expression_pointer);
+    inst->compiled_expression_pointer = null;
+    inst->compile_return_code = -1;
     return false;
   }
 
   const int orig_len = Length(String, inst->original);
-  pcre2_match_data *match_data = pcre2_match_data_create_from_pattern(inst->compiled_expression_pointer, NULL);
-  PCRE2_SIZE offset = 0;
 
-  /* Execute PCRE2 match block */
-  while ((inst->execute_return_code = pcre2_match(
-             inst->compiled_expression_pointer,
-             (PCRE2_SPTR)orig_cstr,
-             orig_len,
-             offset,
-             0,
-             match_data,
-             NULL)) > 0)
-  {
-    PCRE2_SIZE *ovector = pcre2_get_ovector_pointer(match_data);
+  /* Count occurrences to determine if population is necessary */
+  int match_count = CountOccurrences(inst, orig_cstr, orig_len);
 
-    /* Dynamically allocate an array to hold all bounds for this match */
-    Array(int) *bounds = array(int, inst->execute_return_code * 2);
-    for (register int i = 0; i < inst->execute_return_code; i++) {
-      set(Array(int), bounds, i * 2, (int)ovector[i * 2]);
-      set(Array(int), bounds, i * 2 + 1, (int)ovector[i * 2 + 1]);
-    }
-
-    Match *const match = Create(Match, bounds);
-    inst->matches = call(Array(Match), Insert, inst->matches, -1, match);
-
-    PCRE2_SIZE step = ovector[1];
-    if (ovector[0] == ovector[1]) {
-      step++;
-    }
-    offset = step;
-    if (offset >= (PCRE2_SIZE)orig_len) break;
+  if (match_count > 0) {
+    /* Optional: Pre-allocate Array(Match) capacity using match_count here */
+    ExtractMatches(inst, orig_cstr, orig_len);
   }
 
-  pcre2_match_data_free(match_data);
   Deallocate(orig_cstr);
 
   return true;
 }
 
-/* Update Regex_Extract to accept and process varargs */
 Array(String) *Regex_Extract(Regex *const inst, Array(int) *const indices)
 {
-  if (!inst) {
+  if (!inst || !inst->original) {
     return nll;
   }
 
-  if (!inst->original || !inst->matches) {
-    return array(String, 0);
+  /* Merge nested compilation guard into a single short-circuit condition */
+  if (!inst->compiled_expression_pointer && !CompileCore(inst)) {
+    return nll;
   }
 
-  Regex_Compile(inst);
-
-  const int group_count = Length(Array(int), indices);
-
-  /* Default to fetching group 0 (full match) if no arguments provided */
-  const int actual_count = Length(Array(int), indices);
-  Array(int) *groups = array(int, actual_count);
-
-  if (group_count > 0) {
-    loop (i, group_count) {
-      /* C varargs promote standard integer literals to 'int' */
-      set(Array(int), groups, i, get(Array(int), indices, i));
-    }
-  } else {
-    set(Array(int), groups, 0, 0);
+  /* Reset internal matches array to prevent duplicate appendations */
+  if (inst->matches) {
+    erase(Array(Match), inst->matches);
+    Delete(Array(Match), inst->matches);
   }
+  inst->matches = array(Match, 0);
+
+  char *orig_cstr = flatten(char, inst->original);
+  if (!orig_cstr) {
+    return nll;
+  }
+
+  const int orig_len = Length(String, inst->original);
+  ExtractMatches(inst, orig_cstr, orig_len);
+  Deallocate(orig_cstr);
 
   const int match_count = Length(Array(Match), inst->matches);
-  Array(String) *const extracted = array(String, match_count * actual_count);
-
-  if (!extracted) {
-    Delete(Array(int), groups);
+  Array(String) *results = array(String, match_count);
+  if (!results) {
     return nll;
   }
 
-  register int write_idx = 0;
+  Array(int) *groups = GetGroups(indices);
+  if (!groups) {
+    Delete(Array(String), results);
+    return nll;
+  }
+
   refeach (Match, match, inst->matches, {
-    if (!match) {
-      continue;
-    }
-
-    refeach (int, group, groups, {
-      const int start = Match_GetStart(match, *group);
-      const int end = Match_GetEnd(match, *group);
-
-      if (start < 0 || end < 0 || end < start) {
-        set(Array(String), extracted, write_idx, string(""));
-      } else {
-        set(
-          Array(String),
-          extracted,
-          write_idx,
-          substr(inst->original, start, end - start)
-        );
-      }
-      write_idx++;
-    })
+    String *extracted_str = ExtractSingular(groups, match, inst->original);
+    set(Array(String), results, _refeach_idx_match, extracted_str);
   })
 
   Delete(Array(int), groups);
+  return results;
+}
 
+String *Regex_Substitute(Regex *const inst, const String *const replacement)
+{
+  if (!inst || !replacement) {
+    return nll;
+  }
+
+  if (!inst->original) {
+    return CopyOf(String, replacement);
+  }
+
+  /* Use the subfunction to compile
+   * without triggering the heavy Match extraction */
+  if (!CompileCore(inst)) {
+    return nll;
+  }
+
+  char *subject_cstr = flatten(char, inst->original);
+  char *replace_cstr = flatten(char, replacement);
+
+  if (!subject_cstr || !replace_cstr) {
+    if (subject_cstr) {
+      Deallocate(subject_cstr);
+    }
+
+    if (replace_cstr) {
+      Deallocate(replace_cstr);
+    }
+
+    return nll;
+  }
+
+  const int subject_len = Length(String, inst->original);
+  const int replace_len = Length(String, replacement);
+
+  String *result = SubstituteCore(
+    inst,
+    subject_cstr, subject_len,
+    replace_cstr, replace_len
+  );
+
+  Deallocate(subject_cstr);
+  Deallocate(replace_cstr);
+
+  /* Atomic cleanup operation for singular usage */
   if (inst->compiled_expression_pointer) {
     pcre2_code_free(inst->compiled_expression_pointer);
     inst->compiled_expression_pointer = null;
   }
 
-  return extracted;
+  return result;
 }
 
 String *Regex_Literalise(Regex *const inst)

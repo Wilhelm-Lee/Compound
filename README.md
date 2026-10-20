@@ -27,8 +27,7 @@
 ### Microsoft Windows
 
   Please make sure to have sufficient prerequisites installed on your
-  Windows machine before starting the building process.  But worry not, you will
-  be guided to install these dependencies along the way.
+  Windows machine before starting the building process.
 
   ------------------------------------------------------------------------------
 
@@ -47,7 +46,7 @@
   If you have not downloaded the project from GitHub.com <!-- or CodeBerg.org-->,
   use the following command to do so:
   ```pwsh
-    git clone --recurse-submodules 'https://github.com/Wilhelm-Lee/Compound.git'
+    git clone 'https://github.com/Wilhelm-Lee/Compound.git'
     cd Compound
   ```
 
@@ -67,8 +66,7 @@
 
   So here it is.
   ```bash
-    git clone --recurse-submodules 'https://github.com/Wilhelm-Lee/Compound.git'
-    cd Compound
+    git clone 'https://github.com/Wilhelm-Lee/Compound.git' && cd Compound
   ```
 
   ```bash

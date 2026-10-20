@@ -48,120 +48,69 @@
  */
 #include "../usr/header.h"
 
-int Context(Array(String) *const args)
+int Context(void)
 {
-  ig args;
-
-  class (public, Variable, {
-    class (public, Inner, {
-      field (private, int, value, 0);
-
-      constructor (public, (int value), {
-        this->value = value;
-      })
-    })
-
-    record (public, OperationCode, (int code), {
-      enums (NOP, 0);
-      enums (ADDITION, 1);
-      enums (SUBTRACTION, 2);
-      enums (MULTIPLICATION, 3);
-      enums (DIVISION, 4);
-    });
-
-    field (private, String *, identifier, nll);
-    field (private, String *, value, nll);
-
-    constructor (public, (String *const identifier, String *const value), {
-      if (!identifier) {
-        return nll;
-      }
-
-      this->identifier = CopyOf(String, identifier);
-      this->value = CopyOf(String, value);
-
-      return this;
-    })
-
-    destructor ({
-      Delete(String, this->identifier);
-      Delete(String, this->value);
-    })
-
-    method (public, String *, GetIdentifier, (void), {
-      return this->identifier;
-    })
-
-    method (public, String *, GetValue, (void), {
-      return this->value;
-    })
-
-    virtual (public, Variable *, Operate, (int operation_code, Variable *const other));
-
-    override (public, boolean, Equals, (Variable *const other), {
-      if (!other) {
-        return false;
-      }
-
-      return Equals(String, this->identifier, other->identifier)
-          && Equals(String, this->value, other->value);
-    })
-
-    override (public, String *, Literalise, (void), {
-      return append(nll, this->identifier, string(" = "), this->value, string(";"));
-    })
-  })
-
-  class (public, Integer, {
-    inherit (Variable);
-
-    constructor (public, (int value), {
-      this->identifier = string("Integer");
-      this->value = format("%d", value);
-
-      return this;
-    })
-
-    constructor (public, (Integer *const other), {
-      if (!other) {
-        return nll;
-      }
-
-      this->identifier = string("Integer");
-      this->value = format("%d", other->value);
-
-      return this;
-    })
-
-    override (public, Variable *, Operate, (int operation_code, Variable *const other), {
-      if (!other) {
-        return this;
-      }
-
-      if (operation_code == OperationCode.ADDITION) {
-        this->value = Concat(String, this->value, other->value);
-      }
-
-      return this;
-    })
-
-    override (public, boolean, Equals, (Integer *const other), {
-      if (!other) {
-        return false;
-      }
-
-      return Equals(String, this->value, other->value);
-    })
-  })
 
   return 0;
 }
 
-int Main(Array(String) *const args)
+// int StreamTest(void)
+// {
+//   Stream *const write = stream("/tmp/out", "a");
+//   Stream *const read = stream("/tmp/out", "r");
+
+//   soutln(write, string("0123456789012345678901"));
+
+//   out(Read(read));
+
+//   return 0;
+// }
+
+int Main(void)
 {
-  ig args;
+  return !(
+    sout(
+      stream("content", "w"),
+      reformat(
+        nll, string(NL), string(NL),
+        string("0123456789012345678901"),
+        Concat(String, string("as;dlfkj"), string("zxcvnbm,.")),
+        raw("\${\w*}\b?\UDEADBEEF"),
+        raw("<a href="file">C:\Program Files\</a>"),
+        format("1st Jun, 1980  08:00 + %lu seconds", time(nll))
+      )
+    ),
+    out(
+      Read(stream("content", "r"))
+    )
+  );
 
-  outln(format("Hello, Compound!"NL"The time is %lld.", time(nll)));
+  // /* The definition represents an entire statement. */
+  // String *definition = string("${Object}::${Function}(${Parameter1})");
 
-  return 0;
+  // Regex *const constants_reg = regex(definition, "(?<=\})(.*?)(?=\$\{)");
+  // Regex *const identifiers_reg = regex(definition, "(\$\{)(\w*)(\})");
+
+  // Array(String) *const constants = extract(constants_reg, 0);
+  // refrefeach (String, constant, constants, {
+  //   *constant = append(nll, string("("), CopyOf(String, *constant), string(")"));
+  // })
+
+  // Array(String) *const identifiers = extract(identifiers_reg, 0);
+  // refrefeach (String, identifier, identifiers, {
+  //   // *identifier = substit(regex(*identifier, "(?<=\})(.*?)(?=\$\{)"), "(\$1(\w*)$3)");
+  //   *identifier = raw("\${\w*}");
+  // })
+
+  // String *constants_merged = String_Append(nll, constants);
+  // String *identifiers_merged = String_Append(nll, identifiers);
+
+  // // definition = substit(constants_reg, "($1)");
+  // // definition = substit(identifiers_reg, "(\$1(\w*)$3)");
+
+  // // outln(definition);
+
+  // // Regex *const generated_regex =
+
+  // return 0;
 }

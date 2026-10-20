@@ -26,53 +26,44 @@
 
 # include "buffer.h"
 
-# define INITIAL_STREAM_BUFFER_SIZE  4096LL
+# define STREAM_INITIAL_BUFFER_SIZE  4096LL
 
 typedef struct Stream Stream;
 
 ARRAY(Stream)
 LITERALISE(Stream)
 
-# define stream(filename_cstr, modes_cstr)\
+# define stream(filename_cstr, modes_cstr)                                     \
   Create(Stream, string(filename_cstr), string(modes_cstr))
 
-# define Open(stream_ptr)\
-  Stream_Open(stream_ptr)
+# define Write(stream_ptr, value_string_ptr)                                   \
+  Stream_Write(stream_ptr, value_string_ptr)
 
-# define Close(stream_ptr)\
-  Stream_Close(stream_ptr)
+# define WriteLine(stream_ptr, value_string_ptr)                               \
+  Stream_WriteLine(stream_ptr, value_string_ptr)
 
-# define Flush(stream_ptr)\
-  Stream_Flush(stream_ptr)
-
-# define Write(stream_ptr, value_ptr)\
-  Stream_Write(stream_ptr, value_ptr)
-
-# define WriteLine(stream_ptr, value_ptr)\
-  Stream_WriteLine(stream_ptr, value_ptr)
-
-# define Read(stream_ptr)\
+# define Read(stream_ptr)                                                      \
   Stream_Read(stream_ptr)
 
-# define ReadLine(stream_ptr, lines_to_skip)\
-  Stream_ReadLine(stream_ptr, lines_to_skip)
+# define ReadLines(stream_ptr)                                                 \
+  Stream_ReadLines(stream_ptr)
+
+extern Stream *StdIn, *StdOut, *StdErr;
+
+void InitialiseStream(void);
+void DeinitialiseStream(void);
 
 Stream *Stream_Create(String *const filepath, String *const mode);
 Stream *Stream_CopyOf(const Stream *const other);
 void Stream_Delete(Stream *const inst);
 boolean Stream_Equals(const Stream *const inst, const Stream *const other);
 
-boolean Stream_Open(Stream *const inst);
-boolean Stream_Close(Stream *const inst);
-boolean Stream_Flush(Stream *const inst);
-
 boolean Stream_Write(Stream *const inst, const String *const value);
 boolean Stream_WriteLine(
   Stream *const inst,
-  const String *const value,
-  const llong lines_to_skip
+  String *const value
 );
 String *Stream_Read(Stream *const inst);
-String *Stream_ReadLine(Stream *const inst, const llong lines_to_skip);
+Array(String) *Stream_ReadLines(Stream *const inst);
 
 #endif /* COMPOUND_STREAM_H */
