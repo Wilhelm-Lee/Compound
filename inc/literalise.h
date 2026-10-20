@@ -27,10 +27,6 @@
 # define lit(type, ...)                                                        \
   call(type, Literalise, __VA_ARGS__)
 
-/* Ellipsis is for configurations. */
-# define litarr(elem_type, ...)                                                \
-  call(Array(elem_type), LiteraliseWrapper, __VA_ARGS__)
-
 # define LITERALISE(type)                                                      \
   String *type##_Literalise(type *const inst);                                 \
   FUNC_ARRAY_LITERALISE(type)

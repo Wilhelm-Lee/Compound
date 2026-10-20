@@ -51,22 +51,32 @@ struct Match {
 Match *Match_Create(Array(int) *const bounds)
 {
   Match *const inst = Allocate(sizeof(Match));
-  if (!inst) return nll;
+  if (!inst) {
+    return nll;
+  }
 
   inst->bounds = bounds;
+
   return inst;
 }
 
 Match *Match_CopyOf(Match *const other)
 {
-  if (!other) return nll;
+  if (!other) {
+    return nll;
+  }
+
   return Create(Match, CopyOf(Array(int), other->bounds));
 }
 
 void Match_Delete(Match *const inst)
 {
-  if (!inst) return;
+  if (!inst) {
+    return;
+  }
+
   Delete(Array(int), inst->bounds);
+
   Deallocate(inst);
 }
 
@@ -79,7 +89,7 @@ boolean Match_Equals(Match *const inst, Match *const other)
   if (inst == other) {
     return true;
   }
-  
+
   return Equals(Array(int), inst->bounds, other->bounds, null);
 }
 

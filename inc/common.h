@@ -46,24 +46,39 @@
 # define elif  else if
 
 /* Evals the larger value of two variables -- not expressions for eval safety.*/
-# define max(val1_var, val2_var)\
+# define max(val1_var, val2_var)                                               \
   ((val1_var > val2_var) ? val1_var : val2_var)
 
 /* Evals the lesser values of two variables -- not expressions for eval safety.*/
-# define min(val1_var, val2_var)\
+# define min(val1_var, val2_var)                                               \
   ((val1_var < val2_var) ? val1_var : val2_var)
 
-# define out(string_ptr)\
-  fout(stdout, string_ptr)
+# define sendl(stream_ptr)                                                     \
+  Write(stream_ptr, string(NL))
 
-# define outln(string_ptr)\
-  fout(stdout, append(nll, string_ptr, string(NL)))
+# define endl()                                                                \
+  sendl(StdOut)
 
-# define foutln(file_ptr, string_ptr)\
-  fout(file_ptr, append(nll, string_ptr, string(NL)))
+# define soutf(stream_ptr, format_cstr, ...)                                   \
+  Write(stream_ptr, format(format_cstr, __VA_ARGS__))
 
-# define fout(file_ptr, string_ptr)\
-  fprintf(file_ptr, "%s", flatten(char, string_ptr));
+# define sout(stream_ptr, string_ptr)                                          \
+  Write(stream_ptr, string_ptr)
+
+# define soutln(stream_ptr, string_ptr)                                        \
+  WriteLine(stream_ptr, string_ptr)
+
+# define out(string_ptr)                                                       \
+  sout(StdOut, string_ptr)
+
+# define outf(format_cstr, ...)                                                \
+  out(format(format_cstr, __VA_ARGS__))
+
+# define outln(string_ptr)                                                     \
+  soutln(StdOut, string_ptr)
+
+# define outfln(format_cstr, ...)                                              \
+  outf(format_cstr NEWLINE, __VA_ARGS__)
 
 # define _CONCAT(a, b)                                                         \
   a##b
@@ -123,16 +138,16 @@
 # define Concat(type, inst_obj_ptr, other_obj_ptr)                             \
   (call(type, Concat, inst_obj_ptr, other_obj_ptr))
 
-# define Append(type, inst, ...)\
+# define Append(type, inst, ...)                                               \
   (call(type, Append, inst, arglen(__VA_ARGS__), __VA_ARGS__))
 
 # define Length(type, inst)                                                    \
   (call(type, Length, inst))
 
-# define Insert(type, inst_obj_ptr, ...)\
+# define Insert(type, inst_obj_ptr, ...)                                       \
   (call(type, Insert, inst_obj_ptr, __VA_ARGS__))
 
-# define Remove(type, inst_obj_ptr, ...)\
+# define Remove(type, inst_obj_ptr, ...)                                       \
   (call(type, Remove, inst_obj_ptr, __VA_ARGS__))
 
 /* Contributed by "[halalaluyafail3](https://gist.github.com/Halalaluyafail3)"

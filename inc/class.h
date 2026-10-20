@@ -41,10 +41,16 @@ LITERALISE_ARGS(Class, boolean need_member_definition)
 extern void _Class_EraseFields(Class *const inst);
 extern void _Class_EraseMethods(Class *const inst);
 
-# define class(access_visibility_literal, identifier_literal, ...)             \
+# define _class(                                                               \
+    class_variant,                                                             \
+    access_visibility_literal,                                                 \
+    identifier_literal,                                                        \
+    ...                                                                        \
+  )                                                                            \
   typedef Class identifier_literal;                                            \
   identifier_literal *c_##identifier_literal = Create(                         \
     Class,                                                                     \
+    class_variant,                                                             \
     ACCESS_VISIBILITY_##access_visibility_literal,                             \
     string(nameof(identifier_literal)),                                        \
     null,                                                                      \
@@ -71,6 +77,14 @@ extern void _Class_EraseMethods(Class *const inst);
     Class_Inherit(this, super);                                                \
   }
 
+# define class(access_visibility_literal, identifier_literal, ...)             \
+  _class(                                                                      \
+    CLASS_VARIANT_CLASS,                                                       \
+    access_visibility_literal,                                                 \
+    identifier_literal,                                                        \
+    __VA_ARGS__                                                                \
+  )
+
 /* record (public, ExitCodes, (int code)) */
 /* record (protected, User, (String *name, int id)) */
 /* record (private, RGBChannel, (int red_value, int green_value, int blue_value)) */
@@ -81,7 +95,7 @@ extern void _Class_EraseMethods(Class *const inst);
     lazy_param_clusters,                                                       \
     ...                                                                        \
   )                                                                            \
-  class (access_visibility_literal, identifier_literal, {                      \
+  _class (CLASS_VARIANT_RECORD, access_visibility_literal, identifier_literal,{\
     constructor (public, lazy_param_clusters, {})                              \
     Array(Parameter) *const _record_types = lazy_params lazy_param_clusters;   \
     __VA_ARGS__                                                                \
@@ -135,7 +149,18 @@ extern void _Class_EraseMethods(Class *const inst);
 # define invoke(...)                                                           \
   EMPTY
 
+typedef enum {
+  CLASS_VARIANT_MINIMUM_VALUE = 0,  /* Do not reassign value manually. */
+
+  CLASS_VARIANT_CLASS = CLASS_VARIANT_MINIMUM_VALUE,
+  CLASS_VARIANT_RECORD,
+  CLASS_VARIANT_INTERFACE,
+
+  CLASS_VARIANT_MAXIMUM_VALUE  /* Do not assign value manually. */
+} ClassVariant;
+
 Class *Class_Create(
+  const ClassVariant variant,
   const AccessVisibility visibility,
   String *const identifier,
   Class *const super,

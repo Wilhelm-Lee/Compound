@@ -31,6 +31,8 @@
 # define SPACE " "
 # define WHITESPACE  TABULATION"\n\v\f\r"SPACE
 
+# define TERMINATOR  "\0"
+
 # define PUNCTUATION  "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
 
 # define LOWERCASE  "abcedfghijklmnopqrstuvwxyz"

@@ -22,8 +22,10 @@
 #ifndef COMPOUND_REGEX_H
 # define COMPOUND_REGEX_H
 
-#define PCRE2_CODE_UNIT_WIDTH 8
-#include <pcre2.h>
+/* TODO(william): Please extend the configuration for users. */
+# define PCRE2_CODE_UNIT_WIDTH  8
+
+# include "../dep/pcre2/interface/pcre2.h"
 
 # include "match.h"
 
@@ -32,21 +34,25 @@ typedef struct Regex Regex;
 ARRAY(Regex)
 LITERALISE(Regex)
 
-# define regex(string_ptr, ...)\
+# define regex(string_ptr, ...)                                                \
   (Create(Regex, string_ptr, string(#__VA_ARGS__)))
 
-# define extract(regex_ptr, ...)\
-  Regex_Extract(regex_ptr, Compose(Array(int), __VA_ARGS__))
+/* Provide indices to extract; provide 0 to extract them all. */
+# define extract(regex_ptr, ...)                                               \
+  (Regex_Extract(regex_ptr, Compose(Array(int), __VA_ARGS__)))
 
-/* Returns the modified version of the original string content. */
-# define subsitude(regex_ptr, replacement_string_ptr)\
-  (Regex_Subsitude(regex_ptr, replacement_string_ptr))
+# define substit(regex_ptr, raw_replacement_expression_cstr)                   \
+  (Regex_Substitute(regex_ptr, raw(raw_replacement_expression_cstr)))
+
+void InitialiseRegex(void);
+void DeinitialiseRegex(void);
 
 Regex *Regex_Create(String *const original, String *const expression);
 Regex *Regex_CopyOf(Regex *const other);
 void Regex_Delete(Regex *const inst);
 boolean Regex_Equals(Regex *const inst, Regex *const other);
 Array(String) *Regex_Extract(Regex *const inst, Array(int) *const indices);
-String *Regex_Subsitude(Regex *const inst, const String *const replacement);
+Array(String) *Regex_ExtractAll(Regex *const inst);
+String *Regex_Substitute(Regex *const inst, const String *const replacement);
 
 #endif  /* COMPOUND_REGEX_H */

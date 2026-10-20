@@ -69,30 +69,14 @@
 # endif
 
 # ifdef __COMPOUND_FEATURE_CLASS__
+#  define CONTEXT                                                              \
+   if (_UseContext) {                                                          \
+     returncode = Context();                                                   \
+   }
 static const boolean _UseContext = true;
 # else
+#  define CONTEXT
 static const boolean _UseContext = false;
-# endif
-
-/* Prevent undefined error -- user doesn't necessarily write @Context. */
-# if defined (__COMPOUND_FEATURE_ARGUMENT__) &&                                \
-      defined (__COMPOUND_FEATURE_ENVIRONMENT__)
-static int _Context(Array(String) *const args, Array(String) *const envs)
-{
-  ig args, ig envs;
-  return 0;
-}
-# elif defined (__COMPOUND_FEATURE_ARGUMENT__)
-static int _Context(Array(String) *const args)
-{
-  ig args;
-  return 0;
-}
-# else
-static int _Context(void)
-{
-  return 0;
-}
 # endif
 
 /* @Main is the mask of @_Main. */
@@ -103,33 +87,24 @@ static int _Context(void)
 #  define Main(_args, _envs)                                                   \
    _MainUser(_args, _envs);                                                    \
    int _Main(_args, _envs);                                                    \
-   extern int Context(_args, _envs);                                           \
    IMPL_MAIN                                                                   \
    int _Main(_args, _envs)                                                     \
    {                                                                           \
-     const int returncode = _UseContext ? Context(args, envs)                  \
-                                        : _Context(args, envs);                \
-     if (returncode != EXIT_SUCCESS) {                                         \
-       return returncode;                                                      \
-     }                                                                         \
-                                                                               \
-     return _MainUser(args, envs);                                             \
+     int returncode = 0;                                                       \
+     CONTEXT                                                                   \
+     return !returncode && _MainUser(args, envs);                              \
    }                                                                           \
    int _MainUser(_args, _envs)
 # elif defined (__COMPOUND_FEATURE_ARGUMENT__)
 #  define Main(_args)                                                          \
    _MainUser(_args);                                                           \
    int _Main(_args);                                                           \
-   extern int Context(_args);                                                  \
    IMPL_MAIN                                                                   \
    int _Main(_args)                                                            \
    {                                                                           \
-     const int returncode = _UseContext ? Context(args) : _Context(args);      \
-     if (returncode != EXIT_SUCCESS) {                                         \
-       return returncode;                                                      \
-     }                                                                         \
-                                                                               \
-     return _MainUser(args);                                                   \
+     int returncode = 0;                                                       \
+     CONTEXT                                                                   \\
+     return !returncode && _MainUser(args);                                    \
    }                                                                           \
    int _MainUser(_args)
 # else
@@ -137,20 +112,14 @@ static int _Context(void)
 #  define Main(placeholder_void)                                               \
    _MainUser(placeholder_void);                                                \
    int _Main(placeholder_void);                                                \
-   extern int Context(placeholder_void);                                       \
    IMPL_MAIN                                                                   \
    int _Main(placeholder_void)                                                 \
    {                                                                           \
-     const int returncode = _UseContext ? Context() : _Context();              \
-     if (returncode != EXIT_SUCCESS) {                                         \
-       return returncode;                                                      \
-     }                                                                         \
-                                                                               \
-     return _MainUser();                                                       \
+     int returncode = 0;                                                       \
+     CONTEXT                                                                   \
+     return !returncode && _MainUser();                                        \
    }                                                                           \
    int _MainUser(placeholder_void)
 # endif
-
-# undef Context
 
 #endif  /* COMPOUND_ENTRY_H */

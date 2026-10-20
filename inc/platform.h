@@ -41,13 +41,7 @@
 # elif defined(_WIN32) || defined(_WIN64)
 #  define __COMPOUND_ON_WINDOWS__
 # else
-/* Declared separately is purely for *your* personal preference. */
 #  define __COMPOUND_ON_UNIX__
-#  define __COMPOUND_ON_LINUX__
-
-/* For unifications: */
-#  define __COMPOUND_ON_UNIX_OR_LINUX__\
-       (__COMPOUND_ON_UNIX__ || __COMPOUND_ON_LINUX__)
 # endif
 
 # ifdef __COMPOUND_ON_APPLE__

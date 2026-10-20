@@ -121,7 +121,7 @@ boolean Access_IsAccessible(
   }
 
   if (!IsValidVisibility(accessee->visibility)
-   || !IsValidVisibility(accessee->visibility)) {
+   || !IsValidVisibility(accesser->visibility)) {
     return false;
   }
 
