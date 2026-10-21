@@ -70,18 +70,23 @@ int Main(void)
 {
   return !(
     sout(
-      stream("content", "w"),
+      stream("/tmp/out", "w"),
       reformat(
         nll, string(NL), string(NL),
-        string("0123456789012345678901"),
-        Concat(String, string("as;dlfkj"), string("zxcvnbm,.")),
+        substit(regex(string("10123456789012345678901"), "\B(?=(\d{3})+(?!\d))"), ","),
+        Concat(String, string("as;dlfkj"), Reverse(String, string("zxcvnbm,."))),
         raw("\${\w*}\b?\UDEADBEEF"),
         raw("<a href="file">C:\Program Files\</a>"),
+        raw("        \
+          apple      \
+          nonewline  \
+          banana     \
+        "),
         format("1st Jun, 1980  08:00 + %lu seconds", time(nll))
       )
     ),
     out(
-      Read(stream("content", "r"))
+      Read(stream("/tmp/out", "r"))
     )
   );
 

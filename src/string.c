@@ -1197,7 +1197,20 @@ inline String *String_Reverse(String *const inst)
     return null;
   }
 
-  ig call(Array(byte), Reverse, Getter(String, Data, inst));
+  /* @String_Length Excludes the terminator. */
+  const int length = Length(String, inst);
+  Array(byte) *const reversed = array(byte, length + 1);
+  refeach (byte, it, reversed, {
+    *it = get(Array(byte), inst->data, length - _refeach_idx_it - 1);
+  })
+
+  /* Set the terminator. */
+  set(Array(byte), reversed, -1, 0);
+
+  /* Obsolete the old data. */
+  Delete(Array(byte), inst->data);
+
+  inst->data = reversed;
 
   return inst;
 }
