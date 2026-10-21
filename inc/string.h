@@ -44,6 +44,19 @@ LITERALISE(String)
 # define string(char_ptr)                                                      \
   (String_Update(null, char_ptr))
 
+/* Constructs a String instance with raw input.
+ * Use with a pair of quotes.
+ *   raw("")
+ *   raw("content")
+ *   raw("\E\s\c\a\p\e\s\e\q\u\e\n\c\e")
+ *   raw("''"''"''")
+ *   raw("<a href="file">C:\Program Files\</a>")
+ *   raw("        \
+ *     apple      \
+ *     nonewline  \
+ *     banana     \
+ *   ")
+ */
 # define raw(...)                                                              \
   (String_FromRaw(#__VA_ARGS__))
 

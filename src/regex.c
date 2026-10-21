@@ -534,23 +534,25 @@ String *Regex_Literalise(Regex *const inst)
     return nll;
   }
 
-  String *str_regex = string("Regex(");
+  String *str_regex = string("regex(");
   String *str_comma = string(", ");
   String *str_end = string(")");
+  String *str_quote = string("\"");
 
   String *rtn = CopyOf(String, str_regex);
-  if (inst->expression) {
-    rtn = append(rtn, inst->expression);
+  if (inst->original) {
+    rtn = append(rtn, str_quote, inst->original, str_quote);
   }
 
   rtn = append(rtn, str_comma);
 
-  if (inst->original) {
-    rtn = append(rtn, inst->original);
+  if (inst->expression) {
+    rtn = append(rtn, str_quote, inst->expression, str_quote);
   }
 
   rtn = append(rtn, str_end);
 
+  Delete(String, str_quote);
   Delete(String, str_regex);
   Delete(String, str_comma);
   Delete(String, str_end);
