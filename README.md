@@ -1,5 +1,9 @@
 # COMPOUND
 
+<p align="center">
+  <img src="BANNER_MIDDLE_MARGIN.png" alt="Compound Banner Middle Margin" />
+</p>
+
   The Compound library is a macro-driven, C99-compliant framework designed to
   bring high-level object-oriented patterns and automated memory management to
   the C programming language. It provides a robust foundation for building
