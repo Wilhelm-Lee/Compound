@@ -1,7 +1,7 @@
 # COMPOUND
 
   <p align="center">
-    <img src="BANNER_MIDDLE_MARGIN.png" alt="Compound Banner Middle Margin" />
+    <img src="BANNER_MIDDLE_MARGIN.png" alt="Yeuxs de Élégance" />
   </p>
 
   The Compound library is a macro-driven, C99-compliant framework designed to
